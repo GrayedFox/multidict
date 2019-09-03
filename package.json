@@ -4,7 +4,7 @@
   "description": "Spell check in multiple languages with this Firefox addon",
   "main": "multidict.js",
   "scripts": {
-    "build": "browserify ./multidict.js > ./bundle.js",
+    "build": "browserify ./multidict.js > ./background.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

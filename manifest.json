@@ -8,17 +8,17 @@
     "48": "icons/icon-64.png",
     "96": "icons/icon-128.png"
   },
-  
+
   "background": {
-    "scripts": ["bundle.js"]
+    "scripts": ["background.js"]
   },
 
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": []
+      "js": ["content.js"]
     }
   ],
-  
+
   "web_accessible_resources": ["dictionaries/*.aff, dictionaries/*.dic"]
 }

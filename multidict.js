@@ -1,66 +1,80 @@
 const nspell = require('./nspell/index.js')
+const { loadDictionaries } = require('./helpers.js')
 
-// promisifed async custom forEach function taken from p-iteration
-const forEach = async (array, callback, thisArg) => {
-  const promiseArray = []
-  for (let i = 0; i < array.length; i++) {
-    if (i in array) {
-      const p = Promise.resolve(array[i]).then((currentValue) => {
-        return callback.call(thisArg || this, currentValue, i, array)
-      })
-      promiseArray.push(p)
-    }
+let messageHandler
+let dictionaries = []
+let languages = []
+let languagePrefs = {}
+let spells = {}
+
+// create spell checkers in order of languages specified by user
+function createSpellCheckers (languagePrefs, dictionaries) {
+  if (languagePrefs.length !== dictionaries.length) {
+    console.error('Language and dictionary length are not equal. Aborting.')
+    return
   }
-  await Promise.all(promiseArray)
+
+  const spells = {}
+
+  for (let i = 0; i < dictionaries.length; i++) {
+    spells[languagePrefs[i]] = nspell(dictionaries[i])
+  }
+
+  return spells
 }
 
-// read a file, the firefox extension way
-function readFile (path) {
-  return new Promise((resolve, reject) => {
-    fetch(path, { mode: 'same-origin' })
-      .then(function (res) {
-        return res.blob()
-      })
-      .then(function (blob) {
-        const reader = new FileReader()
+// return suggestions for misspelt words
+function checkSpelling (spell, content) {
+  // split string by spaces and strip out punctuation that does not form part of the word itself
+  // then remove any strings that are numbers or less than 1 char in length
+  const cleanedContent = content.split(/(?:\s)/)
+    .reduce((acc, string) => acc.concat([string.replace(/(\B\W|\W\B|\s)/gm, '')]), [])
+    .reduce((acc, string) => {
+      return string.length > 1 && isNaN(string) && !string.includes('@')
+        ? acc.concat([string])
+        : acc
+    }, [])
+  // BUG: click event listener sends single line of text instead of content of entire editable field
 
-        reader.addEventListener('loadend', function () {
-          resolve(this.result)
-        })
+  console.log(cleanedContent)
 
-        reader.readAsText(blob)
-      })
-      .catch(error => {
-        reject(error)
-      })
+  return cleanedContent.reduce((acc, string) => {
+    return !spell.correct(string) ? acc.concat([[string, spell.suggest(string)]]) : acc
+  }, [])
+}
+
+function listener (message) {
+  messageHandler = message
+  messageHandler.postMessage({ greeting: 'Connection established' })
+
+  messageHandler.onMessage.addListener((message) => {
+    if (message.language === 'unreliable') {
+      messageHandler.postMessage(checkSpelling(spells[languagePrefs[0]], message.content))
+    } else {
+      for (const pref of languagePrefs) {
+        if (languages.includes(`${message.language}-${pref}`)) {
+          messageHandler.postMessage(checkSpelling(spells[pref], message.content))
+          break
+        }
+      }
+    }
   })
 }
 
-// get local dictionary files
-async function loadDictionaries (languages) {
-  const dictionaries = []
-  return forEach(languages, async (lang) => {
-    const dic = await readFile(browser.runtime.getURL(`./dictionaries/${lang}.dic`))
-    const aff = await readFile(browser.runtime.getURL(`./dictionaries/${lang}.aff`))
-    dictionaries.push({ dic: dic, aff: aff })
-  }).then(function () {
-    return dictionaries
-  }).catch(function (err) {
-    console.log(err)
-  })
+// main function which loads dictionaries and creates NSpell dictionary instances
+async function main () {
+  languages = await browser.i18n.getAcceptLanguages()
+  dictionaries = await loadDictionaries(languages)
+  languagePrefs = languages.reduce((acc, lang) => acc.concat([lang.slice(3, 5)]), [])
+  spells = createSpellCheckers(languagePrefs, dictionaries)
+
+  console.log(languages)
+  console.log(languagePrefs)
 }
 
-// main function which loads dictionaries and creates NSpell dictionary intances
-async function main (root) {
-  const languages = await browser.i18n.getAcceptLanguages()
-  const dictionaries = await loadDictionaries(languages)
-  const spell = nspell(dictionaries[0])
-  console.log('Checking "color" is spelt correctly: ' + spell.correct('color'))
-  console.log('Suggesting alternatives: ' + spell.suggest('color'))
-  console.log('Checking "colour" is spelt correclty: ' + spell.correct('colour'))
-}
+browser.runtime.onConnect.addListener(listener)
 
-main(document)
+main()
 
 // Goal: enable multiple laguages to be used when spell checking
 //
@@ -70,7 +84,6 @@ main(document)
 // Method: user should disable browser spell check (to avoid annoying/false red lines) and rely
 // on the extension
 //
-// MVP: spell check using dictionaries, underline misspelled words in multiple
-// languages
-// V2: show suggestions
-// V3: show grammatical errors
+// MVP: spell check using dictionaries, detect language of each field, underline misspelled words,
+// show suggestions
+// V2: persistent personal dictionary to add words to

@@ -1,8 +1,6 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-const nspell = require('./nspell/index.js')
-
 // promisifed async custom forEach function taken from p-iteration
-const forEach = async (array, callback, thisArg) => {
+async function forEach (array, callback, thisArg) {
   const promiseArray = []
   for (let i = 0; i < array.length; i++) {
     if (i in array) {
@@ -15,7 +13,7 @@ const forEach = async (array, callback, thisArg) => {
   await Promise.all(promiseArray)
 }
 
-// read  a file, the firefox extension way
+// read a file, the firefox extension way
 function readFile (path) {
   return new Promise((resolve, reject) => {
     fetch(path, { mode: 'same-origin' })
@@ -37,7 +35,7 @@ function readFile (path) {
   })
 }
 
-// read local dictionary files
+// get local dictionary files
 async function loadDictionaries (languages) {
   const dictionaries = []
   return forEach(languages, async (lang) => {
@@ -51,17 +49,88 @@ async function loadDictionaries (languages) {
   })
 }
 
-// will need to bundle nspell using browserify, import strategy did not work
-async function main (root) {
-  const languages = await browser.i18n.getAcceptLanguages()
-  const dictionaries = await loadDictionaries(languages)
-  const spell = nspell(dictionaries[0])
-  console.log('Checking "color" is spelt correctly: ' + spell.correct('color'))
-  console.log('Suggesting alternatives: ' + spell.suggest('color'))
-  console.log('Checking "colour" is spelt correclty: ' + spell.correct('colour'))
+module.exports = {
+  loadDictionaries
 }
 
-main(document)
+},{}],2:[function(require,module,exports){
+const nspell = require('./nspell/index.js')
+const { loadDictionaries } = require('./helpers.js')
+
+let messageHandler
+let dictionaries = []
+let languages = []
+let languagePrefs = {}
+let spells = {}
+
+// create spell checkers in order of languages specified by user
+function createSpellCheckers (languagePrefs, dictionaries) {
+  if (languagePrefs.length !== dictionaries.length) {
+    console.error('Language and dictionary length are not equal. Aborting.')
+    return
+  }
+
+  const spells = {}
+
+  for (let i = 0; i < dictionaries.length; i++) {
+    spells[languagePrefs[i]] = nspell(dictionaries[i])
+  }
+
+  return spells
+}
+
+// return suggestions for misspelt words
+function checkSpelling (spell, content) {
+  // split string by spaces and strip out punctuation that does not form part of the word itself
+  // then remove any strings that are numbers or less than 1 char in length
+  const cleanedContent = content.split(/(?:\s)/)
+    .reduce((acc, string) => acc.concat([string.replace(/(\B\W|\W\B|\s)/gm, '')]), [])
+    .reduce((acc, string) => {
+      return string.length > 1 && isNaN(string) && !string.includes('@')
+        ? acc.concat([string])
+        : acc
+    }, [])
+  // BUG: click event listener sends single line of text instead of content of entire editable field
+
+  console.log(cleanedContent)
+
+  return cleanedContent.reduce((acc, string) => {
+    return !spell.correct(string) ? acc.concat([[string, spell.suggest(string)]]) : acc
+  }, [])
+}
+
+function listener (message) {
+  messageHandler = message
+  messageHandler.postMessage({ greeting: 'Connection established' })
+
+  messageHandler.onMessage.addListener((message) => {
+    if (message.language === 'unreliable') {
+      messageHandler.postMessage(checkSpelling(spells[languagePrefs[0]], message.content))
+    } else {
+      for (const pref of languagePrefs) {
+        if (languages.includes(`${message.language}-${pref}`)) {
+          messageHandler.postMessage(checkSpelling(spells[pref], message.content))
+          break
+        }
+      }
+    }
+  })
+}
+
+// main function which loads dictionaries and creates NSpell dictionary instances
+async function main () {
+  languages = await browser.i18n.getAcceptLanguages()
+  dictionaries = await loadDictionaries(languages)
+  languagePrefs = languages.reduce((acc, lang) => acc.concat([lang.slice(3, 5)]), [])
+  spells = createSpellCheckers(languagePrefs, dictionaries)
+
+  console.log(languages)
+  console.log(languagePrefs)
+}
+
+browser.runtime.onConnect.addListener(listener)
+
+main()
 
 // Goal: enable multiple laguages to be used when spell checking
 //
@@ -71,10 +140,11 @@ main(document)
 // Method: user should disable browser spell check (to avoid annoying/false red lines) and rely
 // on the extension
 //
-// MVP: no suggestions, spell check only using dictionaries
-// V2: show suggestions
+// MVP: spell check using dictionaries, detect language of each field, underline misspelled words,
+// show suggestions
+// V2: persistent personal dictionary to add words to
 
-},{"./nspell/index.js":5}],2:[function(require,module,exports){
+},{"./helpers.js":1,"./nspell/index.js":6}],3:[function(require,module,exports){
 'use strict'
 
 var push = require('./util/add.js')
@@ -94,7 +164,7 @@ function add(value, model) {
   return self
 }
 
-},{"./util/add.js":10}],3:[function(require,module,exports){
+},{"./util/add.js":11}],4:[function(require,module,exports){
 'use strict'
 
 var form = require('./util/form.js')
@@ -106,7 +176,7 @@ function correct(value) {
   return Boolean(form(this, value))
 }
 
-},{"./util/form.js":17}],4:[function(require,module,exports){
+},{"./util/form.js":18}],5:[function(require,module,exports){
 'use strict'
 
 var parse = require('./util/dictionary.js')
@@ -152,7 +222,7 @@ function add(buf) {
   return self
 }
 
-},{"./util/dictionary.js":14}],5:[function(require,module,exports){
+},{"./util/dictionary.js":15}],6:[function(require,module,exports){
 'use strict'
 
 var affix = require('./util/affix.js')
@@ -223,7 +293,7 @@ function NSpell (aff, dic) {
   }
 }
 
-},{"./add.js":2,"./correct.js":3,"./dictionary.js":4,"./personal.js":6,"./remove.js":7,"./spell.js":8,"./suggest.js":9,"./util/affix.js":11,"./word-characters.js":21}],6:[function(require,module,exports){
+},{"./add.js":3,"./correct.js":4,"./dictionary.js":5,"./personal.js":7,"./remove.js":8,"./spell.js":9,"./suggest.js":10,"./util/affix.js":12,"./word-characters.js":22}],7:[function(require,module,exports){
 'use strict'
 
 var trim = require('./util/trim.js')
@@ -274,7 +344,7 @@ function add(buf) {
   return self
 }
 
-},{"./util/trim.js":20}],7:[function(require,module,exports){
+},{"./util/trim.js":21}],8:[function(require,module,exports){
 'use strict'
 
 module.exports = remove
@@ -288,7 +358,7 @@ function remove(value) {
   return self
 }
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 'use strict'
 
 var form = require('./util/form.js')
@@ -312,7 +382,7 @@ function spell(word) {
   }
 }
 
-},{"./util/flag.js":16,"./util/form.js":17}],9:[function(require,module,exports){
+},{"./util/flag.js":17,"./util/form.js":18}],10:[function(require,module,exports){
 'use strict'
 
 var trim = require('./util/trim.js')
@@ -672,7 +742,7 @@ function generate(context, memory, words, edits) {
   }
 }
 
-},{"./util/casing.js":13,"./util/flag.js":16,"./util/form.js":17,"./util/normalize.js":18,"./util/trim.js":20}],10:[function(require,module,exports){
+},{"./util/casing.js":14,"./util/flag.js":17,"./util/form.js":18,"./util/normalize.js":19,"./util/trim.js":21}],11:[function(require,module,exports){
 'use strict'
 
 var apply = require('./apply.js')
@@ -763,7 +833,7 @@ function add(dict, word, codes, options) {
   }
 }
 
-},{"./apply.js":12}],11:[function(require,module,exports){
+},{"./apply.js":13}],12:[function(require,module,exports){
 'use strict'
 
 var trim = require('./trim.js')
@@ -1072,7 +1142,7 @@ function start(source) {
   return new RegExp(caret + source)
 }
 
-},{"./rule-codes.js":19,"./trim.js":20}],12:[function(require,module,exports){
+},{"./rule-codes.js":20,"./trim.js":21}],13:[function(require,module,exports){
 'use strict'
 
 module.exports = apply
@@ -1128,7 +1198,7 @@ function apply(value, rule, rules) {
   return words
 }
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 'use strict'
 
 module.exports = casing
@@ -1163,7 +1233,7 @@ function exact(value) {
   return value.toUpperCase() === value ? 'u' : null
 }
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 'use strict'
 
 var trim = require('./trim.js')
@@ -1248,7 +1318,7 @@ function parseLine(line, options, dict) {
   }
 }
 
-},{"./add.js":10,"./rule-codes.js":19,"./trim.js":20}],15:[function(require,module,exports){
+},{"./add.js":11,"./rule-codes.js":20,"./trim.js":21}],16:[function(require,module,exports){
 'use strict'
 
 var flag = require('./flag.js')
@@ -1286,7 +1356,7 @@ function exact(context, value) {
   return false
 }
 
-},{"./flag.js":16}],16:[function(require,module,exports){
+},{"./flag.js":17}],17:[function(require,module,exports){
 'use strict'
 
 module.exports = flag
@@ -1298,7 +1368,7 @@ function flag(values, value, flags) {
   return flags && own.call(values, value) && flags.indexOf(values[value]) !== -1
 }
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 'use strict'
 
 var normalize = require('./normalize.js')
@@ -1365,7 +1435,7 @@ function ignore(flags, dict, all) {
   )
 }
 
-},{"./exact.js":15,"./flag.js":16,"./normalize.js":18,"./trim.js":20}],18:[function(require,module,exports){
+},{"./exact.js":16,"./flag.js":17,"./normalize.js":19,"./trim.js":21}],19:[function(require,module,exports){
 'use strict'
 
 module.exports = normalize
@@ -1384,7 +1454,7 @@ function normalize(value, patterns) {
   return value
 }
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 'use strict'
 
 module.exports = ruleCodes
@@ -1416,7 +1486,7 @@ function ruleCodes(flags, value) {
   return value.split(flag === 'num' ? ',' : '')
 }
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 'use strict'
 
 var re = /^\s*|\s*$/g
@@ -1427,7 +1497,7 @@ function trim(value) {
   return value.replace(re, '')
 }
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 'use strict'
 
 module.exports = wordCharacters
@@ -1437,4 +1507,4 @@ function wordCharacters() {
   return this.flags.WORDCHARS || null
 }
 
-},{}]},{},[1]);
+},{}]},{},[2]);
