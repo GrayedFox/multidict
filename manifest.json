@@ -10,13 +10,13 @@
   },
 
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["dist/background.js"]
   },
 
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "js": ["dist/content.js"]
     }
   ],
 

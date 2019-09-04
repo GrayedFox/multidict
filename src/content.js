@@ -1,55 +1,28 @@
 const messageHandler = browser.runtime.connect({ name: 'spell-checker' })
 const editableFields = ['INPUT', 'TEXTAREA', 'DIV']
-
-// sexy es6 debounce with spread operator
-function debounce (callback, wait) {
-  let timeout
-  return (...args) => {
-    const context = this
-    clearTimeout(timeout)
-    timeout = setTimeout(() => callback.apply(context, args), wait)
-  }
-}
-
-function getContent (node) {
-  if (node.nodeName === 'INPUT' || node.nodeName === 'TEXTAREA') {
-    return node.value
-  } else {
-    return node.innerText
-  }
-}
+const { debounce, getText, underline } = require('./helpers.js')
 
 // catches editable fields being clicked on or edited
 // TODO: don't spell check code or other inline editors
 async function editable (event) {
   const node = event.target
 
-  // only detect language inside editable fields
+  // only detect language and spellcheck editable fields
   if (!editableFields.includes(node.nodeName) || node.contentEditable === false) {
     return
   }
 
-  const content = getContent(node)
-
-  // if we have already found a reliable language for this element, use it
-  // if (node.multiDictDetectedLanguage) {
-  //   console.log('Using reliable language ' + node.multiDictDetectedLanguage)
-  //   messageHandler.postMessage({
-  //     name: 'spell-checker',
-  //     language: node.multiDictDetectedLanguage,
-  //     content: content
-  //   })
-  //   return
-  // }
-
+  const content = getText(node)
   const detectedLanguage = await browser.i18n.detectLanguage(content)
+
+  console.log(node.nodeName)
   console.log(detectedLanguage)
 
+  // for some reason, cannot send node (event.target) in message. Size restriction?
   if (detectedLanguage.isReliable) {
-    node.multiDictDetectedLanguage = detectedLanguage.languages[0].language
     messageHandler.postMessage({
       name: 'spell-checker',
-      language: node.multiDictDetectedLanguage,
+      language: detectedLanguage.languages[0].language,
       content: content
     })
   } else {
@@ -61,13 +34,25 @@ async function editable (event) {
   }
 }
 
-document.body.addEventListener('click', debounce(editable, 1200))
-document.body.addEventListener('keyup', debounce(editable, 1200))
-
+// background script message object should contain: { spelling, node }
 messageHandler.onMessage.addListener((message) => {
   console.log('Got message from background...')
   console.log(message)
+  if (message.spelling) {
+    underline(message.spelling.misspeltWords, message.hello)
+  }
 })
+
+messageHandler.onDisconnect.addListener((p) => {
+  if (p.error) {
+    console.log(`Disconnected due to an error: ${p.error.message}`)
+  }
+})
+
+// BUG: click event listener sends single line of text instead of content of entire editable field
+// TODO: tie click event to suggesting words instead of spell checking
+document.body.addEventListener('click', debounce(editable, 1200))
+document.body.addEventListener('keyup', debounce(editable, 1200))
 
 // inject a listener which triggers from focus event on editable fields
 // detect language of content within field

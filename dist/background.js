@@ -1,150 +1,4 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-// promisifed async custom forEach function taken from p-iteration
-async function forEach (array, callback, thisArg) {
-  const promiseArray = []
-  for (let i = 0; i < array.length; i++) {
-    if (i in array) {
-      const p = Promise.resolve(array[i]).then((currentValue) => {
-        return callback.call(thisArg || this, currentValue, i, array)
-      })
-      promiseArray.push(p)
-    }
-  }
-  await Promise.all(promiseArray)
-}
-
-// read a file, the firefox extension way
-function readFile (path) {
-  return new Promise((resolve, reject) => {
-    fetch(path, { mode: 'same-origin' })
-      .then(function (res) {
-        return res.blob()
-      })
-      .then(function (blob) {
-        const reader = new FileReader()
-
-        reader.addEventListener('loadend', function () {
-          resolve(this.result)
-        })
-
-        reader.readAsText(blob)
-      })
-      .catch(error => {
-        reject(error)
-      })
-  })
-}
-
-// get local dictionary files
-async function loadDictionaries (languages) {
-  const dictionaries = []
-  return forEach(languages, async (lang) => {
-    const dic = await readFile(browser.runtime.getURL(`./dictionaries/${lang}.dic`))
-    const aff = await readFile(browser.runtime.getURL(`./dictionaries/${lang}.aff`))
-    dictionaries.push({ dic: dic, aff: aff })
-  }).then(function () {
-    return dictionaries
-  }).catch(function (err) {
-    console.log(err)
-  })
-}
-
-module.exports = {
-  loadDictionaries
-}
-
-},{}],2:[function(require,module,exports){
-const nspell = require('./nspell/index.js')
-const { loadDictionaries } = require('./helpers.js')
-
-let messageHandler
-let dictionaries = []
-let languages = []
-let languagePrefs = {}
-let spells = {}
-
-// create spell checkers in order of languages specified by user
-function createSpellCheckers (languagePrefs, dictionaries) {
-  if (languagePrefs.length !== dictionaries.length) {
-    console.error('Language and dictionary length are not equal. Aborting.')
-    return
-  }
-
-  const spells = {}
-
-  for (let i = 0; i < dictionaries.length; i++) {
-    spells[languagePrefs[i]] = nspell(dictionaries[i])
-  }
-
-  return spells
-}
-
-// return suggestions for misspelt words
-function checkSpelling (spell, content) {
-  // split string by spaces and strip out punctuation that does not form part of the word itself
-  // then remove any strings that are numbers or less than 1 char in length
-  const cleanedContent = content.split(/(?:\s)/)
-    .reduce((acc, string) => acc.concat([string.replace(/(\B\W|\W\B|\s)/gm, '')]), [])
-    .reduce((acc, string) => {
-      return string.length > 1 && isNaN(string) && !string.includes('@')
-        ? acc.concat([string])
-        : acc
-    }, [])
-  // BUG: click event listener sends single line of text instead of content of entire editable field
-
-  console.log(cleanedContent)
-
-  return cleanedContent.reduce((acc, string) => {
-    return !spell.correct(string) ? acc.concat([[string, spell.suggest(string)]]) : acc
-  }, [])
-}
-
-function listener (message) {
-  messageHandler = message
-  messageHandler.postMessage({ greeting: 'Connection established' })
-
-  messageHandler.onMessage.addListener((message) => {
-    if (message.language === 'unreliable') {
-      messageHandler.postMessage(checkSpelling(spells[languagePrefs[0]], message.content))
-    } else {
-      for (const pref of languagePrefs) {
-        if (languages.includes(`${message.language}-${pref}`)) {
-          messageHandler.postMessage(checkSpelling(spells[pref], message.content))
-          break
-        }
-      }
-    }
-  })
-}
-
-// main function which loads dictionaries and creates NSpell dictionary instances
-async function main () {
-  languages = await browser.i18n.getAcceptLanguages()
-  dictionaries = await loadDictionaries(languages)
-  languagePrefs = languages.reduce((acc, lang) => acc.concat([lang.slice(3, 5)]), [])
-  spells = createSpellCheckers(languagePrefs, dictionaries)
-
-  console.log(languages)
-  console.log(languagePrefs)
-}
-
-browser.runtime.onConnect.addListener(listener)
-
-main()
-
-// Goal: enable multiple laguages to be used when spell checking
-//
-// Limits: no way to directly interact right now with browser dictionary list so have to build
-// spell check/lookup functionality
-//
-// Method: user should disable browser spell check (to avoid annoying/false red lines) and rely
-// on the extension
-//
-// MVP: spell check using dictionaries, detect language of each field, underline misspelled words,
-// show suggestions
-// V2: persistent personal dictionary to add words to
-
-},{"./helpers.js":1,"./nspell/index.js":6}],3:[function(require,module,exports){
 'use strict'
 
 var push = require('./util/add.js')
@@ -164,7 +18,7 @@ function add(value, model) {
   return self
 }
 
-},{"./util/add.js":11}],4:[function(require,module,exports){
+},{"./util/add.js":9}],2:[function(require,module,exports){
 'use strict'
 
 var form = require('./util/form.js')
@@ -176,7 +30,7 @@ function correct(value) {
   return Boolean(form(this, value))
 }
 
-},{"./util/form.js":18}],5:[function(require,module,exports){
+},{"./util/form.js":16}],3:[function(require,module,exports){
 'use strict'
 
 var parse = require('./util/dictionary.js')
@@ -222,7 +76,7 @@ function add(buf) {
   return self
 }
 
-},{"./util/dictionary.js":15}],6:[function(require,module,exports){
+},{"./util/dictionary.js":13}],4:[function(require,module,exports){
 'use strict'
 
 var affix = require('./util/affix.js')
@@ -293,7 +147,7 @@ function NSpell (aff, dic) {
   }
 }
 
-},{"./add.js":3,"./correct.js":4,"./dictionary.js":5,"./personal.js":7,"./remove.js":8,"./spell.js":9,"./suggest.js":10,"./util/affix.js":12,"./word-characters.js":22}],7:[function(require,module,exports){
+},{"./add.js":1,"./correct.js":2,"./dictionary.js":3,"./personal.js":5,"./remove.js":6,"./spell.js":7,"./suggest.js":8,"./util/affix.js":10,"./word-characters.js":20}],5:[function(require,module,exports){
 'use strict'
 
 var trim = require('./util/trim.js')
@@ -344,7 +198,7 @@ function add(buf) {
   return self
 }
 
-},{"./util/trim.js":21}],8:[function(require,module,exports){
+},{"./util/trim.js":19}],6:[function(require,module,exports){
 'use strict'
 
 module.exports = remove
@@ -358,7 +212,7 @@ function remove(value) {
   return self
 }
 
-},{}],9:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 'use strict'
 
 var form = require('./util/form.js')
@@ -382,7 +236,7 @@ function spell(word) {
   }
 }
 
-},{"./util/flag.js":17,"./util/form.js":18}],10:[function(require,module,exports){
+},{"./util/flag.js":15,"./util/form.js":16}],8:[function(require,module,exports){
 'use strict'
 
 var trim = require('./util/trim.js')
@@ -742,7 +596,7 @@ function generate(context, memory, words, edits) {
   }
 }
 
-},{"./util/casing.js":14,"./util/flag.js":17,"./util/form.js":18,"./util/normalize.js":19,"./util/trim.js":21}],11:[function(require,module,exports){
+},{"./util/casing.js":12,"./util/flag.js":15,"./util/form.js":16,"./util/normalize.js":17,"./util/trim.js":19}],9:[function(require,module,exports){
 'use strict'
 
 var apply = require('./apply.js')
@@ -833,7 +687,7 @@ function add(dict, word, codes, options) {
   }
 }
 
-},{"./apply.js":13}],12:[function(require,module,exports){
+},{"./apply.js":11}],10:[function(require,module,exports){
 'use strict'
 
 var trim = require('./trim.js')
@@ -1142,7 +996,7 @@ function start(source) {
   return new RegExp(caret + source)
 }
 
-},{"./rule-codes.js":20,"./trim.js":21}],13:[function(require,module,exports){
+},{"./rule-codes.js":18,"./trim.js":19}],11:[function(require,module,exports){
 'use strict'
 
 module.exports = apply
@@ -1198,7 +1052,7 @@ function apply(value, rule, rules) {
   return words
 }
 
-},{}],14:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 'use strict'
 
 module.exports = casing
@@ -1233,7 +1087,7 @@ function exact(value) {
   return value.toUpperCase() === value ? 'u' : null
 }
 
-},{}],15:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 'use strict'
 
 var trim = require('./trim.js')
@@ -1318,7 +1172,7 @@ function parseLine(line, options, dict) {
   }
 }
 
-},{"./add.js":11,"./rule-codes.js":20,"./trim.js":21}],16:[function(require,module,exports){
+},{"./add.js":9,"./rule-codes.js":18,"./trim.js":19}],14:[function(require,module,exports){
 'use strict'
 
 var flag = require('./flag.js')
@@ -1356,7 +1210,7 @@ function exact(context, value) {
   return false
 }
 
-},{"./flag.js":17}],17:[function(require,module,exports){
+},{"./flag.js":15}],15:[function(require,module,exports){
 'use strict'
 
 module.exports = flag
@@ -1368,7 +1222,7 @@ function flag(values, value, flags) {
   return flags && own.call(values, value) && flags.indexOf(values[value]) !== -1
 }
 
-},{}],18:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 'use strict'
 
 var normalize = require('./normalize.js')
@@ -1435,7 +1289,7 @@ function ignore(flags, dict, all) {
   )
 }
 
-},{"./exact.js":16,"./flag.js":17,"./normalize.js":19,"./trim.js":21}],19:[function(require,module,exports){
+},{"./exact.js":14,"./flag.js":15,"./normalize.js":17,"./trim.js":19}],17:[function(require,module,exports){
 'use strict'
 
 module.exports = normalize
@@ -1454,7 +1308,7 @@ function normalize(value, patterns) {
   return value
 }
 
-},{}],20:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 'use strict'
 
 module.exports = ruleCodes
@@ -1486,7 +1340,7 @@ function ruleCodes(flags, value) {
   return value.split(flag === 'num' ? ',' : '')
 }
 
-},{}],21:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 'use strict'
 
 var re = /^\s*|\s*$/g
@@ -1497,7 +1351,7 @@ function trim(value) {
   return value.replace(re, '')
 }
 
-},{}],22:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 'use strict'
 
 module.exports = wordCharacters
@@ -1507,4 +1361,198 @@ function wordCharacters() {
   return this.flags.WORDCHARS || null
 }
 
-},{}]},{},[2]);
+},{}],21:[function(require,module,exports){
+const nspell = require('../nspell/index.js')
+const { checkSpelling, loadDictionariesAndPrefs } = require('./helpers.js')
+
+let messageHandler
+let languages = []
+let languagePrefs = []
+let spells = {}
+
+// create spell checkers in order of languages specified by user
+function createSpellCheckers (user) {
+  if (languagePrefs.length !== user.dicts.length) {
+    console.error('Language prefs and user dictionary length are not equal. Aborting.')
+    return
+  }
+
+  const spellCheckers = {}
+
+  for (let i = 0; i < user.dicts.length; i++) {
+    spellCheckers[languagePrefs[i]] = nspell(user.dicts[i])
+  }
+
+  return spellCheckers
+}
+
+// handles all incoming messages from the content script
+function listener (message) {
+  messageHandler = message
+  messageHandler.postMessage({ greeting: 'Connection established' })
+
+  // content script message object should contain: { name, language, content, node }
+  messageHandler.onMessage.addListener((message) => {
+    if (message.language === 'unreliable') {
+      messageHandler.postMessage({
+        suggestions: checkSpelling(spells[languagePrefs[0]], message.content)
+      })
+    } else {
+      for (const pref of languagePrefs) {
+        if (languages.includes(`${message.language}-${pref}`)) {
+          messageHandler.postMessage({
+            spelling: checkSpelling(spells[pref], message.content)
+          })
+          break
+        }
+      }
+    }
+  })
+}
+
+// main function loads dictionaries, sets langauge prefs, and creates NSpell dictionary instances
+async function main () {
+  languages = await browser.i18n.getAcceptLanguages()
+  const user = await loadDictionariesAndPrefs(languages)
+  languagePrefs = user.prefs.reduce((acc, lang) => acc.concat([lang.slice(3, 5)]), [])
+  spells = createSpellCheckers(user)
+
+  console.log(languages)
+  console.log(languagePrefs)
+}
+
+browser.runtime.onConnect.addListener(listener)
+
+main()
+
+// Goal: enable multiple laguages to be used when spell checking
+//
+// Limits: no way to directly interact right now with browser dictionary list so have to build
+// spell check/lookup functionality
+//
+// Method: user should disable browser spell check (to avoid annoying/false red lines) and rely
+// on the extension
+//
+// MVP: spell check using dictionaries, detect language of each field, underline misspelled words,
+// show suggestions
+// V2: persistent personal dictionary to add words to
+
+},{"../nspell/index.js":4,"./helpers.js":22}],22:[function(require,module,exports){
+// custom promisifed async forEach function taken from p-iteration
+async function forEach (array, callback, thisArg) {
+  const promiseArray = []
+  for (let i = 0; i < array.length; i++) {
+    if (i in array) {
+      const p = Promise.resolve(array[i]).then((currentValue) => {
+        return callback.call(thisArg || this, currentValue, i, array)
+      })
+      promiseArray.push(p)
+    }
+  }
+  await Promise.all(promiseArray)
+}
+
+// read a file, the firefox extension way
+function readFile (path) {
+  return new Promise((resolve, reject) => {
+    fetch(path, { mode: 'same-origin' })
+      .then(function (res) {
+        return res.blob()
+      })
+      .then(function (blob) {
+        const reader = new FileReader()
+
+        reader.addEventListener('loadend', function () {
+          resolve(this.result)
+        })
+
+        reader.readAsText(blob)
+      })
+      .catch(error => {
+        resolve({ error: error })
+      })
+  })
+}
+
+// return misspelt words and suggestions
+function checkSpelling (spell, content) {
+  const spelling = {
+    suggestions: {},
+    misspeltWords: []
+  }
+
+  // split string by spaces and strip out punctuation that does not form part of the word itself
+  // then remove any strings that are numbers or less than 1 char in length
+  const cleanedContent = content.split(/(?:\s)/)
+    .reduce((acc, string) => acc.concat([string.replace(/(\B\W|\W\B|\s)/gm, '')]), [])
+    .reduce((acc, string) => {
+      return string.length > 1 && isNaN(string) && !string.includes('@')
+        ? acc.concat([string])
+        : acc
+    }, [])
+
+  console.log(cleanedContent)
+
+  for (const string of cleanedContent) {
+    if (!spell.correct(string)) {
+      spelling.suggestions[string] = spell.suggest(string)
+      spelling.misspeltWords.push(string)
+    }
+  }
+
+  return spelling
+}
+
+// sexy es6 debounce with spread operator
+function debounce (callback, wait) {
+  let timeout
+  return (...args) => {
+    const context = this
+    clearTimeout(timeout)
+    timeout = setTimeout(() => callback.apply(context, args), wait)
+  }
+}
+
+// get text from a given node
+function getText (node) {
+  if (node.nodeName === 'INPUT' || node.nodeName === 'TEXTAREA') {
+    return node.value
+  } else {
+    return node.innerText
+  }
+}
+
+// get local dictionary files according to supported languages
+async function loadDictionariesAndPrefs (languages) {
+  const dicts = []
+  let prefs = []
+  return forEach(languages, async (lang) => {
+    prefs.push(lang)
+    const dic = await readFile(browser.runtime.getURL(`./dictionaries/${lang}.dic`))
+    const aff = await readFile(browser.runtime.getURL(`./dictionaries/${lang}.aff`))
+    if (!dic.error && !aff.error) {
+      dicts.push({ languageCode: lang, dic: dic, aff: aff })
+    } else {
+      // prevent race condition when reading files changing the preferred language order
+      prefs = prefs.filter((value) => value !== lang)
+    }
+  }).then(function () {
+    return { dicts, prefs }
+  }).catch(function (err) {
+    console.log(err)
+  })
+}
+
+// underline all misspelt words by wrapping them in 'u' tags
+// see https://codersblock.com/blog/highlight-text-inside-a-textarea/
+function underline (words, node) {}
+
+module.exports = {
+  checkSpelling,
+  debounce,
+  getText,
+  loadDictionariesAndPrefs,
+  underline
+}
+
+},{}]},{},[21]);
