@@ -18,7 +18,7 @@ var backslash = '\\'
 var tab = '\t'.charCodeAt(0)
 
 // Parse a dictionary.
-function parse(buf, options, dict) {
+function parse (buf, options, dict) {
   var index
   var last
   var value
@@ -41,7 +41,7 @@ function parse(buf, options, dict) {
 }
 
 // Parse a line in dictionary.
-function parseLine(line, options, dict) {
+function parseLine (line, options, dict) {
   var word
   var codes
   var result

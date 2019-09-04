@@ -16,7 +16,8 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["dist/content.js"]
+      "js": ["dist/content.js"],
+      "css": ["src/deps/highlight/highlight-within-textarea.css"]
     }
   ],
 

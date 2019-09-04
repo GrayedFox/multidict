@@ -3,7 +3,7 @@
 module.exports = apply
 
 // Apply a rule.
-function apply(value, rule, rules) {
+function apply (value, rule, rules) {
   var entries = rule.entries
   var words = []
   var index = -1

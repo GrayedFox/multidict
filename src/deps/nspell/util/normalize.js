@@ -3,7 +3,7 @@
 module.exports = normalize
 
 // Normalize `value` with patterns.
-function normalize(value, patterns) {
+function normalize (value, patterns) {
   var length = patterns.length
   var index = -1
   var pattern

@@ -71,10 +71,10 @@ var defaultKeyboardLayout = [
 
 // Parse an affix file.
 // eslint-disable-next-line complexity
-function affix(aff) {
+function affix (aff) {
   var rules = {}
   var replacementTable = []
-  var conversion = {in: [], out: []}
+  var conversion = { in: [], out: [] }
   var compoundRuleCodes = {}
   var lines = []
   var flags = {}
@@ -284,7 +284,7 @@ function affix(aff) {
     flags: flags
   }
 
-  function pushLine(line) {
+  function pushLine (line) {
     line = trim(line)
 
     // Hash can be a valid flag, so we only discard line that starts with it.
@@ -296,12 +296,12 @@ function affix(aff) {
 
 // Wrap the `source` of an expression-like string so that it matches only at
 // the end of a value.
-function end(source) {
+function end (source) {
   return new RegExp(source + dollarSign)
 }
 
 // Wrap the `source` of an expression-like string so that it matches only at
 // the start of a value.
-function start(source) {
+function start (source) {
   return new RegExp(caret + source)
 }

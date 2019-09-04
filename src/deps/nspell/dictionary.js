@@ -5,7 +5,7 @@ var parse = require('./util/dictionary.js')
 module.exports = add
 
 // Add a dictionary file.
-function add(buf) {
+function add (buf) {
   var self = this
   var compound = self.compoundRules
   var compoundCodes = self.compoundRuleCodes

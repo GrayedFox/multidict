@@ -3,7 +3,7 @@
 module.exports = ruleCodes
 
 // Parse rule codes.
-function ruleCodes(flags, value) {
+function ruleCodes (flags, value) {
   var flag = flags.FLAG
   var result = []
   var length

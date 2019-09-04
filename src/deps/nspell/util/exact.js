@@ -7,7 +7,7 @@ module.exports = exact
 var own = {}.hasOwnProperty
 
 // Check spelling of `value`, exactly.
-function exact(context, value) {
+function exact (context, value) {
   var data = context.data
   var flags = context.flags
   var codes = own.call(data, value) ? data[value] : null

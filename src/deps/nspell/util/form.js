@@ -8,7 +8,7 @@ var flag = require('./flag.js')
 module.exports = form
 
 // Find a known form of `value`.
-function form(context, value, all) {
+function form (context, value, all) {
   var dict = context.data
   var flags = context.flags
   var alternative
@@ -58,7 +58,7 @@ function form(context, value, all) {
   return null
 }
 
-function ignore(flags, dict, all) {
+function ignore (flags, dict, all) {
   return (
     flag(flags, 'KEEPCASE', dict) || all || flag(flags, 'FORBIDDENWORD', dict)
   )

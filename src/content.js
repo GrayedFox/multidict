@@ -1,11 +1,14 @@
 const messageHandler = browser.runtime.connect({ name: 'spell-checker' })
-const editableFields = ['INPUT', 'TEXTAREA', 'DIV']
-const { debounce, getText, underline } = require('./helpers.js')
+const editableFields = ['TEXTAREA']
+const { debounce, getText } = require('./helpers.js')
+const { highlight } = require('./deps/highlight/highlight-within-textarea.js')
+
+let node
 
 // catches editable fields being clicked on or edited
 // TODO: don't spell check code or other inline editors
 async function editable (event) {
-  const node = event.target
+  node = event.target
 
   // only detect language and spellcheck editable fields
   if (!editableFields.includes(node.nodeName) || node.contentEditable === false) {
@@ -15,10 +18,6 @@ async function editable (event) {
   const content = getText(node)
   const detectedLanguage = await browser.i18n.detectLanguage(content)
 
-  console.log(node.nodeName)
-  console.log(detectedLanguage)
-
-  // for some reason, cannot send node (event.target) in message. Size restriction?
   if (detectedLanguage.isReliable) {
     messageHandler.postMessage({
       name: 'spell-checker',
@@ -39,7 +38,10 @@ messageHandler.onMessage.addListener((message) => {
   console.log('Got message from background...')
   console.log(message)
   if (message.spelling) {
-    underline(message.spelling.misspeltWords, message.hello)
+    highlight(node, {
+      highlight: message.spelling.misspeltWords,
+      className: 'red'
+    })
   }
 })
 
@@ -50,11 +52,8 @@ messageHandler.onDisconnect.addListener((p) => {
 })
 
 // BUG: click event listener sends single line of text instead of content of entire editable field
-// TODO: tie click event to suggesting words instead of spell checking
-document.body.addEventListener('click', debounce(editable, 1200))
+// TODO: tie click event to showing suggested words instead of spell checking
+// document.body.addEventListener('click', debounce(word, 200))
 document.body.addEventListener('keyup', debounce(editable, 1200))
 
-// inject a listener which triggers from focus event on editable fields
-// detect language of content within field
-// send a message containing the text to spell check using background.js dictionary
-// OR send 'unreliable' and fallback to primary user dictionary
+// injects a keyup listener for spell checking words, which then highlights misspelt words

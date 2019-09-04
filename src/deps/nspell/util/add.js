@@ -6,7 +6,7 @@ module.exports = add
 
 var own = {}.hasOwnProperty
 
-function add(dict, word, codes, options) {
+function add (dict, word, codes, options) {
   var flags = options.flags
   var rules = options.rules
   var compoundRuleCodes = options.compoundRuleCodes
@@ -80,7 +80,7 @@ function add(dict, word, codes, options) {
   }
 
   // Add `rules` for `word` to the table.
-  function add(word, rules) {
+  function add (word, rules) {
     // Some dictionaries will list the same word multiple times with different
     // rule sets.
     var curr = (own.call(dict, word) && dict[word]) || []

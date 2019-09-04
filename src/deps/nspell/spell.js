@@ -6,7 +6,7 @@ var flag = require('./util/flag.js')
 module.exports = spell
 
 // Check spelling of `word`.
-function spell(word) {
+function spell (word) {
   var self = this
   var dict = self.data
   var flags = self.flags

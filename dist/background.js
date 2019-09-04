@@ -1,4 +1,80 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+const nspell = require('./deps/nspell/index.js')
+const { checkSpelling, loadDictionariesAndPrefs } = require('./helpers.js')
+
+let messageHandler
+let languages = []
+let languagePrefs = []
+let spells = {}
+
+// create spell checkers in order of languages specified by user
+function createSpellCheckers (user) {
+  if (languagePrefs.length !== user.dicts.length) {
+    console.error('Language prefs and user dictionary length are not equal. Aborting.')
+    return
+  }
+
+  const spellCheckers = {}
+
+  for (let i = 0; i < user.dicts.length; i++) {
+    spellCheckers[languagePrefs[i]] = nspell(user.dicts[i])
+  }
+
+  return spellCheckers
+}
+
+// handles all incoming messages from the content script
+function listener (message) {
+  messageHandler = message
+  messageHandler.postMessage({ greeting: 'Connection established' })
+
+  // content script message object should contain: { name, language, content }
+  messageHandler.onMessage.addListener((message) => {
+    if (message.language === 'unreliable') {
+      messageHandler.postMessage({
+        suggestions: checkSpelling(spells[languagePrefs[0]], message.content)
+      })
+    } else {
+      for (const pref of languagePrefs) {
+        if (languages.includes(`${message.language}-${pref}`)) {
+          messageHandler.postMessage({
+            spelling: checkSpelling(spells[pref], message.content)
+          })
+          break
+        }
+      }
+    }
+  })
+}
+
+// main function loads dictionaries, sets langauge prefs, and creates NSpell dictionary instances
+async function main () {
+  languages = await browser.i18n.getAcceptLanguages()
+  const user = await loadDictionariesAndPrefs(languages)
+  languagePrefs = user.prefs.reduce((acc, lang) => acc.concat([lang.slice(3, 5)]), [])
+  spells = createSpellCheckers(user)
+
+  console.log(languages)
+  console.log(languagePrefs)
+}
+
+browser.runtime.onConnect.addListener(listener)
+
+main()
+
+// Goal: enable multiple laguages to be used when spell checking
+//
+// Limits: no way to directly interact right now with browser dictionary list so have to build
+// spell check/lookup functionality
+//
+// Method: user should disable browser spell check (to avoid annoying/false red lines) and rely
+// on the extension
+//
+// MVP: spell check using dictionaries, detect language of each field, underline misspelled words,
+// show suggestions
+// V2: persistent personal dictionary to add words to
+
+},{"./deps/nspell/index.js":5,"./helpers.js":22}],2:[function(require,module,exports){
 'use strict'
 
 var push = require('./util/add.js')
@@ -8,7 +84,7 @@ module.exports = add
 var own = {}.hasOwnProperty
 
 // Add `value` to the checker.
-function add(value, model) {
+function add (value, model) {
   var self = this
   var dict = self.data
   var codes = model && own.call(dict, model) ? dict[model].concat() : []
@@ -18,7 +94,7 @@ function add(value, model) {
   return self
 }
 
-},{"./util/add.js":9}],2:[function(require,module,exports){
+},{"./util/add.js":10}],3:[function(require,module,exports){
 'use strict'
 
 var form = require('./util/form.js')
@@ -26,11 +102,11 @@ var form = require('./util/form.js')
 module.exports = correct
 
 // Check spelling of `value`.
-function correct(value) {
+function correct (value) {
   return Boolean(form(this, value))
 }
 
-},{"./util/form.js":16}],3:[function(require,module,exports){
+},{"./util/form.js":17}],4:[function(require,module,exports){
 'use strict'
 
 var parse = require('./util/dictionary.js')
@@ -38,7 +114,7 @@ var parse = require('./util/dictionary.js')
 module.exports = add
 
 // Add a dictionary file.
-function add(buf) {
+function add (buf) {
   var self = this
   var compound = self.compoundRules
   var compoundCodes = self.compoundRuleCodes
@@ -76,7 +152,7 @@ function add(buf) {
   return self
 }
 
-},{"./util/dictionary.js":13}],4:[function(require,module,exports){
+},{"./util/dictionary.js":14}],5:[function(require,module,exports){
 'use strict'
 
 var affix = require('./util/affix.js')
@@ -147,7 +223,7 @@ function NSpell (aff, dic) {
   }
 }
 
-},{"./add.js":1,"./correct.js":2,"./dictionary.js":3,"./personal.js":5,"./remove.js":6,"./spell.js":7,"./suggest.js":8,"./util/affix.js":10,"./word-characters.js":20}],5:[function(require,module,exports){
+},{"./add.js":2,"./correct.js":3,"./dictionary.js":4,"./personal.js":6,"./remove.js":7,"./spell.js":8,"./suggest.js":9,"./util/affix.js":11,"./word-characters.js":21}],6:[function(require,module,exports){
 'use strict'
 
 var trim = require('./util/trim.js')
@@ -155,7 +231,7 @@ var trim = require('./util/trim.js')
 module.exports = add
 
 // Add a dictionary.
-function add(buf) {
+function add (buf) {
   var self = this
   var flags = self.flags
   var lines = buf.toString('utf8').split('\n')
@@ -198,13 +274,13 @@ function add(buf) {
   return self
 }
 
-},{"./util/trim.js":19}],6:[function(require,module,exports){
+},{"./util/trim.js":20}],7:[function(require,module,exports){
 'use strict'
 
 module.exports = remove
 
 // Remove `value` from the checker.
-function remove(value) {
+function remove (value) {
   var self = this
 
   self.data[value] = null
@@ -212,7 +288,7 @@ function remove(value) {
   return self
 }
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 'use strict'
 
 var form = require('./util/form.js')
@@ -221,7 +297,7 @@ var flag = require('./util/flag.js')
 module.exports = spell
 
 // Check spelling of `word`.
-function spell(word) {
+function spell (word) {
   var self = this
   var dict = self.data
   var flags = self.flags
@@ -236,7 +312,7 @@ function spell(word) {
   }
 }
 
-},{"./util/flag.js":15,"./util/form.js":16}],8:[function(require,module,exports){
+},{"./util/flag.js":16,"./util/form.js":17}],9:[function(require,module,exports){
 'use strict'
 
 var trim = require('./util/trim.js')
@@ -251,7 +327,7 @@ var noSuggestType = 'NOSUGGEST'
 
 // Suggest spelling for `value`.
 // eslint-disable-next-line complexity
-function suggest(value) {
+function suggest (value) {
   var self = this
   var replacementTable = self.replacementTable
   var conversion = self.conversion
@@ -450,11 +526,11 @@ function suggest(value) {
   // BOOM! All done!
   return values
 
-  function sort(a, b) {
+  function sort (a, b) {
     return sortWeight(a, b) || sortCasing(a, b) || sortAlpha(a, b)
   }
 
-  function sortWeight(a, b) {
+  function sortWeight (a, b) {
     if (weighted[a] === weighted[b]) {
       return 0
     }
@@ -462,7 +538,7 @@ function suggest(value) {
     return weighted[a] > weighted[b] ? -1 : 1
   }
 
-  function sortCasing(a, b) {
+  function sortCasing (a, b) {
     var leftCasing = casing(a)
     var rightCasing = casing(b)
 
@@ -479,13 +555,13 @@ function suggest(value) {
     return 0
   }
 
-  function sortAlpha(a, b) {
+  function sortAlpha (a, b) {
     return a.localeCompare(b)
   }
 }
 
 // Get a list of values close in edit distance to `words`.
-function generate(context, memory, words, edits) {
+function generate (context, memory, words, edits) {
   var characters = context.flags.TRY
   var characterLength = characters.length
   var data = context.data
@@ -572,7 +648,7 @@ function generate(context, memory, words, edits) {
   return result
 
   // Check and handle a generated value.
-  function check(value, double) {
+  function check (value, double) {
     var state = memory.state[value]
     var corrected
 
@@ -596,7 +672,7 @@ function generate(context, memory, words, edits) {
   }
 }
 
-},{"./util/casing.js":12,"./util/flag.js":15,"./util/form.js":16,"./util/normalize.js":17,"./util/trim.js":19}],9:[function(require,module,exports){
+},{"./util/casing.js":13,"./util/flag.js":16,"./util/form.js":17,"./util/normalize.js":18,"./util/trim.js":20}],10:[function(require,module,exports){
 'use strict'
 
 var apply = require('./apply.js')
@@ -605,7 +681,7 @@ module.exports = add
 
 var own = {}.hasOwnProperty
 
-function add(dict, word, codes, options) {
+function add (dict, word, codes, options) {
   var flags = options.flags
   var rules = options.rules
   var compoundRuleCodes = options.compoundRuleCodes
@@ -679,7 +755,7 @@ function add(dict, word, codes, options) {
   }
 
   // Add `rules` for `word` to the table.
-  function add(word, rules) {
+  function add (word, rules) {
     // Some dictionaries will list the same word multiple times with different
     // rule sets.
     var curr = (own.call(dict, word) && dict[word]) || []
@@ -687,7 +763,7 @@ function add(dict, word, codes, options) {
   }
 }
 
-},{"./apply.js":11}],10:[function(require,module,exports){
+},{"./apply.js":12}],11:[function(require,module,exports){
 'use strict'
 
 var trim = require('./trim.js')
@@ -761,10 +837,10 @@ var defaultKeyboardLayout = [
 
 // Parse an affix file.
 // eslint-disable-next-line complexity
-function affix(aff) {
+function affix (aff) {
   var rules = {}
   var replacementTable = []
-  var conversion = {in: [], out: []}
+  var conversion = { in: [], out: [] }
   var compoundRuleCodes = {}
   var lines = []
   var flags = {}
@@ -974,7 +1050,7 @@ function affix(aff) {
     flags: flags
   }
 
-  function pushLine(line) {
+  function pushLine (line) {
     line = trim(line)
 
     // Hash can be a valid flag, so we only discard line that starts with it.
@@ -986,23 +1062,23 @@ function affix(aff) {
 
 // Wrap the `source` of an expression-like string so that it matches only at
 // the end of a value.
-function end(source) {
+function end (source) {
   return new RegExp(source + dollarSign)
 }
 
 // Wrap the `source` of an expression-like string so that it matches only at
 // the start of a value.
-function start(source) {
+function start (source) {
   return new RegExp(caret + source)
 }
 
-},{"./rule-codes.js":18,"./trim.js":19}],11:[function(require,module,exports){
+},{"./rule-codes.js":19,"./trim.js":20}],12:[function(require,module,exports){
 'use strict'
 
 module.exports = apply
 
 // Apply a rule.
-function apply(value, rule, rules) {
+function apply (value, rule, rules) {
   var entries = rule.entries
   var words = []
   var index = -1
@@ -1052,13 +1128,13 @@ function apply(value, rule, rules) {
   return words
 }
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 'use strict'
 
 module.exports = casing
 
 // Get the casing of `value`.
-function casing(value) {
+function casing (value) {
   var head = exact(value.charAt(0))
   var rest = value.slice(1)
 
@@ -1079,7 +1155,7 @@ function casing(value) {
   return null
 }
 
-function exact(value) {
+function exact (value) {
   if (value.toLowerCase() === value) {
     return 'l'
   }
@@ -1087,7 +1163,7 @@ function exact(value) {
   return value.toUpperCase() === value ? 'u' : null
 }
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 'use strict'
 
 var trim = require('./trim.js')
@@ -1108,7 +1184,7 @@ var backslash = '\\'
 var tab = '\t'.charCodeAt(0)
 
 // Parse a dictionary.
-function parse(buf, options, dict) {
+function parse (buf, options, dict) {
   var index
   var last
   var value
@@ -1131,7 +1207,7 @@ function parse(buf, options, dict) {
 }
 
 // Parse a line in dictionary.
-function parseLine(line, options, dict) {
+function parseLine (line, options, dict) {
   var word
   var codes
   var result
@@ -1172,7 +1248,7 @@ function parseLine(line, options, dict) {
   }
 }
 
-},{"./add.js":9,"./rule-codes.js":18,"./trim.js":19}],14:[function(require,module,exports){
+},{"./add.js":10,"./rule-codes.js":19,"./trim.js":20}],15:[function(require,module,exports){
 'use strict'
 
 var flag = require('./flag.js')
@@ -1182,7 +1258,7 @@ module.exports = exact
 var own = {}.hasOwnProperty
 
 // Check spelling of `value`, exactly.
-function exact(context, value) {
+function exact (context, value) {
   var data = context.data
   var flags = context.flags
   var codes = own.call(data, value) ? data[value] : null
@@ -1210,7 +1286,7 @@ function exact(context, value) {
   return false
 }
 
-},{"./flag.js":15}],15:[function(require,module,exports){
+},{"./flag.js":16}],16:[function(require,module,exports){
 'use strict'
 
 module.exports = flag
@@ -1218,11 +1294,11 @@ module.exports = flag
 var own = {}.hasOwnProperty
 
 // Check whether a word has a flag.
-function flag(values, value, flags) {
+function flag (values, value, flags) {
   return flags && own.call(values, value) && flags.indexOf(values[value]) !== -1
 }
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 'use strict'
 
 var normalize = require('./normalize.js')
@@ -1233,7 +1309,7 @@ var flag = require('./flag.js')
 module.exports = form
 
 // Find a known form of `value`.
-function form(context, value, all) {
+function form (context, value, all) {
   var dict = context.data
   var flags = context.flags
   var alternative
@@ -1283,19 +1359,19 @@ function form(context, value, all) {
   return null
 }
 
-function ignore(flags, dict, all) {
+function ignore (flags, dict, all) {
   return (
     flag(flags, 'KEEPCASE', dict) || all || flag(flags, 'FORBIDDENWORD', dict)
   )
 }
 
-},{"./exact.js":14,"./flag.js":15,"./normalize.js":17,"./trim.js":19}],17:[function(require,module,exports){
+},{"./exact.js":15,"./flag.js":16,"./normalize.js":18,"./trim.js":20}],18:[function(require,module,exports){
 'use strict'
 
 module.exports = normalize
 
 // Normalize `value` with patterns.
-function normalize(value, patterns) {
+function normalize (value, patterns) {
   var length = patterns.length
   var index = -1
   var pattern
@@ -1308,13 +1384,13 @@ function normalize(value, patterns) {
   return value
 }
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 'use strict'
 
 module.exports = ruleCodes
 
 // Parse rule codes.
-function ruleCodes(flags, value) {
+function ruleCodes (flags, value) {
   var flag = flags.FLAG
   var result = []
   var length
@@ -1340,104 +1416,28 @@ function ruleCodes(flags, value) {
   return value.split(flag === 'num' ? ',' : '')
 }
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 'use strict'
 
 var re = /^\s*|\s*$/g
 
 module.exports = trim
 
-function trim(value) {
+function trim (value) {
   return value.replace(re, '')
 }
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 'use strict'
 
 module.exports = wordCharacters
 
 // Get the word characters defined in affix.
-function wordCharacters() {
+function wordCharacters () {
   return this.flags.WORDCHARS || null
 }
 
-},{}],21:[function(require,module,exports){
-const nspell = require('../nspell/index.js')
-const { checkSpelling, loadDictionariesAndPrefs } = require('./helpers.js')
-
-let messageHandler
-let languages = []
-let languagePrefs = []
-let spells = {}
-
-// create spell checkers in order of languages specified by user
-function createSpellCheckers (user) {
-  if (languagePrefs.length !== user.dicts.length) {
-    console.error('Language prefs and user dictionary length are not equal. Aborting.')
-    return
-  }
-
-  const spellCheckers = {}
-
-  for (let i = 0; i < user.dicts.length; i++) {
-    spellCheckers[languagePrefs[i]] = nspell(user.dicts[i])
-  }
-
-  return spellCheckers
-}
-
-// handles all incoming messages from the content script
-function listener (message) {
-  messageHandler = message
-  messageHandler.postMessage({ greeting: 'Connection established' })
-
-  // content script message object should contain: { name, language, content, node }
-  messageHandler.onMessage.addListener((message) => {
-    if (message.language === 'unreliable') {
-      messageHandler.postMessage({
-        suggestions: checkSpelling(spells[languagePrefs[0]], message.content)
-      })
-    } else {
-      for (const pref of languagePrefs) {
-        if (languages.includes(`${message.language}-${pref}`)) {
-          messageHandler.postMessage({
-            spelling: checkSpelling(spells[pref], message.content)
-          })
-          break
-        }
-      }
-    }
-  })
-}
-
-// main function loads dictionaries, sets langauge prefs, and creates NSpell dictionary instances
-async function main () {
-  languages = await browser.i18n.getAcceptLanguages()
-  const user = await loadDictionariesAndPrefs(languages)
-  languagePrefs = user.prefs.reduce((acc, lang) => acc.concat([lang.slice(3, 5)]), [])
-  spells = createSpellCheckers(user)
-
-  console.log(languages)
-  console.log(languagePrefs)
-}
-
-browser.runtime.onConnect.addListener(listener)
-
-main()
-
-// Goal: enable multiple laguages to be used when spell checking
-//
-// Limits: no way to directly interact right now with browser dictionary list so have to build
-// spell check/lookup functionality
-//
-// Method: user should disable browser spell check (to avoid annoying/false red lines) and rely
-// on the extension
-//
-// MVP: spell check using dictionaries, detect language of each field, underline misspelled words,
-// show suggestions
-// V2: persistent personal dictionary to add words to
-
-},{"../nspell/index.js":4,"./helpers.js":22}],22:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 // custom promisifed async forEach function taken from p-iteration
 async function forEach (array, callback, thisArg) {
   const promiseArray = []
@@ -1543,16 +1543,11 @@ async function loadDictionariesAndPrefs (languages) {
   })
 }
 
-// underline all misspelt words by wrapping them in 'u' tags
-// see https://codersblock.com/blog/highlight-text-inside-a-textarea/
-function underline (words, node) {}
-
 module.exports = {
   checkSpelling,
   debounce,
   getText,
-  loadDictionariesAndPrefs,
-  underline
+  loadDictionariesAndPrefs
 }
 
-},{}]},{},[21]);
+},{}]},{},[1]);

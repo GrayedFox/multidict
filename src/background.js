@@ -1,4 +1,4 @@
-const nspell = require('../nspell/index.js')
+const nspell = require('./deps/nspell/index.js')
 const { checkSpelling, loadDictionariesAndPrefs } = require('./helpers.js')
 
 let messageHandler
@@ -27,7 +27,7 @@ function listener (message) {
   messageHandler = message
   messageHandler.postMessage({ greeting: 'Connection established' })
 
-  // content script message object should contain: { name, language, content, node }
+  // content script message object should contain: { name, language, content }
   messageHandler.onMessage.addListener((message) => {
     if (message.language === 'unreliable') {
       messageHandler.postMessage({

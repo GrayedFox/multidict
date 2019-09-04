@@ -5,7 +5,7 @@ var trim = require('./util/trim.js')
 module.exports = add
 
 // Add a dictionary.
-function add(buf) {
+function add (buf) {
   var self = this
   var flags = self.flags
   var lines = buf.toString('utf8').split('\n')

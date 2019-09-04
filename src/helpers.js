@@ -103,14 +103,9 @@ async function loadDictionariesAndPrefs (languages) {
   })
 }
 
-// underline all misspelt words by wrapping them in 'u' tags
-// see https://codersblock.com/blog/highlight-text-inside-a-textarea/
-function underline (words, node) {}
-
 module.exports = {
   checkSpelling,
   debounce,
   getText,
-  loadDictionariesAndPrefs,
-  underline
+  loadDictionariesAndPrefs
 }

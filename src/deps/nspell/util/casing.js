@@ -3,7 +3,7 @@
 module.exports = casing
 
 // Get the casing of `value`.
-function casing(value) {
+function casing (value) {
   var head = exact(value.charAt(0))
   var rest = value.slice(1)
 
@@ -24,7 +24,7 @@ function casing(value) {
   return null
 }
 
-function exact(value) {
+function exact (value) {
   if (value.toLowerCase() === value) {
     return 'l'
   }

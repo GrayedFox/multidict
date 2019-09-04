@@ -3,6 +3,6 @@
 module.exports = wordCharacters
 
 // Get the word characters defined in affix.
-function wordCharacters() {
+function wordCharacters () {
   return this.flags.WORDCHARS || null
 }

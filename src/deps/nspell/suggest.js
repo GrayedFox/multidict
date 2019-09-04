@@ -12,7 +12,7 @@ var noSuggestType = 'NOSUGGEST'
 
 // Suggest spelling for `value`.
 // eslint-disable-next-line complexity
-function suggest(value) {
+function suggest (value) {
   var self = this
   var replacementTable = self.replacementTable
   var conversion = self.conversion
@@ -211,11 +211,11 @@ function suggest(value) {
   // BOOM! All done!
   return values
 
-  function sort(a, b) {
+  function sort (a, b) {
     return sortWeight(a, b) || sortCasing(a, b) || sortAlpha(a, b)
   }
 
-  function sortWeight(a, b) {
+  function sortWeight (a, b) {
     if (weighted[a] === weighted[b]) {
       return 0
     }
@@ -223,7 +223,7 @@ function suggest(value) {
     return weighted[a] > weighted[b] ? -1 : 1
   }
 
-  function sortCasing(a, b) {
+  function sortCasing (a, b) {
     var leftCasing = casing(a)
     var rightCasing = casing(b)
 
@@ -240,13 +240,13 @@ function suggest(value) {
     return 0
   }
 
-  function sortAlpha(a, b) {
+  function sortAlpha (a, b) {
     return a.localeCompare(b)
   }
 }
 
 // Get a list of values close in edit distance to `words`.
-function generate(context, memory, words, edits) {
+function generate (context, memory, words, edits) {
   var characters = context.flags.TRY
   var characterLength = characters.length
   var data = context.data
@@ -333,7 +333,7 @@ function generate(context, memory, words, edits) {
   return result
 
   // Check and handle a generated value.
-  function check(value, double) {
+  function check (value, double) {
     var state = memory.state[value]
     var corrected
 

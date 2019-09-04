@@ -5,6 +5,9 @@
   "main": "multidict.js",
   "scripts": {
     "build": "bash build.sh",
+    "lint": "eslint .",
+    "lint-fix": "eslint . --fix",
+    "serve": "web-ext run -u 'https://www.freecontactform.com/free.php' -u 'about:debugging' -u 'about:preferences' -p 'addons' --keep-profile-changes",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
