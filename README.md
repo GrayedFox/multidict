@@ -5,6 +5,19 @@ Use multiple languages when spell checking inside Firefox.
 Supported languages are based on the dictionaries used for spell checking in Chrome, Firefox,
 LibreOffice, OpenOffice, and many more apps that rely on the Hunspell spell checker.
 
+## Supported Languages
+
+- German (de-de)
+- American English (en-us)
+- Australian English (en-au)
+- British English (en-gb)
+- French (fr-fr)
+- Italian (it-it)
+- Polish (pl-pl)
+- Romanian (ro-ro)
+- Russian (ru-ru)
+- Spanish (es-es)
+
 ## Usage
 
 ### Disabling Built In Spellchecker
@@ -58,26 +71,35 @@ This way you can use multiple dictionaries on the same page/tab without changing
 using any hotkeys. It is especially useful if you are used to composing emails in multiple
 languages.
 
+## Privacy
 
-## Supported Languages
+___No information is collected by this add-on or sent to any 3rd party.___
 
-- German (de-de)
-- American English (en-us)
-- Australian English (en-au)
-- British English (en-gb)
-- French (fr-fr)
-- Italian (it-it)
-- Polish (pl-pl)
-- Romanian (ro-ro)
-- Russian (ru-ru)
-- Spanish (es-es)
+It should be noted, however, that the native Firefox [detect language][8] feature is a JavaScript
+wrapper around the Compact Language Detector software [CLD2][9] and I cannot say for sure that when
+calling this method, Firefox isn't sending data to it's servers.
+
+I can say that there doesn't seem to be any requests being made inside the Network tab of the
+developer tools when calling this function and that Mozilla has a very to-the-point, down-to-earth
+[privacy policy][10] which details their philosophy and approach to data collection.
+
+Remember, Firefox is open source software, which makes them a damn sight more trustworthy and
+accountable than most other companies (and certainly most other browsers) out in the wild.
 
 ## Credits
 
-- Dictionaries by [Hunspell][0] and available for download [here][1].
-- Icons by [SmashIcons][2], taken from [Flaticon.com][3].
-- Powered by [NSpell][4], made by Titus Wormer, the brilliant mind behind the [retext][5] NLP.
+- Dictionaries by [Hunspell][0] and available for download [here][1]
+- Icons by [SmashIcons][2], taken from [Flaticon.com][3]
+- Spellchecking powered by [NSpell][4], made by Titus Wormer, the brains behind [retext][5] NLP
+- Highlighting thanks to Will Boyd who created the [HighlightWithinTextarea][7] jQuery plugin
 - Async forEach helper function taken from Antonio V's [p-iteration][6] module
+- Language detection thanks to Dick Sites and the kick-ass [CLD2][9] (Compact Language Detector 2)
+  software
+- Mozilla and all her contributors
+- All of you, duh!
+
+Thanks for using this software, feel free to leave a bug report or feedback via the GitHub issue
+tracker.
 
  [0]: https://hunspell.github.io/
  [1]: https://src.chromium.org/viewvc/chrome/trunk/deps/third_party/hunspell_dictionaries/
@@ -86,3 +108,7 @@ languages.
  [4]: https://github.com/wooorm/nspell
  [5]: https://github.com/retextjs/retext
  [6]: https://github.com/toniov/p-iteration
+ [7]: https://github.com/lonekorean/highlight-within-textarea
+ [8]: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/i18n/detectLanguage
+ [9]: https://github.com/CLD2Owners/cld2
+ [10]: https://www.mozilla.org/en-US/privacy/faq/

@@ -7,7 +7,7 @@
     "build": "bash build.sh",
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",
-    "serve": "web-ext run -u 'https://www.freecontactform.com/free.php' -u 'about:debugging' -u 'about:preferences' -p 'addons' --keep-profile-changes",
+    "serve": "web-ext run -u 'file:///home/grayedfox/github/multi-dict/src/test-page.html' -u 'about:debugging' -u 'about:preferences' -p 'addons' --keep-profile-changes",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

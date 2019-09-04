@@ -51,14 +51,14 @@ textarea {
 	color: inherit;
 }
 
-.hwt-content mark .red {
+.hwt-content mark.red {
 	background-color: #ffc9c9;
 }
 
-.hwt-content mark .blue {
+.hwt-content mark.blue {
 	background-color: #a3daff;
 }
 
-.hwt-content mark .yellow {
+.hwt-content mark.yellow {
 	background-color: #ffec99;
 }

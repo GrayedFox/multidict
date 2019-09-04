@@ -73,17 +73,13 @@ HighlightWithinTextarea.prototype = {
     this.$container.appendChild(this.$el)
     this.$container.append(this.$backdrop, this.$el)
 
-    console.log(this.$container)
-
     // this.fixFirefox()
 
     // plugin function checks this for success
-    this.isGenerated = true
+    // this.isGenerated = true
 
     // trigger input event to highlight any existing input
     this.handleInput()
-
-    console.log(this.$highlights)
   },
 
   // Firefox doesn't show text that scrolls into the padding of a textarea, so
@@ -257,9 +253,12 @@ HighlightWithinTextarea.prototype = {
     })
   },
 
+  // wrap all
   renderMarks: function (boundaries) {
     console.log('render marks')
     let input = this.$el.value
+    const marks = []
+
     boundaries.forEach(function (boundary, index) {
       let markup
       if (boundary.type === 'start') {
@@ -278,7 +277,7 @@ HighlightWithinTextarea.prototype = {
 
     // replace start tokens with opening <mark> tags with class name
     input = input.replace(/\{\{hwt-mark-start\|(\d+)\}\}/g, function (match, submatch) {
-      var className = boundaries[+submatch].className
+      const className = boundaries[+submatch].className
       if (className) {
         return '<mark class="' + className + '">'
       } else {
@@ -288,9 +287,9 @@ HighlightWithinTextarea.prototype = {
 
     // replace stop tokens with closing </mark> tags
     input = input.replace(/\{\{hwt-mark-stop\}\}/g, '</mark>')
+    console.log('input', input)
 
-    this.$highlights.innerHtml = input
-    console.log(this.$highlights.innerHtml)
+    this.$highlights.innerHTML = input
   },
 
   handleScroll: function () {
@@ -300,7 +299,7 @@ HighlightWithinTextarea.prototype = {
   },
 
   destroy: function () {
-    console.log('destroyed')
+    console.log('destroying')
     this.$backdrop.remove()
     this.$el
       .unwrap()
@@ -333,6 +332,7 @@ function highlightWithinTextarea (node, options) {
       plugin.destroy()
     }
     plugin = new HighlightWithinTextarea($el, options)
+    return plugin
   }
 }
 
