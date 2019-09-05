@@ -63,7 +63,6 @@ HighlightWithinTextarea.prototype = {
       ['margin-top', 'margin-right', 'margin-bottom', 'margin-left'], true)
 
     const selections = this.getPositions()
-    console.log(selections)
 
     this.container = createElementWithClasses('div', [`${ID}-container`])
     this.container = css(this.container, containerProps)
@@ -83,6 +82,9 @@ HighlightWithinTextarea.prototype = {
     this.container.appendChild(this.el)
     this.el.parentNode.insertBefore(this.backdrop, this.el)
 
+    this.el.focus()
+    this.el.setSelectionRange(selections.start, selections.end)
+
     // this.fixFirefox()
 
     // trigger input event to highlight any existing input
@@ -93,9 +95,9 @@ HighlightWithinTextarea.prototype = {
     console.log('get textarea positions')
     const el = this.el
     return {
-      startPosition: el.selectionStart,
-      endPosition: el.selectionEnd,
-      cursorPosition: el.selectionStart === el.selectionEnd
+      start: el.selectionStart,
+      end: el.selectionEnd,
+      cursor: el.selectionStart === el.selectionEnd
         ? el.selectionStart / el.value.length
         : undefined
     }
