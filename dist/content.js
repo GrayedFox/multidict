@@ -39,14 +39,13 @@ messageHandler.onMessage.addListener((message) => {
   console.log('Got message from background...')
   console.log(message)
   if (message.spelling) {
-    const result = highlight(node, {
+    highlight(node, {
       highlight: message.spelling.misspeltWords,
       className: 'red'
     })
-    console.log('result', result)
 
-    node.remove()
-    document.body.appendChild(result.$container)
+    // node.parentNode.append(result.$container)
+    // node.parentNode.appendChild(result.$container)
   }
 })
 
@@ -64,179 +63,116 @@ document.body.addEventListener('keyup', debounce(editable, 1200))
 // injects a keyup listener for spell checking words, which then highlights misspelt words
 
 },{"./deps/highlight/highlight-within-textarea.js":2,"./helpers.js":3}],2:[function(require,module,exports){
-/*
- * highlight-within-textarea
- *
- * @author  Will Boyd
- * @github  https://github.com/lonekorean/highlight-within-textarea
- */
-
 const ID = 'hwt'
 
-let plugin
+let highlighter
 
-const HighlightWithinTextarea = function ($el, config) {
-  this.init($el, config)
+// jQuery like helper function for getting/setting styles and properties of element
+function css (element, styles, styleValues = false) {
+  if (Array.isArray(styles)) {
+    const requestedStyles = {}
+    styles.forEach((style) => {
+      if (styleValues) {
+        requestedStyles[style] = element.getPropertyValue(style)
+      } else {
+        const win = element.ownerDocument.defaultView
+        requestedStyles[style] = win.getComputedStyle(element, null)[style]
+      }
+    })
+    return requestedStyles
+  } else {
+    for (const [key, value] of Object.entries(styles)) {
+      element.style[key] = value
+    }
+    return element
+  }
+}
+
+// simple helper that creates an element and adds classes
+function createElementWithClasses (type, classes) {
+  const element = document.createElement(type)
+  classes.forEach((klass) => element.classList.add(klass))
+  return element
+}
+
+const HighlightWithinTextarea = function (el, config) {
+  this.init(el, config)
 }
 
 HighlightWithinTextarea.prototype = {
-  init: function ($el, config) {
-    this.$el = $el
-
-    if (this.getType(config) === 'custom') {
-      this.highlight = config
-      this.generate()
-    } else {
-      console.error('valid config object not provided')
-    }
-  },
-
-  // returns identifier strings that aren't necessarily "real" JavaScript types
-  getType: function (instance) {
-    const type = typeof instance
-    if (!instance) {
-      return 'falsy'
-    } else if (Array.isArray(instance)) {
-      if (instance.length === 2 && typeof instance[0] === 'number' && typeof instance[1] === 'number') {
-        return 'range'
-      } else {
-        return 'array'
-      }
-    } else if (type === 'object') {
-      if (instance instanceof RegExp) {
-        return 'regexp'
-      } else if (instance.hasOwnProperty('highlight')) {
-        return 'custom'
-      }
-    } else if (type === 'function' || type === 'string') {
-      return type
-    }
-
-    return 'other'
+  init: function (el, config) {
+    this.el = el
+    this.generate()
   },
 
   generate: function () {
     console.log('generating')
-    this.$el.classList.add(`${ID}-input`, `${ID}-content`)
-    this.$el.addEventListener('input', this.handleInput.bind(this))
-    this.$el.addEventListener('scroll', this.handleScroll.bind(this))
-    // .on('input.' + ID, this.handleInput.bind(this))
-    // .on('scroll.' + ID, this.handleScroll.bind(this))
+    // Get styles from textarea being spell checked
+    const textareaStyles = window.getComputedStyle(this.el)
+    const highlightProps = css(textareaStyles, [
+      'font-size',
+      'font-family',
+      'font-weight',
+      'line-height',
+      'letter-spacing',
+      'border',
+      'padding-top',
+      'padding-right',
+      'padding-bottom',
+      'padding-left'
+    ], true)
 
-    function createElWithClass (type, klass) {
-      const el = document.createElement(type)
-      el.classList.add(klass)
-      return el
-    }
+    console.log(highlightProps)
 
-    this.$highlights = createElWithClass('div', `${ID}-highlights`)
-    this.$highlights.classList.add(`${ID}-content`)
+    const containerProps = css(textareaStyles,
+      ['margin-top', 'margin-right', 'margin-bottom', 'margin-left'], true)
 
-    this.$backdrop = createElWithClass('div', `${ID}-backdrop`)
-    this.$backdrop.append(this.$highlights)
+    const selections = this.getPositions()
+    console.log(selections)
 
-    this.$container = createElWithClass('div', `${ID}-container`)
-    this.$container.appendChild(this.$el)
-    this.$container.append(this.$backdrop, this.$el)
+    this.container = createElementWithClasses('div', [`${ID}-container`])
+    this.container = css(this.container, containerProps)
+
+    this.el.classList.add(`${ID}-input`, `${ID}-content`)
+    this.el.addEventListener('input', this.handleInput.bind(this))
+    this.el.addEventListener('scroll', this.handleScroll.bind(this))
+
+    this.highlights = createElementWithClasses('div', [`${ID}-highlights`, `${ID}-content`])
+    this.highlights = css(this.highlights, highlightProps)
+
+    this.backdrop = createElementWithClasses('div', [`${ID}-backdrop`])
+    this.backdrop.style['background-colour'] = textareaStyles.getPropertyValue('background-color')
+    this.backdrop.append(this.highlights)
+
+    this.el.parentNode.insertBefore(this.container, this.el)
+    this.container.appendChild(this.el)
+    this.el.parentNode.insertBefore(this.backdrop, this.el)
 
     // this.fixFirefox()
 
-    // plugin function checks this for success
-    // this.isGenerated = true
-
     // trigger input event to highlight any existing input
-    this.handleInput()
+    // this.handleInput()
   },
 
-  // Firefox doesn't show text that scrolls into the padding of a textarea, so
-  // rearrange a couple box models to make highlights behave the same way
-  // fixFirefox: function () {
-  //   // take padding and border pixels from highlights div
-  //   const padding = this.$highlights.css([
-  //     'padding-top', 'padding-right', 'padding-bottom', 'padding-left'
-  //   ])
-  //
-  //   const border = this.$highlights.css([
-  //     'border-top-width', 'border-right-width', 'border-bottom-width', 'border-left-width'
-  //   ])
-  //   this.$highlights.css({
-  //     padding: '0',
-  //     'border-width': '0'
-  //   })
-  //
-  //   this.$backdrop
-  //     // jquery setting css with object notation
-  //     .css({
-  //       // give padding pixels to backdrop div
-  //       'margin-top': '+=' + padding['padding-top'],
-  //       'margin-right': '+=' + padding['padding-right'],
-  //       'margin-bottom': '+=' + padding['padding-bottom'],
-  //       'margin-left': '+=' + padding['padding-left']
-  //     })
-  //     .css({
-  //       // give border pixels to backdrop div
-  //       'margin-top': '+=' + border['border-top-width'],
-  //       'margin-right': '+=' + border['border-right-width'],
-  //       'margin-bottom': '+=' + border['border-bottom-width'],
-  //       'margin-left': '+=' + border['border-left-width']
-  //     })
-  // },
+  getPositions: function () {
+    console.log('get textarea positions')
+    const el = this.el
+    return {
+      startPosition: el.selectionStart,
+      endPosition: el.selectionEnd,
+      cursorPosition: el.selectionStart === el.selectionEnd
+        ? el.selectionStart / el.value.length
+        : undefined
+    }
+  },
 
   handleInput: function () {
     console.log('handle input')
-    const input = this.$el.value
+    const input = this.el.value
     const ranges = this.getRanges(input, this.highlight)
     const unstaggeredRanges = this.removeStaggeredRanges(ranges)
     const boundaries = this.getBoundaries(unstaggeredRanges)
     this.renderMarks(boundaries)
-  },
-
-  getRanges: function (input, highlight) {
-    const type = this.getType(highlight)
-    switch (type) {
-      case 'array':
-        return this.getArrayRanges(input, highlight)
-      case 'function':
-        return this.getFunctionRanges(input, highlight)
-      case 'regexp':
-        return this.getRegExpRanges(input, highlight)
-      case 'string':
-        return this.getStringRanges(input, highlight)
-      case 'range':
-        return this.getRangeRanges(input, highlight)
-      case 'custom':
-        return this.getCustomRanges(input, highlight)
-      default:
-        if (!highlight) {
-          // do nothing for falsy values
-          return []
-        } else {
-          console.error('unrecognized highlight type')
-        }
-    }
-  },
-
-  getArrayRanges: function (input, arr) {
-    const ranges = arr.map(this.getRanges.bind(this, input))
-    return Array.prototype.concat.apply([], ranges)
-  },
-
-  getFunctionRanges: function (input, func) {
-    return this.getRanges(input, func(input))
-  },
-
-  getRegExpRanges: function (input, regex) {
-    const ranges = []
-    let match
-    while (match = regex.exec(input), match !== null) {
-      ranges.push([match.index, match.index + match[0].length])
-      if (!regex.global) {
-        // non-global regexes do not increase lastIndex, causing an infinite loop,
-        // but we can just break manually after the first match
-        break
-      }
-    }
-    return ranges
   },
 
   getStringRanges: function (input, str) {
@@ -251,79 +187,9 @@ HighlightWithinTextarea.prototype = {
     return ranges
   },
 
-  getRangeRanges: function (input, range) {
-    return [range]
-  },
-
-  getCustomRanges: function (input, custom) {
-    const ranges = this.getRanges(input, custom.highlight)
-    if (custom.className) {
-      ranges.forEach(function (range) {
-        // persist class name as a property of the array
-        if (range.className) {
-          range.className = custom.className + ' ' + range.className
-        } else {
-          range.className = custom.className
-        }
-      })
-    }
-    return ranges
-  },
-
-  // prevent staggered overlaps (clean nesting is fine)
-  removeStaggeredRanges: function (ranges) {
-    const unstaggeredRanges = []
-    ranges.forEach(function (range) {
-      const isStaggered = unstaggeredRanges.some(function (unstaggeredRange) {
-        const isStartInside = range[0] > unstaggeredRange[0] && range[0] < unstaggeredRange[1]
-        const isStopInside = range[1] > unstaggeredRange[0] && range[1] < unstaggeredRange[1]
-        return isStartInside !== isStopInside // xor
-      })
-      if (!isStaggered) {
-        unstaggeredRanges.push(range)
-      }
-    })
-    return unstaggeredRanges
-  },
-
-  getBoundaries: function (ranges) {
-    const boundaries = []
-    ranges.forEach(function (range) {
-      boundaries.push({
-        type: 'start',
-        index: range[0],
-        className: range.className
-      })
-      boundaries.push({
-        type: 'stop',
-        index: range[1]
-      })
-    })
-
-    this.sortBoundaries(boundaries)
-    return boundaries
-  },
-
-  sortBoundaries: function (boundaries) {
-    // backwards sort (since marks are inserted right to left)
-    boundaries.sort(function (a, b) {
-      if (a.index !== b.index) {
-        return b.index - a.index
-      } else if (a.type === 'stop' && b.type === 'start') {
-        return 1
-      } else if (a.type === 'start' && b.type === 'stop') {
-        return -1
-      } else {
-        return 0
-      }
-    })
-  },
-
-  // wrap all
   renderMarks: function (boundaries) {
     console.log('render marks')
-    let input = this.$el.value
-    const marks = []
+    let input = this.el.value
 
     boundaries.forEach(function (boundary, index) {
       let markup
@@ -336,7 +202,7 @@ HighlightWithinTextarea.prototype = {
     })
 
     // this keeps scrolling aligned when input ends with a newline
-    input = input.replace(/\n(\{\{hwt-mark-stop\}\})?$/, '\n\n$1')
+    // input = input.replace(/\n(\{\{hwt-mark-stop\}\})?$/, '\n\n$1')
 
     // encode HTML entities
     input = input.replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -353,58 +219,62 @@ HighlightWithinTextarea.prototype = {
 
     // replace stop tokens with closing </mark> tags
     input = input.replace(/\{\{hwt-mark-stop\}\}/g, '</mark>')
-    console.log('input', input)
-
-    this.$highlights.innerHTML = input
+    this.highlights.innerHTML = input
   },
 
   handleScroll: function () {
     console.log('handle scroll')
-    const scrollTop = this.$el.scrollTop()
-    this.$backdrop.scrollTop(scrollTop)
+    const scrollTop = this.el.scrollTop()
+    this.backdrop.scrollTop(scrollTop)
   },
 
   destroy: function () {
     console.log('destroying')
-    this.$backdrop.remove()
-    this.$el
-      .unwrap()
-      .removeClass(ID + '-text ' + ID + '-input')
-      .off(ID)
-      .removeData(ID)
+    const parent = this.el.parentNode
+
+    if (parent !== document.body) {
+      parent.parentNode.insertBefore(this.el, parent)
+      parent.parentNode.removeChild(parent)
+    }
+
+    this.backdrop.remove()
+    this.el.classList.remove(`${ID}-content`, `${ID}-input`)
+    this.el.removeEventListener('input', this.handleInput.bind(this))
+    this.el.removeEventListener('scroll', this.handleScroll.bind(this))
   }
 }
 
-function highlightWithinTextarea (node, options) {
-  const $el = node.cloneNode()
-
-  if (typeof options === 'string') {
-    if (plugin) {
-      switch (options) {
-        case 'update':
-          plugin.handleInput()
-          break
-        case 'destroy':
-          plugin.destroy()
-          break
-        default:
-          console.error('unrecognized method string')
+// add custom class names from options
+function getCustomRanges (input, custom) {
+  const ranges = this.getRanges(input, custom.highlight)
+  if (custom.className) {
+    ranges.forEach(function (range) {
+      // persist class name as a property of the array
+      if (range.className) {
+        range.className = custom.className + ' ' + range.className
+      } else {
+        range.className = custom.className
       }
-    } else {
-      console.error('plugin must be instantiated first')
-    }
-  } else {
-    if (plugin) {
-      plugin.destroy()
-    }
-    plugin = new HighlightWithinTextarea($el, options)
-    return plugin
+    })
   }
+  return ranges
+}
+
+// generate backdrop div that inherits/copies all properties from textarea being spellchecked
+// move textarea node into highlight container, keeping focus, cursor position, and selected text
+// add text from textarea to innerHTML of div, wrapping all misspelt words in <mark> tags
+// event listener should copy any text entered into the textarea into the div
+
+function highlight (node, options) {
+  if (highlighter) {
+    highlighter.destroy()
+  }
+  highlighter = new HighlightWithinTextarea(node, options)
 }
 
 // function handleScroll (node) {
 //   const scrollTop = node.scrollTop()
-//   $backdrop.scrollTop(scrollTop)
+//   backdrop.scrollTop(scrollTop)
 // }
 //
 // function applyHighlights (text) {
@@ -416,12 +286,46 @@ function highlightWithinTextarea (node, options) {
 // function handleInput (node) {
 //   var text = node.value
 //   var highlightedText = applyHighlights(text)
-//   $highlights.html(highlightedText)
+//   highlights.html(highlightedText)
 // }
+//
+//   // Firefox doesn't show text that scrolls into the padding of a textarea, so
+// rearrange a couple box models to make highlights behave the same way
+// fixFirefox: function () {
+//   // take padding and border pixels from highlights div
+//   const padding = css(this.highlights, [
+//     'padding-top', 'padding-right', 'padding-bottom', 'padding-left'
+//   ])
+//
+//   const border = css(this.highlights, [
+//     'border-top-width', 'border-right-width', 'border-bottom-width', 'border-left-width'
+//   ])
+//
+//   this.highlights = css(this.highlights, {
+//     padding: '0',
+//     'border-width': '0'
+//   })
+//
+//   this.backdrop = css(this.backdrop, {
+//     // add padding pixels to backdrop div
+//     'margin-top': '+=' + padding['padding-top'],
+//     'margin-right': '+=' + padding['padding-right'],
+//     'margin-bottom': '+=' + padding['padding-bottom'],
+//     'margin-left': '+=' + padding['padding-left']
+//   })
+//   // console.log(css(this.backdrop, ['margin-top']))
+//
+//   this.backdrop = css(this.backdrop, {
+//     // add border pixels to backdrop div
+//     'margin-top': '+=' + border['border-top-width'],
+//     'margin-right': '+=' + border['border-right-width'],
+//     'margin-bottom': '+=' + border['border-bottom-width'],
+//     'margin-left': '+=' + border['border-left-width']
+//   })
+//   // console.log(css(this.backdrop, ['margin-top']))
+// },
 
-module.exports = {
-  highlight: highlightWithinTextarea
-}
+module.exports = { highlight }
 
 },{}],3:[function(require,module,exports){
 // custom promisifed async forEach function taken from p-iteration

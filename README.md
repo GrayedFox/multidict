@@ -99,7 +99,7 @@ accountable than most other companies (and certainly most other browsers) out in
 - All of you, duh!
 
 Thanks for using this software, feel free to leave a bug report or feedback via the GitHub issue
-tracker.
+tracker :)
 
  [0]: https://hunspell.github.io/
  [1]: https://src.chromium.org/viewvc/chrome/trunk/deps/third_party/hunspell_dictionaries/

@@ -1,0 +1,19 @@
+.outer {
+  position: relative;
+  height: 100vh;
+}
+
+.middle {
+  height: 100%;
+  width: 50%;
+  overflow: auto;
+  margin: auto;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+}
+
+#story {
+  border: 2px solid #5fa8b3;
+  font-family: sans-serif;
+  font-size: 100%;
+}

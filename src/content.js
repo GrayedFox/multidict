@@ -38,14 +38,13 @@ messageHandler.onMessage.addListener((message) => {
   console.log('Got message from background...')
   console.log(message)
   if (message.spelling) {
-    const result = highlight(node, {
+    highlight(node, {
       highlight: message.spelling.misspeltWords,
       className: 'red'
     })
-    console.log('result', result)
 
-    node.remove()
-    document.body.appendChild(result.$container)
+    // node.parentNode.append(result.$container)
+    // node.parentNode.appendChild(result.$container)
   }
 })
 
