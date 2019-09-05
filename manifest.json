@@ -17,7 +17,7 @@
     {
       "matches": ["<all_urls>"],
       "js": ["dist/content.js"],
-      "css": ["src/deps/highlight/highlight-within-textarea.css"]
+      "css": ["src/deps/highlight/highlight.css"]
     }
   ],
 

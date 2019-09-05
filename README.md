@@ -91,7 +91,8 @@ accountable than most other companies (and certainly most other browsers) out in
 - Dictionaries by [Hunspell][0] and available for download [here][1]
 - Icons by [SmashIcons][2], taken from [Flaticon.com][3]
 - Spellchecking powered by [NSpell][4], made by Titus Wormer, the brains behind [retext][5] NLP
-- Highlighting thanks to Will Boyd who created the [HighlightWithinTextarea][7] jQuery plugin
+- Highlighting logic based off heavily redacted [HighlightWithinTextarea][7] jQuery plugin by
+  Will Boyd
 - Async forEach helper function taken from Antonio V's [p-iteration][6] module
 - Language detection thanks to Dick Sites and the kick-ass [CLD2][9] (Compact Language Detector 2)
   software

@@ -1,3 +1,10 @@
+/*
+ * This is a heavily modified version of the jQuery highlight-within-textarea plugin
+ *
+ * @author  Will Boyd
+ * @github  https://github.com/lonekorean/highlight-within-textarea
+ */
+
 const ID = 'hwt'
 
 let highlighter
@@ -37,9 +44,12 @@ const HighlightWithinTextarea = function (el, config) {
 HighlightWithinTextarea.prototype = {
   init: function (el, config) {
     this.el = el
+    this.class = config.className
+    this.misspeltWords = config.highlight
     this.generate()
   },
 
+  // generate the required wrapping divs and containers
   generate: function () {
     console.log('generating')
     // Get styles from textarea being spell checked
@@ -57,18 +67,20 @@ HighlightWithinTextarea.prototype = {
       'padding-left'
     ], true)
 
-    console.log(highlightProps)
-
     const containerProps = css(textareaStyles,
       ['margin-top', 'margin-right', 'margin-bottom', 'margin-left'], true)
 
-    const selections = this.getPositions()
+    // used to restore cursor position/selected text inside textarea
+    const selections = {
+      start: this.el.selectionStart,
+      end: this.el.selectionEnd
+    }
 
     this.container = createElementWithClasses('div', [`${ID}-container`])
     this.container = css(this.container, containerProps)
 
     this.el.classList.add(`${ID}-input`, `${ID}-content`)
-    this.el.addEventListener('input', this.handleInput.bind(this))
+    this.el.addEventListener('input', this.highlightText.bind(this))
     this.el.addEventListener('scroll', this.handleScroll.bind(this))
 
     this.highlights = createElementWithClasses('div', [`${ID}-highlights`, `${ID}-content`])
@@ -86,77 +98,33 @@ HighlightWithinTextarea.prototype = {
     this.el.setSelectionRange(selections.start, selections.end)
 
     // this.fixFirefox()
-
-    // trigger input event to highlight any existing input
-    // this.handleInput()
+    // call main method to highlight existing input
+    this.highlightText(this.misspeltWords)
   },
 
-  getPositions: function () {
-    console.log('get textarea positions')
-    const el = this.el
-    return {
-      start: el.selectionStart,
-      end: el.selectionEnd,
-      cursor: el.selectionStart === el.selectionEnd
-        ? el.selectionStart / el.value.length
-        : undefined
-    }
-  },
-
-  handleInput: function () {
-    console.log('handle input')
+  // expects an array of words and gets the range of each misspelt word inside the input
+  // by updating the index as we search we make sure to only search the remainder of the string
+  // this means words mispelled twice in the same sentence will still have the correct range
+  highlightText: function () {
+    console.log('highlight text')
     const input = this.el.value
-    const ranges = this.getRanges(input, this.highlight)
-    const unstaggeredRanges = this.removeStaggeredRanges(ranges)
-    const boundaries = this.getBoundaries(unstaggeredRanges)
-    this.renderMarks(boundaries)
-  },
-
-  getStringRanges: function (input, str) {
-    const ranges = []
-    const inputLower = input.toLowerCase()
-    const strLower = str.toLowerCase()
     let index = 0
-    while (index = inputLower.indexOf(strLower, index), index !== -1) {
-      ranges.push([index, index + strLower.length])
-      index += strLower.length
-    }
-    return ranges
-  },
+    let newInput = input
 
-  renderMarks: function (boundaries) {
-    console.log('render marks')
-    let input = this.el.value
-
-    boundaries.forEach(function (boundary, index) {
-      let markup
-      if (boundary.type === 'start') {
-        markup = '{{hwt-mark-start|' + index + '}}'
+    this.misspeltWords.forEach((word) => {
+      index = newInput.indexOf(word, index)
+      if (index !== -1) {
+        const markup = `<mark class=${this.class}>${word}</mark>`
+        const start = index
+        const end = index + word.length
+        newInput = newInput.slice(0, start) + markup + newInput.slice(end)
+        index += markup.length
       } else {
-        markup = '{{hwt-mark-stop}}'
-      }
-      input = input.slice(0, boundary.index) + markup + input.slice(boundary.index)
-    })
-
-    // this keeps scrolling aligned when input ends with a newline
-    // input = input.replace(/\n(\{\{hwt-mark-stop\}\})?$/, '\n\n$1')
-
-    // encode HTML entities
-    input = input.replace(/</g, '&lt;').replace(/>/g, '&gt;')
-
-    // replace start tokens with opening <mark> tags with class name
-    input = input.replace(/\{\{hwt-mark-start\|(\d+)\}\}/g, function (match, submatch) {
-      const className = boundaries[+submatch].className
-      if (className) {
-        return '<mark class="' + className + '">'
-      } else {
-        return '<mark>'
+        console.warn(`Warning! Could not find index of ${word}! in string remainder`)
       }
     })
 
-    // replace stop tokens with closing </mark> tags
-    input = input.replace(/\{\{hwt-mark-stop\}\}/g, '</mark>')
-    this.highlights.innerHTML = input
+    this.highlights.innerHTML = newInput
   },
 
   handleScroll: function () {
@@ -176,25 +144,9 @@ HighlightWithinTextarea.prototype = {
 
     this.backdrop.remove()
     this.el.classList.remove(`${ID}-content`, `${ID}-input`)
-    this.el.removeEventListener('input', this.handleInput.bind(this))
+    this.el.removeEventListener('input', this.highlightText.bind(this))
     this.el.removeEventListener('scroll', this.handleScroll.bind(this))
   }
-}
-
-// add custom class names from options
-function getCustomRanges (input, custom) {
-  const ranges = this.getRanges(input, custom.highlight)
-  if (custom.className) {
-    ranges.forEach(function (range) {
-      // persist class name as a property of the array
-      if (range.className) {
-        range.className = custom.className + ' ' + range.className
-      } else {
-        range.className = custom.className
-      }
-    })
-  }
-  return ranges
 }
 
 // generate backdrop div that inherits/copies all properties from textarea being spellchecked
@@ -209,23 +161,6 @@ function highlight (node, options) {
   highlighter = new HighlightWithinTextarea(node, options)
 }
 
-// function handleScroll (node) {
-//   const scrollTop = node.scrollTop()
-//   backdrop.scrollTop(scrollTop)
-// }
-//
-// function applyHighlights (text) {
-//   return text.reduce((acc, word) => {
-//     acc += `<mark>${word}</mark>`
-//   })
-// }
-//
-// function handleInput (node) {
-//   var text = node.value
-//   var highlightedText = applyHighlights(text)
-//   highlights.html(highlightedText)
-// }
-//
 //   // Firefox doesn't show text that scrolls into the padding of a textarea, so
 // rearrange a couple box models to make highlights behave the same way
 // fixFirefox: function () {

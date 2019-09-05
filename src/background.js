@@ -9,7 +9,7 @@ let spells = {}
 // create spell checkers in order of languages specified by user
 function createSpellCheckers (user) {
   if (languagePrefs.length !== user.dicts.length) {
-    console.error('Language prefs and user dictionary length are not equal. Aborting.')
+    console.warn('Language prefs and user dictionary length are not equal. Aborting.')
     return
   }
 
@@ -25,7 +25,7 @@ function createSpellCheckers (user) {
 // handles all incoming messages from the content script
 function listener (message) {
   messageHandler = message
-  messageHandler.postMessage({ greeting: 'Connection established' })
+  messageHandler.postMessage({ greeting: 'MultDict connection established' })
 
   // content script message object should contain: { name, language, content }
   messageHandler.onMessage.addListener((message) => {

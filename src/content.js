@@ -1,11 +1,11 @@
 const messageHandler = browser.runtime.connect({ name: 'spell-checker' })
 const editableFields = ['TEXTAREA']
 const { debounce, getText } = require('./helpers.js')
-const { highlight } = require('./deps/highlight/highlight-within-textarea.js')
+const { highlight } = require('./deps/highlight/highlight.js')
 
 let node
 
-// catches editable fields being clicked on or edited
+// catches the keyup event on editable fields
 // TODO: don't spell check code or other inline editors
 async function editable (event) {
   node = event.target
@@ -35,28 +35,23 @@ async function editable (event) {
 
 // background script message object should contain: { spelling, node }
 messageHandler.onMessage.addListener((message) => {
-  console.log('Got message from background...')
-  console.log(message)
+  if (message.greeting) {
+    console.log(message.greeting)
+  }
   if (message.spelling) {
     highlight(node, {
       highlight: message.spelling.misspeltWords,
       className: 'red'
     })
-
-    // node.parentNode.append(result.$container)
-    // node.parentNode.appendChild(result.$container)
   }
 })
 
+// mostly for debugging
 messageHandler.onDisconnect.addListener((p) => {
   if (p.error) {
-    console.log(`Disconnected due to an error: ${p.error.message}`)
+    console.warn(`MultiDict disconnected due to an error: ${p.error.message}`)
   }
 })
 
-// BUG: click event listener sends single line of text instead of content of entire editable field
-// TODO: tie click event to showing suggested words instead of spell checking
-// document.body.addEventListener('click', debounce(word, 200))
-document.body.addEventListener('keyup', debounce(editable, 1200))
-
-// injects a keyup listener for spell checking words, which then highlights misspelt words
+// TODO: tie click/hover event to showing suggested words instead of spell checking
+document.body.addEventListener('keyup', debounce(editable, 1000))

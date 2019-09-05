@@ -28,14 +28,12 @@
 	word-wrap: break-word !important;
 	color: transparent !important;
 	overflow: hidden !important;
+	padding: 0 !important;
 }
 
 .hwt-input {
 	display: block !important;
 	position: relative !important;
-	/* padding: 0;
-	border-radius: 0;
-	font: inherit; */
 	margin: 0 !important;
 	overflow-x: hidden !important;
 	overflow-y: auto !important;

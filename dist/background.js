@@ -10,7 +10,7 @@ let spells = {}
 // create spell checkers in order of languages specified by user
 function createSpellCheckers (user) {
   if (languagePrefs.length !== user.dicts.length) {
-    console.error('Language prefs and user dictionary length are not equal. Aborting.')
+    console.warn('Language prefs and user dictionary length are not equal. Aborting.')
     return
   }
 
@@ -26,7 +26,7 @@ function createSpellCheckers (user) {
 // handles all incoming messages from the content script
 function listener (message) {
   messageHandler = message
-  messageHandler.postMessage({ greeting: 'Connection established' })
+  messageHandler.postMessage({ greeting: 'MultDict connection established' })
 
   // content script message object should contain: { name, language, content }
   messageHandler.onMessage.addListener((message) => {
@@ -1477,28 +1477,31 @@ function readFile (path) {
 // return misspelt words and suggestions
 function checkSpelling (spell, content) {
   const spelling = {
-    suggestions: {},
-    misspeltWords: []
+    cleanedContent: [],
+    misspeltWords: [],
+    suggestions: {}
   }
 
   // split string by spaces and strip out punctuation that does not form part of the word itself
   // then remove any strings that are numbers or less than 1 char in length
-  const cleanedContent = content.split(/(?:\s)/)
-    .reduce((acc, string) => acc.concat([string.replace(/(\B\W|\W\B|\s)/gm, '')]), [])
+  spelling.cleanedContent = content.split(/(?:\s)/)
+    .reduce((acc, string) => acc.concat([string.replace(/(\B\W|\W\B)/gm, '')]), [])
     .reduce((acc, string) => {
       return string.length > 1 && isNaN(string) && !string.includes('@')
         ? acc.concat([string])
         : acc
     }, [])
 
-  console.log(cleanedContent)
+  console.log('cleaned content', spelling.cleanedContent)
 
-  for (const string of cleanedContent) {
-    if (!spell.correct(string)) {
-      spelling.suggestions[string] = spell.suggest(string)
-      spelling.misspeltWords.push(string)
+  for (const word of spelling.cleanedContent) {
+    if (!spell.correct(word)) {
+      spelling.suggestions[word] = spell.suggest(word)
+      spelling.misspeltWords.push(word)
     }
   }
+
+  console.log('misspelt words', spelling.misspeltWords)
 
   return spelling
 }
