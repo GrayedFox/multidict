@@ -97,7 +97,7 @@ HighlightWithinTextarea.prototype = {
     this.el.focus()
     this.el.setSelectionRange(selections.start, selections.end)
 
-    // this.fixFirefox()
+    this.padHighlights()
     // call main method to highlight existing input
     this.highlightText(this.misspeltWords)
   },
@@ -129,8 +129,38 @@ HighlightWithinTextarea.prototype = {
 
   handleScroll: function () {
     console.log('handle scroll')
-    const scrollTop = this.el.scrollTop()
-    this.backdrop.scrollTop(scrollTop)
+    const scrollTop = this.el.scrollTop
+    if (scrollTop) {
+      this.backdrop.scrollTop = scrollTop
+    } else {
+      console.warn('MultDict: scrollTop method unavailable.')
+    }
+  },
+
+  // take padding and border pixels from textarea and add them to padding of highlights div
+  padHighlights: function () {
+    const paddingAndBorder = css(this.el, [
+      'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+      'border-top-width', 'border-right-width', 'border-bottom-width', 'border-left-width'
+    ])
+
+    const padding = {
+      'padding-top': 0,
+      'padding-right': 0,
+      'padding-bottom': 0,
+      'padding-left': 0
+    }
+
+    Object.entries(paddingAndBorder).forEach(([key, value]) => {
+      if (key.includes('top')) padding['padding-top'] += parseInt(value, 10)
+      if (key.includes('right')) padding['padding-right'] += parseInt(value, 10)
+      if (key.includes('bottom')) padding['padding-bottom'] += parseInt(value, 10)
+      if (key.includes('left')) padding['padding-left'] += parseInt(value, 10)
+    })
+
+    Object.keys(padding).forEach((key) => { padding[key] += 'px' })
+
+    this.highlights = css(this.highlights, padding)
   },
 
   destroy: function () {
@@ -156,45 +186,11 @@ HighlightWithinTextarea.prototype = {
 
 function highlight (node, options) {
   if (highlighter) {
+    // TODO: see if this can be optimised by avoding the destroy each time?
+    // highlighter.highlightText(options.highlight)
     highlighter.destroy()
   }
   highlighter = new HighlightWithinTextarea(node, options)
 }
-
-//   // Firefox doesn't show text that scrolls into the padding of a textarea, so
-// rearrange a couple box models to make highlights behave the same way
-// fixFirefox: function () {
-//   // take padding and border pixels from highlights div
-//   const padding = css(this.highlights, [
-//     'padding-top', 'padding-right', 'padding-bottom', 'padding-left'
-//   ])
-//
-//   const border = css(this.highlights, [
-//     'border-top-width', 'border-right-width', 'border-bottom-width', 'border-left-width'
-//   ])
-//
-//   this.highlights = css(this.highlights, {
-//     padding: '0',
-//     'border-width': '0'
-//   })
-//
-//   this.backdrop = css(this.backdrop, {
-//     // add padding pixels to backdrop div
-//     'margin-top': '+=' + padding['padding-top'],
-//     'margin-right': '+=' + padding['padding-right'],
-//     'margin-bottom': '+=' + padding['padding-bottom'],
-//     'margin-left': '+=' + padding['padding-left']
-//   })
-//   // console.log(css(this.backdrop, ['margin-top']))
-//
-//   this.backdrop = css(this.backdrop, {
-//     // add border pixels to backdrop div
-//     'margin-top': '+=' + border['border-top-width'],
-//     'margin-right': '+=' + border['border-right-width'],
-//     'margin-bottom': '+=' + border['border-bottom-width'],
-//     'margin-left': '+=' + border['border-left-width']
-//   })
-//   // console.log(css(this.backdrop, ['margin-top']))
-// },
 
 module.exports = { highlight }
