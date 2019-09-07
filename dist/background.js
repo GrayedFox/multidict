@@ -62,13 +62,7 @@ browser.runtime.onConnect.addListener(listener)
 
 main()
 
-// Goal: enable multiple laguages to be used when spell checking
-//
-// Limits: no way to directly interact right now with browser dictionary list so have to build
-// spell check/lookup functionality
-//
-// Method: user should disable browser spell check (to avoid annoying/false red lines) and rely
-// on the extension
+// Goal: enable multiple laguages to be used when spell checking by detecting content language
 //
 // MVP: spell check using dictionaries, detect language of each field, underline misspelled words,
 // show suggestions
@@ -1452,7 +1446,7 @@ async function forEach (array, callback, thisArg) {
   await Promise.all(promiseArray)
 }
 
-// read a file, the firefox extension way
+// read a text file, the firefox extension way
 function readFile (path) {
   return new Promise((resolve, reject) => {
     fetch(path, { mode: 'same-origin' })
@@ -1474,7 +1468,7 @@ function readFile (path) {
   })
 }
 
-// return misspelt words and suggestions
+// check spelling of content and return misspelt words and suggestions
 function checkSpelling (spell, content) {
   const spelling = {
     cleanedContent: [],
@@ -1483,7 +1477,7 @@ function checkSpelling (spell, content) {
   }
 
   // split string by spaces and strip out punctuation that does not form part of the word itself
-  // then remove any strings that are numbers or less than 1 char in length
+  // then remove any email strings, numbers, or text that is less than 2 characters in length
   spelling.cleanedContent = content.split(/(?:\s)/)
     .reduce((acc, string) => acc.concat([string.replace(/(\B\W|\W\B)/gm, '')]), [])
     .reduce((acc, string) => {
@@ -1492,8 +1486,6 @@ function checkSpelling (spell, content) {
         : acc
     }, [])
 
-  console.log('cleaned content', spelling.cleanedContent)
-
   for (const word of spelling.cleanedContent) {
     if (!spell.correct(word)) {
       spelling.suggestions[word] = spell.suggest(word)
@@ -1501,7 +1493,9 @@ function checkSpelling (spell, content) {
     }
   }
 
+  console.log('cleaned content', spelling.cleanedContent)
   console.log('misspelt words', spelling.misspeltWords)
+  console.log('suggestions', spelling.suggestions)
 
   return spelling
 }
@@ -1536,7 +1530,7 @@ async function loadDictionariesAndPrefs (languages) {
     if (!dic.error && !aff.error) {
       dicts.push({ languageCode: lang, dic: dic, aff: aff })
     } else {
-      // prevent race condition when reading files changing the preferred language order
+      // prevent race condition when reading files changes the preferred language order
       prefs = prefs.filter((value) => value !== lang)
     }
   }).then(function () {

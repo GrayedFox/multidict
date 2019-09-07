@@ -42,7 +42,7 @@ messageHandler.onMessage.addListener((message) => {
   if (message.spelling) {
     highlight(node, {
       highlight: message.spelling.misspeltWords,
-      className: 'red'
+      className: 'blue'
     })
   }
 })
@@ -69,7 +69,7 @@ const ID = 'hwt'
 
 let highlighter
 
-// jQuery like helper function for getting/setting styles and properties of element
+// jQuery like helper function for getting/setting styles and properties of an element
 function css (element, styles, styleValues = false) {
   if (Array.isArray(styles)) {
     const requestedStyles = {}
@@ -167,24 +167,23 @@ HighlightWithinTextarea.prototype = {
   // this means words mispelled twice in the same sentence will still have the correct range
   highlightText: function () {
     console.log('highlight text')
-    const input = this.el.value
+    let input = this.el.value
     let index = 0
-    let newInput = input
 
     this.misspeltWords.forEach((word) => {
-      index = newInput.indexOf(word, index)
+      index = input.indexOf(word, index)
       if (index !== -1) {
         const markup = `<mark class=${this.class}>${word}</mark>`
         const start = index
         const end = index + word.length
-        newInput = newInput.slice(0, start) + markup + newInput.slice(end)
+        input = input.slice(0, start) + markup + input.slice(end)
         index += markup.length
       } else {
         console.warn(`Warning! Could not find index of ${word}! in string remainder`)
       }
     })
 
-    this.highlights.innerHTML = newInput
+    this.highlights.innerHTML = input
   },
 
   handleScroll: function () {
@@ -270,7 +269,7 @@ async function forEach (array, callback, thisArg) {
   await Promise.all(promiseArray)
 }
 
-// read a file, the firefox extension way
+// read a text file, the firefox extension way
 function readFile (path) {
   return new Promise((resolve, reject) => {
     fetch(path, { mode: 'same-origin' })
@@ -292,7 +291,7 @@ function readFile (path) {
   })
 }
 
-// return misspelt words and suggestions
+// check spelling of content and return misspelt words and suggestions
 function checkSpelling (spell, content) {
   const spelling = {
     cleanedContent: [],
@@ -301,7 +300,7 @@ function checkSpelling (spell, content) {
   }
 
   // split string by spaces and strip out punctuation that does not form part of the word itself
-  // then remove any strings that are numbers or less than 1 char in length
+  // then remove any email strings, numbers, or text that is less than 2 characters in length
   spelling.cleanedContent = content.split(/(?:\s)/)
     .reduce((acc, string) => acc.concat([string.replace(/(\B\W|\W\B)/gm, '')]), [])
     .reduce((acc, string) => {
@@ -310,8 +309,6 @@ function checkSpelling (spell, content) {
         : acc
     }, [])
 
-  console.log('cleaned content', spelling.cleanedContent)
-
   for (const word of spelling.cleanedContent) {
     if (!spell.correct(word)) {
       spelling.suggestions[word] = spell.suggest(word)
@@ -319,7 +316,9 @@ function checkSpelling (spell, content) {
     }
   }
 
+  console.log('cleaned content', spelling.cleanedContent)
   console.log('misspelt words', spelling.misspeltWords)
+  console.log('suggestions', spelling.suggestions)
 
   return spelling
 }
@@ -354,7 +353,7 @@ async function loadDictionariesAndPrefs (languages) {
     if (!dic.error && !aff.error) {
       dicts.push({ languageCode: lang, dic: dic, aff: aff })
     } else {
-      // prevent race condition when reading files changing the preferred language order
+      // prevent race condition when reading files changes the preferred language order
       prefs = prefs.filter((value) => value !== lang)
     }
   }).then(function () {

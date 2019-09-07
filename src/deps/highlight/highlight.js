@@ -9,7 +9,7 @@ const ID = 'hwt'
 
 let highlighter
 
-// jQuery like helper function for getting/setting styles and properties of element
+// jQuery like helper function for getting/setting styles and properties of an element
 function css (element, styles, styleValues = false) {
   if (Array.isArray(styles)) {
     const requestedStyles = {}
@@ -107,24 +107,23 @@ HighlightWithinTextarea.prototype = {
   // this means words mispelled twice in the same sentence will still have the correct range
   highlightText: function () {
     console.log('highlight text')
-    const input = this.el.value
+    let input = this.el.value
     let index = 0
-    let newInput = input
 
     this.misspeltWords.forEach((word) => {
-      index = newInput.indexOf(word, index)
+      index = input.indexOf(word, index)
       if (index !== -1) {
         const markup = `<mark class=${this.class}>${word}</mark>`
         const start = index
         const end = index + word.length
-        newInput = newInput.slice(0, start) + markup + newInput.slice(end)
+        input = input.slice(0, start) + markup + input.slice(end)
         index += markup.length
       } else {
         console.warn(`Warning! Could not find index of ${word}! in string remainder`)
       }
     })
 
-    this.highlights.innerHTML = newInput
+    this.highlights.innerHTML = input
   },
 
   handleScroll: function () {

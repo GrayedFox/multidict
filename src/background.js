@@ -61,13 +61,7 @@ browser.runtime.onConnect.addListener(listener)
 
 main()
 
-// Goal: enable multiple laguages to be used when spell checking
-//
-// Limits: no way to directly interact right now with browser dictionary list so have to build
-// spell check/lookup functionality
-//
-// Method: user should disable browser spell check (to avoid annoying/false red lines) and rely
-// on the extension
+// Goal: enable multiple laguages to be used when spell checking by detecting content language
 //
 // MVP: spell check using dictionaries, detect language of each field, underline misspelled words,
 // show suggestions
