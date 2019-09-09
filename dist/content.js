@@ -42,7 +42,7 @@ messageHandler.onMessage.addListener((message) => {
   if (message.spelling) {
     highlight(node, {
       highlight: message.spelling.misspeltWords,
-      className: 'blue'
+      className: 'red'
     })
   }
 })
@@ -163,26 +163,29 @@ HighlightWithinTextarea.prototype = {
   },
 
   // expects an array of words and gets the range of each misspelt word inside the input
-  // by updating the index as we search we make sure to only search the remainder of the string
-  // this means words mispelled twice in the same sentence will still have the correct range
+  // by updating the search index as we go we make sure to only search the remainder of the string
+  // this means words mispelled twice in the same sentence will be wrapped properly
   highlightText: function () {
     console.log('highlight text')
     let input = this.el.value
     let index = 0
+    let lastIndex = 0
 
     this.misspeltWords.forEach((word) => {
       index = input.indexOf(word, index)
       if (index !== -1) {
-        const markup = `<mark class=${this.class}>${word}</mark>`
+        const markup = `<mark class="${this.class}">${word}</mark>`
         const start = index
         const end = index + word.length
         input = input.slice(0, start) + markup + input.slice(end)
         index += markup.length
+        lastIndex = index
       } else {
-        console.warn(`Warning! Could not find index of ${word}! in string remainder`)
+        console.warn(`Warning! Could not find "${word}" in remainding text "${input.slice(lastIndex)}"`)
       }
     })
 
+    // TODO: this will fail the Firefox audit when publishing, need to use DOM manipulation
     this.highlights.innerHTML = input
   },
 
@@ -242,7 +245,6 @@ HighlightWithinTextarea.prototype = {
 // move textarea node into highlight container, keeping focus, cursor position, and selected text
 // add text from textarea to innerHTML of div, wrapping all misspelt words in <mark> tags
 // event listener should copy any text entered into the textarea into the div
-
 function highlight (node, options) {
   if (highlighter) {
     // TODO: see if this can be optimised by avoding the destroy each time?
@@ -255,7 +257,7 @@ function highlight (node, options) {
 module.exports = { highlight }
 
 },{}],3:[function(require,module,exports){
-// custom promisifed async forEach function taken from p-iteration
+// custom async forEach function taken from p-iteration
 async function forEach (array, callback, thisArg) {
   const promiseArray = []
   for (let i = 0; i < array.length; i++) {
@@ -267,6 +269,21 @@ async function forEach (array, callback, thisArg) {
     }
   }
   await Promise.all(promiseArray)
+}
+
+// sexy es6 debounce with spread operator
+function debounce (callback, wait) {
+  let timeout
+  return (...args) => {
+    const context = this
+    clearTimeout(timeout)
+    timeout = setTimeout(() => callback.apply(context, args), wait)
+  }
+}
+
+// get text from a given node
+function getText (node) {
+  return node.value.length > 0 ? node.value : node.innerText
 }
 
 // read a text file, the firefox extension way
@@ -291,23 +308,32 @@ function readFile (path) {
   })
 }
 
+// clean content and strip out unwanted text/patterns before spell checking
+function cleanContent (content) {
+  const rxUrls = /^(http|ftp|www)/
+  const rxSeparators = /[\s.,:;!?_<>{}()[\]"`´^$°§½¼³%&¬+=*~#|/\\]/
+  const rxSingleQuotes = /^'+|'+$/gm
+
+  // split all content by any character that should not form part of a word
+  return content.split(rxSeparators)
+    .reduce((acc, string) => {
+      // remove any number of single quotes that do not form part of a word i.e. 'y'all' > y'all
+      string = string.replace(rxSingleQuotes, '')
+      // filter out emails, URLs, numbers, and text less than 2 characters in length
+      if (!string.includes('@') && !rxUrls.test(string) && isNaN(string) && string.length > 1) {
+        return acc.concat([string])
+      }
+      return acc
+    }, [])
+}
+
 // check spelling of content and return misspelt words and suggestions
 function checkSpelling (spell, content) {
   const spelling = {
-    cleanedContent: [],
+    cleanedContent: cleanContent(content),
     misspeltWords: [],
     suggestions: {}
   }
-
-  // split string by spaces and strip out punctuation that does not form part of the word itself
-  // then remove any email strings, numbers, or text that is less than 2 characters in length
-  spelling.cleanedContent = content.split(/(?:\s)/)
-    .reduce((acc, string) => acc.concat([string.replace(/(\B\W|\W\B)/gm, '')]), [])
-    .reduce((acc, string) => {
-      return string.length > 1 && isNaN(string) && !string.includes('@')
-        ? acc.concat([string])
-        : acc
-    }, [])
 
   for (const word of spelling.cleanedContent) {
     if (!spell.correct(word)) {
@@ -321,25 +347,6 @@ function checkSpelling (spell, content) {
   console.log('suggestions', spelling.suggestions)
 
   return spelling
-}
-
-// sexy es6 debounce with spread operator
-function debounce (callback, wait) {
-  let timeout
-  return (...args) => {
-    const context = this
-    clearTimeout(timeout)
-    timeout = setTimeout(() => callback.apply(context, args), wait)
-  }
-}
-
-// get text from a given node
-function getText (node) {
-  if (node.nodeName === 'INPUT' || node.nodeName === 'TEXTAREA') {
-    return node.value
-  } else {
-    return node.innerText
-  }
 }
 
 // get local dictionary files according to supported languages

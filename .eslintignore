@@ -1,2 +1,5 @@
-# tell eslint to ignore dist folder and everything in it
+# ignore dist folder and everything in it
 dist/**
+
+# ignore minified purify dependency
+src/deps/dompurify/**

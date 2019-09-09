@@ -41,7 +41,7 @@ messageHandler.onMessage.addListener((message) => {
   if (message.spelling) {
     highlight(node, {
       highlight: message.spelling.misspeltWords,
-      className: 'blue'
+      className: 'red'
     })
   }
 })

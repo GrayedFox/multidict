@@ -103,26 +103,29 @@ HighlightWithinTextarea.prototype = {
   },
 
   // expects an array of words and gets the range of each misspelt word inside the input
-  // by updating the index as we search we make sure to only search the remainder of the string
-  // this means words mispelled twice in the same sentence will still have the correct range
+  // by updating the search index as we go we make sure to only search the remainder of the string
+  // this means words mispelled twice in the same sentence will be wrapped properly
   highlightText: function () {
     console.log('highlight text')
     let input = this.el.value
     let index = 0
+    let lastIndex = 0
 
     this.misspeltWords.forEach((word) => {
       index = input.indexOf(word, index)
       if (index !== -1) {
-        const markup = `<mark class=${this.class}>${word}</mark>`
+        const markup = `<mark class="${this.class}">${word}</mark>`
         const start = index
         const end = index + word.length
         input = input.slice(0, start) + markup + input.slice(end)
         index += markup.length
+        lastIndex = index
       } else {
-        console.warn(`Warning! Could not find index of ${word}! in string remainder`)
+        console.warn(`Warning! Could not find "${word}" in remainding text "${input.slice(lastIndex)}"`)
       }
     })
 
+    // TODO: this will fail the Firefox audit when publishing, need to use DOM manipulation
     this.highlights.innerHTML = input
   },
 
@@ -182,7 +185,6 @@ HighlightWithinTextarea.prototype = {
 // move textarea node into highlight container, keeping focus, cursor position, and selected text
 // add text from textarea to innerHTML of div, wrapping all misspelt words in <mark> tags
 // event listener should copy any text entered into the textarea into the div
-
 function highlight (node, options) {
   if (highlighter) {
     // TODO: see if this can be optimised by avoding the destroy each time?
