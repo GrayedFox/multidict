@@ -1,5 +1,2 @@
 # ignore dist folder and everything in it
 dist/**
-
-# ignore minified purify dependency
-src/deps/dompurify/**

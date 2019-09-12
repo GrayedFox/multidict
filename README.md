@@ -1,6 +1,6 @@
 # Multi Dict
 
-Use multiple languages when spell checking inside Firefox.
+Smart language detection spell checker with configurable text highlights, customisable shortcuts
 
 Supported languages are based on the dictionaries used for spell checking in Chrome, Firefox,
 LibreOffice, OpenOffice, and many more apps that rely on the Hunspell spell checker.
@@ -9,11 +9,11 @@ LibreOffice, OpenOffice, and many more apps that rely on the Hunspell spell chec
 
 ## Supported Languages
 
-- German (de-de)
 - American English (en-us)
 - Australian English (en-au)
 - British English (en-gb)
 - French (fr-fr)
+- German (de-de)
 - Italian (it-it)
 - Polish (pl-pl)
 - Romanian (ro-ro)
@@ -75,7 +75,7 @@ languages.
 
 ## Privacy
 
-___No information is collected by this add-on or sent to any 3rd party.___
+_No information is_ ___ever___ _collected by this add-on or sent to any 3rd party._
 
 It should be noted, however, that the native Firefox [detect language][8] feature is a JavaScript
 wrapper around the Compact Language Detector software [CLD2][9] and I cannot say for sure that when
@@ -86,7 +86,9 @@ developer tools when calling this function and that Mozilla has a very to-the-po
 [privacy policy][10] which details their philosophy and approach to data collection.
 
 Remember, Firefox is open source software, which makes them a damn sight more trustworthy and
-accountable than most other companies (and certainly most other browsers) out in the wild.
+accountable than most other companies (and certainly most other browsers) out in the wild, if you
+have the skills and time (which I do not!) you could also poke around their code base yourself
+just to make absolutely sure.
 
 ## Credits
 

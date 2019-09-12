@@ -1,48 +1,62 @@
 const messageHandler = browser.runtime.connect({ name: 'spell-checker' })
 const editableFields = ['TEXTAREA']
-const { debounce, getText } = require('./helpers.js')
+const { debounce } = require('./helpers.js')
 const { highlight } = require('./deps/highlight/highlight.js')
 
 let node
+let oldValue = ''
 
-// catches the keyup event on editable fields
-// TODO: don't spell check code or other inline editors
-async function editable (event) {
+// listens to all keyup events
+async function edit (event) {
   node = event.target
 
-  // only detect language and spellcheck editable fields
+  // don't spellcheck noneditable or unsupported fields
   if (!editableFields.includes(node.nodeName) || node.contentEditable === false) {
     return
   }
 
-  const content = getText(node)
-  const detectedLanguage = await browser.i18n.detectLanguage(content)
-
-  if (detectedLanguage.isReliable) {
-    messageHandler.postMessage({
-      name: 'spell-checker',
-      language: detectedLanguage.languages[0].language,
-      content: content
-    })
-  } else {
-    messageHandler.postMessage({
-      name: 'spell-checker',
-      language: 'unreliable',
-      content: content
-    })
+  // don't spellcheck if text is identical to last spellchecked text
+  if (node.getAttribute('data-multidict-generated') && (node.value === oldValue)) {
+    return
   }
+
+  oldValue = node.value
+
+  const detectedLanguage = await browser.i18n.detectLanguage(node.value)
+  const language = detectedLanguage.isReliable
+    ? detectedLanguage.languages[0].language
+    : 'unreliable'
+
+  messageHandler.postMessage({
+    type: 'check',
+    detectedLanguage: language,
+    content: node.value
+  })
 }
 
-// background script message object should contain: { spelling, node }
+// handles all incoming messages from the background script
 messageHandler.onMessage.addListener((message) => {
-  if (message.greeting) {
-    console.log(message.greeting)
-  }
-  if (message.spelling) {
-    highlight(node, {
-      highlight: message.spelling.misspeltWords,
-      className: 'red'
-    })
+  switch (message.type) {
+    case 'greeting':
+      console.log(message.greeting)
+      break
+
+    case 'spelling':
+      highlight(node, {
+        highlight: message.spelling.misspeltWords,
+        className: 'red'
+      })
+      break
+
+    case 'add':
+    case 'remove':
+      if (node.dataset.multidictSelectedText) {
+        messageHandler.postMessage({ type: message.type, word: node.dataset.multidictSelectedText })
+      }
+      break
+
+    default:
+      console.warn(`MultiDict: unrecognized background message ${message}`)
   }
 })
 
@@ -53,5 +67,7 @@ messageHandler.onDisconnect.addListener((p) => {
   }
 })
 
-// TODO: tie click/hover event to showing suggested words instead of spell checking
-document.body.addEventListener('keyup', debounce(editable, 1000))
+document.body.addEventListener('keyup', debounce(edit, 1000))
+
+// TODO: tie click/hover event to showing suggested words
+// ToDo: create context menu item for adding custom words to dictionary via rightclick menu
