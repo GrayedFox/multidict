@@ -8,6 +8,9 @@
 const ID = 'hwt'
 
 let highlighter
+let boundInput
+let boundScroll
+let boundSelect
 
 // jQuery like helper function for getting/setting styles and properties of an element
 function css (element, styles, styleValues = false) {
@@ -76,12 +79,17 @@ HighlightWithinTextarea.prototype = {
       end: this.el.selectionEnd
     }
 
+    boundInput = this.highlightText.bind(this)
+    boundScroll = this.handleScroll.bind(this)
+    boundSelect = this.handleSelect.bind(this)
+
     this.container = createElementWithClasses('div', [`${ID}-container`])
     this.container = css(this.container, containerProps)
 
     this.el.classList.add(`${ID}-input`, `${ID}-content`)
-    this.el.addEventListener('input', this.highlightText.bind(this))
-    this.el.addEventListener('scroll', this.handleScroll.bind(this))
+    this.el.addEventListener('input', boundInput)
+    this.el.addEventListener('scroll', boundScroll)
+    this.el.addEventListener('select', boundSelect)
 
     this.highlights = createElementWithClasses('div', [`${ID}-highlights`, `${ID}-content`])
     this.highlights = css(this.highlights, highlightProps)
@@ -98,30 +106,31 @@ HighlightWithinTextarea.prototype = {
     this.el.setSelectionRange(selections.start, selections.end)
 
     this.padHighlights()
-    // call main method to highlight existing input
+    this.handleSelect()
     this.highlightText(this.misspeltWords)
+
+    this.el.setAttribute('data-multidict-generated', true)
   },
 
-  // expects an array of words and gets the range of each misspelt word inside the input
+  // wraps misspelt word inside the highlights div in <mark> tags
   // by updating the search index as we go we make sure to only search the remainder of the string
   // this means words mispelled twice in the same sentence will be wrapped properly
   highlightText: function () {
     console.log('highlight text')
+
     let input = this.el.value
     let index = 0
-    let lastIndex = 0
 
     this.misspeltWords.forEach((word) => {
       index = input.indexOf(word, index)
+      // since deleting or selecting text doesn't trigger a spell check it's possible that we won't
+      // find a misspelt word in the remaining text, which is fine
       if (index !== -1) {
         const markup = `<mark class="${this.class}">${word}</mark>`
         const start = index
         const end = index + word.length
         input = input.slice(0, start) + markup + input.slice(end)
         index += markup.length
-        lastIndex = index
-      } else {
-        console.warn(`Warning! Could not find "${word}" in remainding text "${input.slice(lastIndex)}"`)
       }
     })
 
@@ -137,6 +146,12 @@ HighlightWithinTextarea.prototype = {
     } else {
       console.warn('MultDict: scrollTop method unavailable.')
     }
+  },
+
+  handleSelect: function () {
+    console.log('handle select')
+    const selectedText = this.el.value.slice(this.el.selectionStart, this.el.selectionEnd)
+    this.el.setAttribute('data-multidict-selected-text', selectedText)
   },
 
   // take padding and border pixels from textarea and add them to padding of highlights div
@@ -176,19 +191,17 @@ HighlightWithinTextarea.prototype = {
 
     this.backdrop.remove()
     this.el.classList.remove(`${ID}-content`, `${ID}-input`)
-    this.el.removeEventListener('input', this.highlightText.bind(this))
-    this.el.removeEventListener('scroll', this.handleScroll.bind(this))
+    this.el.removeEventListener('input', boundInput)
+    this.el.removeEventListener('scroll', boundScroll)
+    this.el.removeEventListener('select', boundSelect)
   }
 }
 
-// generate backdrop div that inherits/copies all properties from textarea being spellchecked
+// generate highlights div that inherits/copies all properties from textarea being spellchecked
 // move textarea node into highlight container, keeping focus, cursor position, and selected text
 // add text from textarea to innerHTML of div, wrapping all misspelt words in <mark> tags
-// event listener should copy any text entered into the textarea into the div
 function highlight (node, options) {
   if (highlighter) {
-    // TODO: see if this can be optimised by avoding the destroy each time?
-    // highlighter.highlightText(options.highlight)
     highlighter.destroy()
   }
   highlighter = new HighlightWithinTextarea(node, options)

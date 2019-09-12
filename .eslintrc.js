@@ -7,9 +7,7 @@ module.exports = {
   extends: [
     'standard'
   ],
-  globals: {
-    DOMPurify: 'readonly'
-  },
+  globals: {},
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: 'module'

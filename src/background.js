@@ -1,65 +1,167 @@
 const nspell = require('./deps/nspell/index.js')
-const { checkSpelling, loadDictionariesAndPrefs } = require('./helpers.js')
+const { checkSpelling, createMenuItems, loadDictionariesAndPrefs } = require('./helpers.js')
 
+let user
+let customWords
 let messageHandler
-let languages = []
-let languagePrefs = []
-let spells = {}
 
-// create spell checkers in order of languages specified by user
-function createSpellCheckers (user) {
-  if (languagePrefs.length !== user.dicts.length) {
-    console.warn('Language prefs and user dictionary length are not equal. Aborting.')
-    return
+class User {
+  constructor (dictionaries, prefs, languages, ownWords) {
+    this.dicts = dictionaries // dictionary objects [{ language: 'en-au', dic: '', aff: '' }]
+    this.prefs = prefs // shorthand language strings ['au', 'de']
+    this.langs = languages // language strings ['en-au', 'de-de']
+    this.ownWords = ownWords // word strings ['kablam', 'shebang']
+    this.spells = this.createSpellCheckers() // nspell instances
   }
 
-  const spellCheckers = {}
+  // create spell checkers in order of languages specified by user
+  createSpellCheckers () {
+    if (this.prefs.length !== this.dicts.length) {
+      console.warn('MultiDict: Language prefs and user dictionary length not equal. Aborting.')
+      return
+    }
 
-  for (let i = 0; i < user.dicts.length; i++) {
-    spellCheckers[languagePrefs[i]] = nspell(user.dicts[i])
+    const spells = {}
+    for (let i = 0; i < this.dicts.length; i++) {
+      spells[this.prefs[i]] = nspell(this.dicts[i])
+    }
+    return spells
   }
 
-  return spellCheckers
+  // add word to user.ownWords and update existing spell checker instances
+  addWord (word) {
+    user.ownWords.push(word)
+    Object.keys(this.spells).forEach((language) => { this.spells[language].add(word) })
+  }
+
+  // remove word from user.ownWords and update existing spell checker instances
+  removeWord (word) {
+    user.ownWords.remove(word)
+    Object.keys(this.spells).forEach((language) => { this.spells[language].remove(word) })
+  }
 }
 
-// handles all incoming messages from the content script
-function listener (message) {
-  messageHandler = message
-  messageHandler.postMessage({ greeting: 'MultDict connection established' })
-
-  // content script message object should contain: { name, language, content }
-  messageHandler.onMessage.addListener((message) => {
-    if (message.language === 'unreliable') {
+// expected: { type: '', detectedLanguage: '', content: '' }
+// checkSpelling returns: { cleanedContent: [], misspeltWords: [], suggestions: {}}
+function check (message) {
+  switch (message.detectedLanguage) {
+    case 'unreliable':
       messageHandler.postMessage({
-        suggestions: checkSpelling(spells[languagePrefs[0]], message.content)
+        type: 'spelling',
+        suggestions: checkSpelling(user.spells[user.prefs[0]], message.content)
       })
-    } else {
-      for (const pref of languagePrefs) {
-        if (languages.includes(`${message.language}-${pref}`)) {
+      break
+
+    default:
+      for (const pref of user.prefs) {
+        if (user.langs.includes(`${message.detectedLanguage}-${pref}`)) {
           messageHandler.postMessage({
-            spelling: checkSpelling(spells[pref], message.content)
+            type: 'spelling',
+            spelling: checkSpelling(user.spells[pref], message.content)
           })
           break
         }
       }
-    }
-  })
+  }
 }
 
-// main function loads dictionaries, sets langauge prefs, and creates NSpell dictionary instances
+// saves a word in browser storage and calls user.addWord
+async function addCustomWord (word) {
+  if (customWords.includes(word)) {
+    return
+  }
+
+  console.log('saving word: ' + word)
+
+  customWords.push(word)
+  const error = await browser.storage.sync.set({ personal: customWords })
+
+  if (error) {
+    customWords.pop() // remove the last word we added to customWords if we fail to save it
+    console.error(`MultiDict: Adding to personal dictionary failed with error: ${error}`)
+  } else {
+    user.addWord(word)
+  }
+}
+
+// removes a word from browser storage and calls user.removeWord
+async function removeCustomWord (word) {
+  if (!customWords.includes(word)) {
+    return
+  }
+
+  console.log('deleting word :' + word)
+
+  customWords.remove(word)
+  const error = await browser.storage.sync.set({ personal: customWords })
+
+  if (error) {
+    customWords.push(word) // re-add the last word we removed to customWords if we fail to remove it
+    console.error(`MultiDict: Removing from personal dictionary failed with error: ${error}`)
+  } else {
+    user.removeWord(word)
+  }
+}
+
+// api that handles performing all actions (from content script and command messages)
+function api (message) {
+  switch (message.type) {
+    case 'add':
+      addCustomWord(message.word)
+      break
+    case 'remove':
+      removeCustomWord(message.word)
+      break
+    case 'check':
+      check(message)
+      break
+    default:
+      console.warn(`MultDict: unrecognized message ${message}. Aborting.`)
+  }
+}
+
+// listens to all incoming messages from the content script
+function contentListener (port) {
+  messageHandler = port
+  messageHandler.postMessage({ type: 'greeting', greeting: 'MultDict connection established.' })
+  messageHandler.onMessage.addListener(api)
+}
+
+// listens to all incoming commands (keyboard shortcuts)
+function commandListener (command) {
+  if (command === 'add' || command === 'remove') {
+    messageHandler.postMessage({ type: command })
+  }
+}
+
+// listens to all incoming messages from the context menu items
+function contextListener (info) {
+  if (info.menuItemId === 'add' || info.menuItemId === 'remove') {
+    api({ type: info.menuItemId, word: info.selectionText })
+  }
+}
+
+// load dictionaries from acceptLanguages and intantiate user
 async function main () {
-  languages = await browser.i18n.getAcceptLanguages()
-  const user = await loadDictionariesAndPrefs(languages)
-  languagePrefs = user.prefs.reduce((acc, lang) => acc.concat([lang.slice(3, 5)]), [])
-  spells = createSpellCheckers(user)
+  const languages = await browser.i18n.getAcceptLanguages()
+  const dictionariesAndPrefs = await loadDictionariesAndPrefs(languages)
 
-  console.log(languages)
-  console.log(languagePrefs)
+  customWords = await browser.storage.sync.get('personal')
+  customWords = Array.isArray(customWords) ? customWords : []
+  user = new User(dictionariesAndPrefs.dicts, dictionariesAndPrefs.prefs, languages, customWords)
+
+  createMenuItems()
+
+  console.log(user.langs)
+  console.log(user.prefs)
+  console.log(user.ownWords)
 }
-
-browser.runtime.onConnect.addListener(listener)
 
 main()
+
+browser.runtime.onConnect.addListener(contentListener)
+browser.commands.onCommand.addListener(commandListener)
+browser.contextMenus.onClicked.addListener(contextListener)
 
 // Goal: enable multiple laguages to be used when spell checking by detecting content language
 //

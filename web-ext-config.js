@@ -6,9 +6,9 @@ module.exports = {
     firefoxProfile: 'addons',
     keepProfileChanges: true,
     startUrl: [
-      'file:///home/grayedfox/github/multi-dict/src/test-page.html',
       'about:debugging',
-      'about:preferences'
+      'about:preferences',
+      'file:///home/grayedfox/github/multi-dict/src/test-page.html'
     ]
   },
   ignoreFiles: [

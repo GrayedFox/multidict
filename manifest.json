@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Multi Dictionary",
-  "description": "Spell check against multiple languages using this addon",
+  "description": "Because spell checking should be smart, not difficult.",
   "homepage_url": "https://github.com/GrayedFox/multi-dict",
   "version": "1.0.0",
   "icons": {
@@ -13,13 +13,33 @@
     "scripts": ["dist/background.js"]
   },
 
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "che.fisher@gmail.com",
+      "strict_min_version": "69.0"
+    }
+  },
+
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["src/deps/dompurify/purify.min.js", "dist/content.js"],
+      "js": ["dist/content.js"],
       "css": ["src/deps/highlight/highlight.css"]
     }
   ],
+
+  "commands": {
+    "add": {
+      "suggested_key": { "default": "Alt+Shift+A" },
+      "description": "Add a word to your personal dictionary"
+    },
+    "remove": {
+      "suggested_key": { "default": "Alt+Shift+D" },
+      "description": "Remove a word from your personal dictionary"
+    }
+  },
+
+  "permissions": ["storage", "contextMenus"],
 
   "web_accessible_resources": ["dictionaries/*.aff, dictionaries/*.dic"]
 }

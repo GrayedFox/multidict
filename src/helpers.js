@@ -1,5 +1,18 @@
+// search an array for a specific item and remove it (extends native array object)
+if (!Array.prototype.remove) {
+  Array.prototype.remove = function remove (item) { // eslint-disable-line no-extend-native
+    if (!(this || Array.isArray(this))) {
+      throw new TypeError()
+    }
+
+    if (this.includes(item)) {
+      return this.splice(this.indexOf(item), 1)
+    }
+  }
+}
+
 // custom async forEach function taken from p-iteration
-async function forEach (array, callback, thisArg) {
+async function _forEach (array, callback, thisArg) {
   const promiseArray = []
   for (let i = 0; i < array.length; i++) {
     if (i in array) {
@@ -12,23 +25,8 @@ async function forEach (array, callback, thisArg) {
   await Promise.all(promiseArray)
 }
 
-// sexy es6 debounce with spread operator
-function debounce (callback, wait) {
-  let timeout
-  return (...args) => {
-    const context = this
-    clearTimeout(timeout)
-    timeout = setTimeout(() => callback.apply(context, args), wait)
-  }
-}
-
-// get text from a given node
-function getText (node) {
-  return node.value.length > 0 ? node.value : node.innerText
-}
-
 // read a text file, the firefox extension way
-function readFile (path) {
+function _readTextFile (path) {
   return new Promise((resolve, reject) => {
     fetch(path, { mode: 'same-origin' })
       .then(function (res) {
@@ -50,10 +48,10 @@ function readFile (path) {
 }
 
 // clean content and strip out unwanted text/patterns before spell checking
-function cleanContent (content) {
+function _cleanContent (content) {
   const rxUrls = /^(http|ftp|www)/
   const rxSeparators = /[\s.,:;!?_<>{}()[\]"`´^$°§½¼³%&¬+=*~#|/\\]/
-  const rxSingleQuotes = /^'+|'+$/gm
+  const rxSingleQuotes = /^'+|'+$/
 
   // split all content by any character that should not form part of a word
   return content.split(rxSeparators)
@@ -71,7 +69,7 @@ function cleanContent (content) {
 // check spelling of content and return misspelt words and suggestions
 function checkSpelling (spell, content) {
   const spelling = {
-    cleanedContent: cleanContent(content),
+    cleanedContent: _cleanContent(content),
     misspeltWords: [],
     suggestions: {}
   }
@@ -90,30 +88,59 @@ function checkSpelling (spell, content) {
   return spelling
 }
 
-// get local dictionary files according to supported languages
-async function loadDictionariesAndPrefs (languages) {
+function createMenuItems () {
+  browser.contextMenus.create({
+    id: 'add',
+    type: 'normal',
+    title: 'Add word to personal dictionary',
+    contexts: ['selection'],
+    icons: { 16: '/icons/plus-icon.svg' }
+  })
+
+  browser.contextMenus.create({
+    id: 'remove',
+    type: 'normal',
+    title: 'Remove word from personal dictionary',
+    contexts: ['selection'],
+    icons: { 16: '/icons/minus-icon.svg' }
+  })
+}
+
+// sexy es6 debounce with spread operator
+function debounce (callback, wait) {
+  let timeout
+  return (...args) => {
+    clearTimeout(timeout)
+    timeout = setTimeout(function () { callback.apply(this, args) }, wait)
+  }
+}
+
+// load local dictionary files from supported languages based on user prefs (acceptLanguages)
+function loadDictionariesAndPrefs (languages) {
   const dicts = []
   let prefs = []
-  return forEach(languages, async (lang) => {
-    prefs.push(lang)
-    const dic = await readFile(browser.runtime.getURL(`./dictionaries/${lang}.dic`))
-    const aff = await readFile(browser.runtime.getURL(`./dictionaries/${lang}.aff`))
+  return _forEach(languages, async (language) => {
+    prefs.push(language)
+    const dic = await _readTextFile(browser.runtime.getURL(`./dictionaries/${language}.dic`))
+    const aff = await _readTextFile(browser.runtime.getURL(`./dictionaries/${language}.aff`))
     if (!dic.error && !aff.error) {
-      dicts.push({ languageCode: lang, dic: dic, aff: aff })
+      dicts.push({ language, dic, aff })
     } else {
-      // prevent race condition when reading files changes the preferred language order
-      prefs = prefs.filter((value) => value !== lang)
+      // remove unfound/unsupported languages from preferred languages
+      prefs = prefs.filter((value) => value !== language)
     }
   }).then(function () {
+    // trim first three characters of supported langauges i.e. de-de > de
+    prefs = prefs.reduce((acc, lang) => acc.concat([lang.slice(3, 5)]), [])
     return { dicts, prefs }
   }).catch(function (err) {
-    console.log(err)
+    console.error(err)
   })
 }
 
 module.exports = {
   checkSpelling,
+  createMenuItems,
   debounce,
-  getText,
   loadDictionariesAndPrefs
 }
