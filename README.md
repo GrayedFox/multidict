@@ -49,18 +49,18 @@ The extension will detect which language is being used inside editable elements 
 to match that to one of your supported languages. If it can't find a match or cannot reliably detect
 the language it will default to your primary preferred language.
 
-Let's take a look at a complex example and go through it step by step...
+Let's take a look at a slightly complex example and go through it step by step:
 
 1. you add the Australian English (en-au), American English (en-us), and standard German (de-de)
    languages to your Firefox preferred languages list via Firefox preferences pane in that order
 
-2. you write the sentence 'Ich liebe mein leben' as the subject of an email
+2. you write the sentence 'Ich leibe mein leben' as the subject of an email
    - Multi Dict will detect the language as German (de) and attempt to match it like so: de-au
    - no match is found, so the next language in your preferred language list is checked: de-us
    - no match is found, so the next language in your preferred language list is checked: de-de
    - a match with a preferred language is found which matches the subject text field language, so
-     Multi Dict will use the German dictionary to spell check and offer suggestions for `leben`
-     (which should be capitalised)
+     Multi Dict will use the German dictionary to spell check and offer suggestions for `leibe`
+     (which should be spelt `liebe`)
 
 3. you write the text "Such beautiful colours! Colorful days are great!" as the body of the email
    - Multi Dict will detect the language as English (en) and attempt to match it like so: en-au
@@ -72,6 +72,11 @@ Let's take a look at a complex example and go through it step by step...
 This way you can use multiple dictionaries on the same page/tab without changing any preferences or
 using any hotkeys. It is especially useful if you are used to composing emails in multiple
 languages.
+
+> Note that your first specified language is also your default language and is used when no matches
+can be found, so if you are editing content in French and (for whatever reason) this is not on your
+supported languages list, in the above example, spell checking would be done against Australian
+English.
 
 ## Privacy
 
@@ -87,19 +92,22 @@ developer tools when calling this function and that Mozilla has a very to-the-po
 
 Remember, Firefox is open source software, which makes them a damn sight more trustworthy and
 accountable than most other companies (and certainly most other browsers) out in the wild, if you
-have the skills and time (which I do not!) you could also poke around their code base yourself
-just to make absolutely sure.
+have the skills and time you could also poke around their code base yourself just to make
+absolutely sure (or you could proxy all your own web traffic and try to isolate any and all network
+traffic coming from Firefox).
 
 ## Credits
 
 - Dictionaries by [Hunspell][0] and available for download [here][1]
 - Icons by [SmashIcons][2], taken from [Flaticon.com][3]
-- Spellchecking powered by [NSpell][4], made by Titus Wormer, the brains behind [retext][5] NLP
+- Spellchecking powered by [NSpell][4], made by Titus Wormer, the brains behind the [retext][5] NLP
 - Highlighting logic based off heavily redacted [HighlightWithinTextarea][7] jQuery plugin by
   Will Boyd
 - Async forEach helper function taken from Antonio V's [p-iteration][6] module
 - Language detection thanks to Dick Sites and the kick-ass [CLD2][9] (Compact Language Detector 2)
   software
+- Word suggestions carousel made possible by the good graces of David DeSandro, who wrote an
+  excellent tutorial called [Introduction to CSS 3D transforms][11]. Give it a read, it's awesome.
 - Mozilla and all her contributors
 - All of you, duh!
 
@@ -117,3 +125,4 @@ tracker :)
  [8]: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/i18n/detectLanguage
  [9]: https://github.com/CLD2Owners/cld2
  [10]: https://www.mozilla.org/en-US/privacy/faq/
+ [11]: https://3dtransforms.desandro.com/
