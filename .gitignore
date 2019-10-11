@@ -1,4 +1,4 @@
 # ignore node modules, web-ext-artifacts, and everything inside the dist folder
 /node_modules
 /web-ext-artifacts
-/dist/**
+/dist/*.js

@@ -1,25 +1,58 @@
-.outer {
-  position: relative;
-  height: 100vh;
+body {
+  font-family: sans-serif;
+  text-align: center;
+  font-size: 22px;
+  /* color: blue; */
 }
 
-.middle {
-  height: 100%;
-  width: 50%;
-  overflow: auto;
-  margin: auto;
-  position: absolute;
-  top: 0; left: 0; bottom: 0; right: 0;
+.suggestions-wrapper {
+  box-sizing: border-box;
+  position: relative;
+  perspective: 1000px;
+  margin: 80px auto;
+  transition: 0.5s;
+  height: 32px;
+  width: 0px;
 }
+
+.suggestions {
+  line-height: 32px;
+  position: absolute;
+  height: inherit;
+  transform-style: preserve-3d;
+  transition: inherit;
+}
+
+.suggestion {
+  position: absolute;
+  font-family: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  height: inherit;
+  transition: inherit;
+}
+
+.suggestion:nth-child(1) { transform: rotateX(0deg) translateZ(48px) }
+.suggestion:nth-child(2) { transform: rotateX(40deg) translateZ(48px) }
+.suggestion:nth-child(3) { transform: rotateX(80deg) translateZ(48px) }
+.suggestion:nth-child(4) { transform: rotateX(120deg) translateZ(48px) }
+.suggestion:nth-child(5) { transform: rotateX(160deg) translateZ(48px) }
+.suggestion:nth-child(6) { transform: rotateX(200deg) translateZ(48px) }
+.suggestion:nth-child(7) { transform: rotateX(240deg) translateZ(48px) }
+.suggestion:nth-child(8) { transform: rotateX(280deg) translateZ(48px) }
+.suggestion:nth-child(9) { transform: rotateX(320deg) translateZ(48px) }
 
 #one {
-  border: 5px solid #5fa8b3;
-  font-family: sans-serif;
-  font-size: 100%;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  border: 3px solid #5fa8b3;
+  height: 210px;
+  width: 310px;
+  position: static;
 }
 
 #two {
-  border: 1px solid #cc2492;
-  font-family: sans-serif;
-  font-size: 80%;
+  border: 3px solid #cc2492;
+  position: static;
 }

@@ -1,61 +1,94 @@
-.hwt-container {
+/* Suggestions */
+.multidict-suggestions-wrapper {
+  position: inherit;
+  display: inline-block;
+  top: 0px;
+  left: 0px;
+  visibility: visible;
+}
+
+.multidict-suggestions-container {
+  box-sizing: border-box;
+  position: relative;
+  perspective: 1000px;
+  margin: 0px auto;
+  transition: 0.5s;
+  width: 0px;
+}
+
+.multidict-suggestions-frame {
+  position: absolute;
+  transform-style: preserve-3d;
+  transition: inherit;
+}
+
+.multidict-suggestion {
+  font-family: inherit;
+  font-weight: inherit;
+  font-size: inherit;
+  letter-spacing: inherit;
+  position: absolute;
+  width: inherit;
+  height: inherit;
+  line-height: inherit;
+  transition: inherit;
+  text-align: left;
+}
+
+/* Highlights */
+.multidict-container {
 	display: inline-block;
 	position: relative;
 	overflow: hidden !important;
 	-webkit-text-size-adjust: none !important;
-	padding: 0 !important;
 }
 
-.hwt-backdrop {
+.multidict-backdrop {
 	position: absolute !important;
 	top: 0 !important;
 	right: -99px !important;
 	bottom: 0 !important;
 	left: 0 !important;
-	margin: 0 !important;
 	padding: 0 99px 0 0 !important;
 	overflow-x: hidden !important;
 	overflow-y: auto !important;
 }
 
-.hwt-highlights {
+.multidict-highlights {
 	width: auto !important;
 	height: auto !important;
-	margin: 0 !important;
 	border-color: transparent !important;
 	white-space: pre-wrap !important;
 	word-wrap: break-word !important;
-	color: transparent !important;
 	overflow: hidden !important;
+  color: transparent;
 }
 
-.hwt-input {
+.multidict-input {
 	display: block !important;
 	position: relative !important;
-	margin: 0 !important;
 	overflow-x: hidden !important;
 	overflow-y: auto !important;
 }
 
-.hwt-content {
-	/* border-width: 1px;
-	border-style: solid; */
+.multidict-content {
 	background: none transparent !important;
 }
 
-.hwt-content mark {
-	padding: 0 !important;
-	color: inherit;
+.multidict-content mark {
+  background-color: inherit;
+  color: transparent;
+  border-radius: 15%;
 }
 
-.hwt-content mark.red {
+.multidict-content mark.red {
 	background-color: #ffc9c9;
 }
 
-.hwt-content mark.blue {
+.multidict-content mark.blue {
 	background-color: #a3daff;
 }
 
-.hwt-content mark.yellow {
+.multidict-content mark.yellow {
 	background-color: #ffec99;
 }

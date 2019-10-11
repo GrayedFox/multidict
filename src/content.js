@@ -1,7 +1,8 @@
+const { debounce, getSelectedWord } = require('./helpers.js')
+const { highlight } = require('./deps/highlight/highlight.js')
+
 const messageHandler = browser.runtime.connect({ name: 'spell-checker' })
 const editableFields = ['TEXTAREA']
-const { debounce } = require('./helpers.js')
-const { highlight } = require('./deps/highlight/highlight.js')
 
 let node
 let oldValue = ''
@@ -10,7 +11,7 @@ let oldValue = ''
 async function edit (event) {
   node = event.target
 
-  // don't spellcheck noneditable or unsupported fields
+  // don't spellcheck non-editable or unsupported fields
   if (!editableFields.includes(node.nodeName) || node.contentEditable === false) {
     return
   }
@@ -34,25 +35,27 @@ async function edit (event) {
   })
 }
 
-// handles all incoming messages from the background script
+// listens to all incoming messages from the background script
 messageHandler.onMessage.addListener((message) => {
   switch (message.type) {
     case 'greeting':
       console.log(message.greeting)
       break
 
-    case 'spelling':
+    case 'highlight':
       highlight(node, {
-        highlight: message.spelling.misspeltWords,
+        misspeltWords: message.spelling.misspeltWords,
+        suggestions: message.spelling.suggestions,
         className: 'red'
       })
       break
 
     case 'add':
     case 'remove':
-      if (node.dataset.multidictSelectedText) {
-        messageHandler.postMessage({ type: message.type, word: node.dataset.multidictSelectedText })
-      }
+      messageHandler.postMessage({
+        type: message.type,
+        word: getSelectedWord().text
+      })
       break
 
     default:
@@ -60,14 +63,12 @@ messageHandler.onMessage.addListener((message) => {
   }
 })
 
-// mostly for debugging
+// for debugging purposes, log disconnect error
 messageHandler.onDisconnect.addListener((p) => {
   if (p.error) {
-    console.warn(`MultiDict disconnected due to an error: ${p.error.message}`)
+    console.warn(`MultiDict: disconnected due to an error: ${p.error.message}. Please try refreshing the page`)
   }
 })
 
-document.body.addEventListener('keyup', debounce(edit, 1000))
-
-// TODO: tie click/hover event to showing suggested words
-// ToDo: create context menu item for adding custom words to dictionary via rightclick menu
+document.body.addEventListener('keyup', debounce(edit, 700))
+document.body.addEventListener('click', debounce(edit, 700))
