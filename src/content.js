@@ -1,7 +1,7 @@
 const { debounce, getSelectedWord } = require('./helpers.js')
 const { highlight } = require('./deps/highlight/highlight.js')
 
-const messageHandler = browser.runtime.connect({ name: 'spell-checker' })
+const messageHandler = browser.runtime.connect({ name: 'content' })
 const editableFields = ['TEXTAREA']
 
 let node

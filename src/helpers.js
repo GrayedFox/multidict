@@ -84,7 +84,7 @@ function createMenuItems () {
     type: 'normal',
     title: 'Add word to personal dictionary',
     contexts: ['selection'],
-    icons: { 16: '/icons/plus-icon.svg' }
+    icons: { 16: 'media/icons/plus-icon.svg' }
   })
 
   browser.contextMenus.create({
@@ -92,7 +92,7 @@ function createMenuItems () {
     type: 'normal',
     title: 'Remove word from personal dictionary',
     contexts: ['selection'],
-    icons: { 16: '/icons/minus-icon.svg' }
+    icons: { 16: 'media/icons/minus-icon.svg' }
   })
 }
 

@@ -5,7 +5,7 @@ Smart language detection spell checker with configurable text highlights, custom
 Supported languages are based on the dictionaries used for spell checking in Chrome, Firefox,
 LibreOffice, OpenOffice, and many more apps that rely on the Hunspell spell checker.
 
-![Language detection! Neat!](media/multi-dict-demo.gif?raw=true "MultiDict In Action")
+![Language detection! Neat!](media/demo/multi-dict-demo.gif?raw=true "MultiDict In Action")
 
 ## Supported Languages
 
@@ -114,6 +114,11 @@ traffic coming from Firefox).
 Thanks for using this software, feel free to leave a bug report or feedback via the GitHub issue
 tracker :)
 
+## Contact Details
+
+For bug reports and feature requests use the GitHub issue tracker, to enquire about something else
+send an email to [che.fisher+mutidict@gmail.com][12]
+
  [0]: https://hunspell.github.io/
  [1]: https://src.chromium.org/viewvc/chrome/trunk/deps/third_party/hunspell_dictionaries/
  [2]: https://www.flaticon.com/authors/smashicons
@@ -126,3 +131,4 @@ tracker :)
  [9]: https://github.com/CLD2Owners/cld2
  [10]: https://www.mozilla.org/en-US/privacy/faq/
  [11]: https://3dtransforms.desandro.com/
+ [12]: mailto:che.fisher+multidict@gmail.com
