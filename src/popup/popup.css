@@ -1,0 +1,90 @@
+html, body {
+  width: 250px;
+  height: auto;
+  margin: 0;
+  padding: 0;
+
+  overflow-x: hidden;
+
+  font-family: "Avenir Next", "Avenir", sans-serif;
+}
+
+*:focus {
+  outline: 0;
+}
+
+a {
+  width: 100%;
+  height: inherit;
+  text-decoration: none;
+  color: #232323;
+
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: tomato;
+}
+
+#menu {
+  list-style-type: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+#menu li {
+  position: relative;
+  text-align: justify;
+  right: 10%;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  font-size: 16px;
+
+  transition:color 0.2s linear, background 0.2s linear;
+}
+
+#menu li:hover {
+  background-color: #fafafa;
+}
+
+#dictionary div {
+  position: relative;
+  float: right;
+  display: inline-block;
+  font-size: small;
+}
+
+.words {
+  list-style-type: none;
+}
+
+.words li {
+  border-top: 1px solid rgba(0,0,0,0);
+  color: #232323;
+  cursor: not-allowed;
+  transition: all 1.5s ease;
+  margin-left: 0;
+  padding-left: 1em;
+  text-indent: -1em;
+}
+
+.words li:after {
+  color: #f0a;
+  content: '\00bb'; /* code for &raquo; */
+  display: block;
+  float: right;
+  opacity: 0;
+  overflow: hidden;
+  width: 0;
+}
+
+.words li:hover {
+  color: tomato;
+  background: rgba(255,255,255,.2);
+  border-radius: 3px;
+  border-top: 1px solid rgba(255,255,255,.1);
+  box-shadow: 0 2px 2px rgba(0,0,0,.2);
+}
+
+.words li:hover:after {
+  opacity: 1;
+}

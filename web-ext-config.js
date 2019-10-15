@@ -8,7 +8,7 @@ module.exports = {
     startUrl: [
       'about:debugging',
       'about:preferences',
-      'file:///home/grayedfox/github/multi-dict/src/test-page.html'
+      'file:///home/grayedfox/github/multi-dict/test_page/test-page.html'
     ]
   },
   ignoreFiles: [

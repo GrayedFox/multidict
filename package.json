@@ -28,7 +28,7 @@
   "homepage": "https://github.com/GrayedFox/multi-dict#readme",
   "devDependencies": {
     "browserify": "^16.5.0",
-    "eslint": "^6.3.0",
+    "eslint": "^6.5.1",
     "eslint-config-standard": "^14.1.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-node": "^9.2.0",

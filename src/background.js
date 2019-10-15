@@ -1,9 +1,7 @@
 const { User, Spelling } = require('./classes.js')
 const { cleanWord, createMenuItems, loadDictionariesAndPrefs, prepareLanguages } = require('./helpers.js')
 
-let user
-let customWords
-let messageHandler
+let user, customWords, contentPort, popupPort, currentPort
 
 // saves a word in browser storage and calls user.addWord
 async function addCustomWord (word) {
@@ -29,10 +27,6 @@ async function removeCustomWord (word) {
     return
   }
 
-  if (word === 'ClearAll') {
-    customWords = []
-  }
-
   const error = await browser.storage.sync.set({ personal: [...customWords].remove(word) })
 
   if (error) {
@@ -45,16 +39,19 @@ async function removeCustomWord (word) {
   console.log('remove result', customWords)
 }
 
+// returns an array all current custom words
+const getCustomWords = () => currentPort.postMessage({ type: 'getWords', customWords })
+
 // checks content for spelling errors and returns a new Spelling instance
 function check (message) {
   const lang = user.getPreferredLanguage(message.detectedLanguage)
-  messageHandler.postMessage({
+  currentPort.postMessage({
     type: 'highlight',
     spelling: new Spelling(user.spellers[lang], message.content)
   })
 }
 
-// api that handles performing all actions (from content script and command messages)
+// api that handles performing all actions (from content script, command messages, and popup menu)
 function api (message) {
   switch (message.type) {
     case 'add':
@@ -66,22 +63,32 @@ function api (message) {
     case 'check':
       check(message)
       break
+    case 'getWords':
+      getCustomWords()
+      break
     default:
       console.warn(`MultDict: unrecognized message ${message}. Aborting.`)
   }
 }
 
-// listens to all incoming messages from the content script
-function contentListener (port) {
-  messageHandler = port
-  messageHandler.postMessage({ type: 'greeting', greeting: 'MultDict connection established.' })
-  messageHandler.onMessage.addListener(api)
+// listens to all incoming messages from the content script and browser popup/action menu
+function contentAndPopupListener (port) {
+  if (port.name === 'popup') {
+    popupPort = port
+    currentPort = popupPort
+    popupPort.onMessage.addListener(api)
+  }
+  if (port.name === 'content') {
+    contentPort = port
+    currentPort = contentPort
+    contentPort.onMessage.addListener(api)
+  }
 }
 
 // listens to all incoming commands (keyboard shortcuts)
 function commandListener (command) {
   if (command === 'add' || command === 'remove') {
-    messageHandler.postMessage({ type: command })
+    contentPort.postMessage({ type: command })
   }
 }
 
@@ -110,7 +117,7 @@ async function main () {
 
 main()
 
-browser.runtime.onConnect.addListener(contentListener)
+browser.runtime.onConnect.addListener(contentAndPopupListener)
 browser.commands.onCommand.addListener(commandListener)
 browser.contextMenus.onClicked.addListener(contextListener)
 
