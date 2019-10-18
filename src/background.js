@@ -45,7 +45,7 @@ const getCustomWords = () => currentPort.postMessage({ type: 'getWords', customW
 // checks content for spelling errors and returns a new Spelling instance
 function check (message) {
   const lang = user.getPreferredLanguage(message.detectedLanguage)
-  currentPort.postMessage({
+  contentPort.postMessage({
     type: 'highlight',
     spelling: new Spelling(user.spellers[lang], message.content)
   })
