@@ -45,14 +45,26 @@ body {
 #one {
   font-family: inherit;
   font-size: inherit;
-  color: inherit;
-  border: 3px solid #5fa8b3;
+  border: 3px solid limegreen;
   height: 210px;
   width: 310px;
-  position: static;
+  position: relative;
 }
 
 #two {
+  font-family: inherit;
+  font-size: inherit;
+  height: 210px;
+  width: 310px;
   border: 3px solid #cc2492;
-  position: static;
+  position: relative;
+}
+
+#three {
+  font-family: inherit;
+  font-size: inherit;
+  height: 210px;
+  width: 310px;
+  border: 3px solid lightblue;
+  position: relative;
 }
