@@ -1,49 +1,11 @@
-/* Suggestions */
-.multidict-suggestions-wrapper {
-  position: inherit;
-  display: inline-block;
-  top: 0px;
-  left: 0px;
-  visibility: visible;
-}
-
-.multidict-suggestions-container {
-  box-sizing: border-box;
-  position: relative;
-  perspective: 1000px;
-  margin: 0px auto;
-  transition: 0.5s;
-  width: 0px;
-}
-
-.multidict-suggestions-frame {
-  position: absolute;
-  transform-style: preserve-3d;
-  transition: inherit;
-}
-
-.multidict-suggestion {
-  font-family: inherit;
-  font-weight: inherit;
-  font-size: inherit;
-  letter-spacing: inherit;
-  position: absolute;
-  width: inherit;
-  height: inherit;
-  line-height: inherit;
-  transition: inherit;
-  text-align: left;
-}
-
 /* Highlights */
 .multidict-container {
-	display: inline-block;
-	position: relative;
 	overflow: hidden !important;
-	-webkit-text-size-adjust: none !important;
+	/* -webkit-text-size-adjust: none !important; */
 }
 
 .multidict-backdrop {
+	color: transparent !important;
 	position: absolute !important;
 	top: 0 !important;
 	right: -99px !important;
@@ -61,14 +23,10 @@
 	white-space: pre-wrap !important;
 	word-wrap: break-word !important;
 	overflow: hidden !important;
-  color: transparent;
 }
 
 .multidict-input {
-	display: block !important;
 	position: relative !important;
-	overflow-x: hidden !important;
-	overflow-y: auto !important;
 }
 
 .multidict-content {
@@ -91,4 +49,38 @@
 
 .multidict-content mark.yellow {
 	background-color: #ffec99;
+}
+
+/* Suggestions */
+.multidict-suggestions-wrapper {
+  display: inline-flex;
+  visibility: visible;
+}
+
+.multidict-suggestions-container {
+  box-sizing: border-box;
+  position: relative;
+  perspective: 1000px;
+  margin: 0px auto;
+  transition: 0.5s;
+  width: 0px;
+}
+
+.multidict-suggestions-frame {
+  position: inherit;
+  transform-style: preserve-3d;
+  transition: inherit;
+}
+
+.multidict-suggestion {
+  font-family: inherit;
+  font-weight: inherit;
+  font-size: inherit;
+  letter-spacing: inherit;
+  position: absolute;
+  width: inherit;
+  height: inherit;
+  line-height: inherit;
+  transition: inherit;
+  text-align: center;
 }

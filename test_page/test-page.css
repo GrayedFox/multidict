@@ -5,6 +5,36 @@ body {
   /* color: blue; */
 }
 
+#one {
+  font-family: inherit;
+  font-size: inherit;
+  border: 3px solid limegreen;
+  height: 210px;
+  width: 310px;
+  position: relative;
+  display: inline-block;
+}
+
+#two {
+  font-family: inherit;
+  font-size: inherit;
+  height: 210px;
+  width: 310px;
+  border: 3px solid tomato;
+  position: relative;
+  display: inline;
+}
+
+#three {
+  font-family: inherit;
+  font-size: inherit;
+  height: 210px;
+  width: 310px;
+  border: 3px solid lightblue;
+  position: relative;
+  display: block;
+}
+
 .suggestions-wrapper {
   box-sizing: border-box;
   position: relative;
@@ -41,30 +71,3 @@ body {
 .suggestion:nth-child(7) { transform: rotateX(240deg) translateZ(48px) }
 .suggestion:nth-child(8) { transform: rotateX(280deg) translateZ(48px) }
 .suggestion:nth-child(9) { transform: rotateX(320deg) translateZ(48px) }
-
-#one {
-  font-family: inherit;
-  font-size: inherit;
-  border: 3px solid limegreen;
-  height: 210px;
-  width: 310px;
-  position: relative;
-}
-
-#two {
-  font-family: inherit;
-  font-size: inherit;
-  height: 210px;
-  width: 310px;
-  border: 3px solid #cc2492;
-  position: relative;
-}
-
-#three {
-  font-family: inherit;
-  font-size: inherit;
-  height: 210px;
-  width: 310px;
-  border: 3px solid lightblue;
-  position: relative;
-}
