@@ -12,13 +12,11 @@ async function addCustomWord (word) {
   const error = await browser.storage.sync.set({ personal: [...customWords, word] })
 
   if (error) {
-    console.error(`MultiDict: Adding to personal dictionary failed with error: ${error}`)
+    console.warn(`MultiDict: Adding to personal dictionary failed with error: ${error}`)
   } else {
     customWords.push(word)
     user.addWord(word)
   }
-
-  console.log('add result', customWords)
 }
 
 // removes a word from browser storage and calls user.removeWord
@@ -30,20 +28,18 @@ async function removeCustomWord (word) {
   const error = await browser.storage.sync.set({ personal: [...customWords].remove(word) })
 
   if (error) {
-    console.error(`MultiDict: Removing from personal dictionary failed with error: ${error}`)
+    console.warn(`MultiDict: Removing from personal dictionary failed with error: ${error}`)
   } else {
     customWords.remove(word)
     user.removeWord(word)
   }
-
-  console.log('remove result', customWords)
 }
 
-// returns an array all current custom words
-const getCustomWords = () => currentPort.postMessage({ type: 'getWords', customWords })
+// returns an array of all current custom words (customWords array is in sync with user.ownWords)
+const getCustomWords = () => currentPort.postMessage({ type: 'getCustomWords', customWords })
 
 // checks content for spelling errors and returns a new Spelling instance
-function check (message) {
+function spellCheck (message) {
   const lang = user.getPreferredLanguage(message.detectedLanguage)
   contentPort.postMessage({
     type: 'highlight',
@@ -60,10 +56,10 @@ function api (message) {
     case 'remove':
       removeCustomWord(message.word)
       break
-    case 'check':
-      check(message)
+    case 'spellCheck':
+      spellCheck(message)
       break
-    case 'getWords':
+    case 'getCustomWords':
       getCustomWords()
       break
     default:
@@ -71,17 +67,17 @@ function api (message) {
   }
 }
 
-// listens to all incoming messages from the content script and browser popup/action menu
-function contentAndPopupListener (port) {
+// listens to all incoming messages from the popup/action menu and handle popup closing
+function popupListener (port) {
+  currentPort = port
   if (port.name === 'popup') {
     popupPort = port
-    currentPort = popupPort
     popupPort.onMessage.addListener(api)
-  }
-  if (port.name === 'content') {
-    contentPort = port
-    currentPort = contentPort
-    contentPort.onMessage.addListener(api)
+    popupPort.onDisconnect.addListener(() => {
+      console.log('popup closed')
+      currentPort = contentPort
+      popupPort = null
+    })
   }
 }
 
@@ -97,6 +93,22 @@ function contextListener (info) {
   if (info.menuItemId === 'add' || info.menuItemId === 'remove') {
     api({ type: info.menuItemId, word: cleanWord(info.selectionText) })
   }
+}
+
+// listen to incoming messages from the content script and on new tab creation
+async function connectToActiveTab () {
+  let tab = await browser.tabs.query({ active: true, currentWindow: true })
+  tab = tab[0]
+  const tabName = `tab-${tab.id}`
+
+  if (contentPort) {
+    contentPort.onMessage.removeListener(api)
+    contentPort.disconnect()
+    contentPort = null
+  }
+
+  contentPort = browser.tabs.connect(tab.id, { name: tabName })
+  contentPort.onMessage.addListener(api)
 }
 
 // load dictionaries, create langauges from browser acceptLanguages, and instantiate user
@@ -117,9 +129,11 @@ async function main () {
 
 main()
 
-browser.runtime.onConnect.addListener(contentAndPopupListener)
 browser.commands.onCommand.addListener(commandListener)
 browser.contextMenus.onClicked.addListener(contextListener)
+browser.tabs.onCreated.addListener(connectToActiveTab)
+browser.runtime.onMessage.addListener(connectToActiveTab)
+browser.runtime.onConnect.addListener(popupListener)
 
 // Goal: enable multiple laguages to be used when spell checking by detecting content language
 //

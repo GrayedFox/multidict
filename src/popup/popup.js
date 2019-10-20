@@ -3,9 +3,9 @@ const messageHandler = browser.runtime.connect({ name: 'popup' })
 const personalDictionary = document.querySelector('#dictionary')
 const wordsList = document.querySelector('.words')
 const arrowDiv = document.querySelector('.arrow')
-
 const wordItem = document.createElement('li')
 const hrefChild = document.createElement('a')
+
 wordItem.classList.add('ownWord')
 hrefChild.setAttribute('href', '#')
 wordItem.appendChild(hrefChild)
@@ -38,7 +38,7 @@ function handleWords (e) {
     hideWords()
   } else if (!showingWords) {
     arrowDiv.textContent = '▼'
-    messageHandler.postMessage({ type: 'getWords' })
+    messageHandler.postMessage({ type: 'getCustomWords' })
   } else if (e.target.classList.contains('ownWord')) {
     removeWord(e.target)
   }
@@ -46,7 +46,7 @@ function handleWords (e) {
 
 // listen to incoming messages from background script
 messageHandler.onMessage.addListener((message) => {
-  if (message.type === 'getWords') {
+  if (message.type === 'getCustomWords') {
     showWords(message.customWords)
   }
 })

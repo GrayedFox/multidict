@@ -1,4 +1,5 @@
 Copyright (c) 2016 Will Boyd
+Copyright (c) 2018 Che Fisher
 
 This software is released under the MIT license: http://opensource.org/licenses/MIT
 

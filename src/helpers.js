@@ -1,5 +1,3 @@
-const { Word } = require('./classes.js')
-
 // remove the first instance of an item inside an array  (extends native array object)
 if (!Array.prototype.remove) {
   Array.prototype.remove = function remove (item) { // eslint-disable-line no-extend-native
@@ -7,15 +5,21 @@ if (!Array.prototype.remove) {
       throw new TypeError()
     }
 
-    if (this.includes(item)) {
+    if (this.includes(item) || this.indexOf(item) !== -1) {
       this.splice(this.indexOf(item), 1)
+      return this
+    }
+
+    // handles cases where item is a finite index and element at given index is defined
+    if (typeof this[item] !== 'undefined' && item >= 0 && Number.isFinite(item)) {
+      this.splice(item, 1)
       return this
     }
   }
 }
 
 // custom async forEach function taken from p-iteration
-async function _forEach (array, callback, thisArg) {
+async function asyncForEach (array, callback, thisArg) {
   const promiseArray = []
   for (let i = 0; i < array.length; i++) {
     if (i in array) {
@@ -28,89 +32,17 @@ async function _forEach (array, callback, thisArg) {
   await Promise.all(promiseArray)
 }
 
-// get the relative boundaries of a word given a specific start index within content
-function _getRelativeBoundaries (word, content, startIndex) {
-  if (!word) {
-    console.warn(`MultiDict: cannot get relative boundaries of ${word}`)
-    return
-  }
-  const start = content.indexOf(word, startIndex)
-  return [start, start + word.length]
-}
+// make target mark element blink N times over M milliseconds by removing/adding class
+function blinkMark (mark, color, times, milliseconds) {
+  const tempInterval = setInterval(() => {
+    const classList = mark.classList
+    classList.contains((color)) ? classList.remove(color) : classList.add(color)
+  }, Math.round(milliseconds / times))
 
-// return a boolean value that checks whether or not a character is a word boundary
-// if char matches any separators, is undefined, or is a zero length string we return true
-function _isWordBoundary (char) {
-  if (typeof char === 'undefined' || (typeof char === 'string' && char.length === 0)) {
-    return true
-  }
-
-  if (char.length !== 1) {
-    console.warn(`MultiDict: word boundary can only operate on single characters! Not: "${char}"`)
-    return
-  }
-
-  const rxSeparators = /[\s\r\n.,:;!?_<>{}()[\]"`´^$°§½¼³%&¬+=*~#|/\\]/
-
-  return rxSeparators.test(char)
-}
-
-// read a text file, the firefox extension way
-function _readTextFile (path) {
-  return new Promise((resolve, reject) => {
-    fetch(path, { mode: 'same-origin' })
-      .then(function (res) {
-        return res.blob()
-      })
-      .then(function (blob) {
-        const reader = new FileReader()
-
-        reader.addEventListener('loadend', function () {
-          resolve(this.result)
-        })
-
-        reader.readAsText(blob)
-      })
-      .catch(error => {
-        resolve({ error: error })
-      })
-  })
-}
-
-// create Add and Remove multdict context menu items
-function createMenuItems () {
-  browser.contextMenus.create({
-    id: 'add',
-    type: 'normal',
-    title: 'Add word to personal dictionary',
-    contexts: ['selection'],
-    icons: { 16: 'media/icons/plus-icon.svg' }
-  })
-
-  browser.contextMenus.create({
-    id: 'remove',
-    type: 'normal',
-    title: 'Remove word from personal dictionary',
-    contexts: ['selection'],
-    icons: { 16: 'media/icons/minus-icon.svg' }
-  })
-}
-
-// sexy es6 debounce with spread operator
-function debounce (callback, wait) {
-  let timeout
-  return (...args) => {
-    clearTimeout(timeout)
-    timeout = setTimeout(function () { callback.apply(this, args) }, wait)
-  }
-}
-
-// return a boolean value that is true if a word, based on the content and startIndex, is a whole
-// word i.e. isWholeWord('lumber', 'he slumbers', 4) would return false
-function isWholeWord (word, content, start) {
-  const prevChar = content.charAt(start - 1)
-  const nextChar = content.charAt(start + word.length)
-  return _isWordBoundary(prevChar) && _isWordBoundary(nextChar)
+  setTimeout(() => {
+    clearInterval(tempInterval)
+    mark.classList.add('red')
+  }, milliseconds)
 }
 
 // cleans text and strips out unwanted symbols/patterns before we use it
@@ -151,8 +83,66 @@ function cleanWord (content) {
   return cleanText(content, false)[0]
 }
 
-// gets the current word based on cursor position
-function getCurrentWord (node) {
+// helper function that creates an element and adds classes
+function createClassyElement (type, classes) {
+  const element = document.createElement(type)
+  classes.forEach((klass) => element.classList.add(klass))
+  return element
+}
+
+// create Add and Remove multdict context menu items
+function createMenuItems () {
+  browser.contextMenus.create({
+    id: 'add',
+    type: 'normal',
+    title: 'Add word to personal dictionary',
+    contexts: ['selection'],
+    icons: { 16: 'media/icons/plus-icon.svg' }
+  })
+
+  browser.contextMenus.create({
+    id: 'remove',
+    type: 'normal',
+    title: 'Remove word from personal dictionary',
+    contexts: ['selection'],
+    icons: { 16: 'media/icons/minus-icon.svg' }
+  })
+}
+
+// jQuery like helper function for getting/setting property values or computed styles of an element
+// pass an object as 2nd param to set styles, or an array as 2nd param to get them
+// 3rd param dictates whether to get computed styles or not (defaults to false)
+function css (element, styles, computedStyles = false) {
+  if (Array.isArray(styles)) {
+    const requestedStyles = {}
+    styles.forEach((style) => {
+      if (!computedStyles) {
+        requestedStyles[style] = element.getPropertyValue(style)
+      } else {
+        const win = element.ownerDocument.defaultView
+        requestedStyles[style] = win.getComputedStyle(element, null)[style]
+      }
+    })
+    return requestedStyles
+  } else {
+    for (const [key, value] of Object.entries(styles)) {
+      element.style[key] = value
+    }
+    return element
+  }
+}
+
+// sexy es6 debounce with spread operator
+function debounce (callback, wait) {
+  let timeout
+  return (...args) => {
+    clearTimeout(timeout)
+    timeout = setTimeout(function () { callback.apply(this, args) }, wait)
+  }
+}
+
+// gets the current word and it's boundaries based on cursor position/selection
+function getCurrentWordBoundaries (node) {
   if (!(node.selectionStart >= 0)) {
     console.warn('MultiDict: get current word failed to find a caret position')
     return ''
@@ -164,6 +154,7 @@ function getCurrentWord (node) {
   }
 
   const text = node.value
+
   if (text) {
     let i = 0
     while (i < 1) {
@@ -172,11 +163,11 @@ function getCurrentWord (node) {
       const prevChar = text.charAt(start - 1)
       const nextChar = text.charAt(end)
 
-      if (!_isWordBoundary(prevChar)) {
+      if (!isWordBoundary(prevChar)) {
         boundaries.start--
       }
 
-      if (!_isWordBoundary(nextChar)) {
+      if (!isWordBoundary(nextChar)) {
         boundaries.end++
       }
 
@@ -185,18 +176,63 @@ function getCurrentWord (node) {
         i = 1
         if (start < end) {
           const word = cleanWord(text.slice(start, end))
-          return new Word(word, ..._getRelativeBoundaries(word, text, start))
+          return [word, ...getRelativeBoundaries(word, text, start)]
         }
         // start and end can be equal if caret positioned between 2 word boundaries i.e. ' | '
-        return new Word('', start, end)
+        return ['', start, end]
       }
     }
+  } else {
+    // for an empty text box and unhandled cases we return no text, start and end 0
+    return ['', 0, 0]
   }
+}
+
+// helper function that gets the index of a Word by matching the Word boundaries against the chunk
+// of text being operated on (needed for when duplicate misspelt words appear inside content)
+function getMatchingWordIndex (content, word) {
+  if (!word.isValid() || !content) {
+    return
+  }
+
+  let searchIndex = 0
+  let wordIndex = 0
+  let found = false
+
+  while (!found) {
+    searchIndex = content.indexOf(word.text, searchIndex)
+    if (searchIndex !== -1) {
+      const start = searchIndex
+      const end = searchIndex + word.length
+      if (start === word.start && end === word.end) {
+        found = true
+      } else {
+        searchIndex += word.length
+        if (isWholeWord(word, content, start)) {
+          wordIndex++
+        }
+      }
+    } else {
+      console.warn('MultiDict: could not find matching mark index inside given content!')
+      break
+    }
+  }
+  return wordIndex
+}
+
+// get the relative boundaries of a word given a specific start index within content
+function getRelativeBoundaries (word, content, startIndex) {
+  if (!word) {
+    console.warn(`MultiDict: cannot get relative boundaries of ${word}`)
+    return
+  }
+  const start = content.indexOf(word, startIndex)
+  return [start, start + word.length]
 }
 
 // use window selection if present, else the current node selection if selection start and end not
 // equal, otherwise get a selection based off the caret positioned at the start/end/within a node
-function getSelectedWord (node = document.activeElement) {
+function getSelectedWordBoundaries (node = document.activeElement) {
   const selection = {
     start: node.selectionStart,
     end: node.selectionEnd
@@ -205,29 +241,54 @@ function getSelectedWord (node = document.activeElement) {
   if (window.getSelection().toString().length > 0) {
     const text = window.getSelection().toString()
     const word = cleanWord(text)
-    return new Word(word, ..._getRelativeBoundaries(word, text, selection.start))
+    return [word, ...getRelativeBoundaries(word, text, selection.start)]
   }
 
   if (selection.start !== selection.end) {
     const text = node.value.slice(selection.start, selection.end)
     const word = cleanWord(text)
-    return new Word(word, ..._getRelativeBoundaries(word, text, selection.start))
+    return [word, ...getRelativeBoundaries(word, text, selection.start)]
   }
 
   if (node.selectionStart >= 0) {
-    return getCurrentWord(node)
+    return getCurrentWordBoundaries(node)
   }
 
   console.warn('MultiDict: get current selection failed to find any workable text.')
+}
+
+// return a boolean value that is true if a word, based on the content and startIndex, is a whole
+// word i.e. isWholeWord('lumber', 'he slumbers', 4) would return false
+function isWholeWord (word, content, start) {
+  const prevChar = content.charAt(start - 1)
+  const nextChar = content.charAt(start + word.length)
+  return isWordBoundary(prevChar) && isWordBoundary(nextChar)
+}
+
+// return a boolean value that checks whether or not a character is a word boundary
+// if char matches any separators, is undefined, or is a zero length string we return true
+function isWordBoundary (char) {
+  if (typeof char === 'undefined' || (typeof char === 'string' && char.length === 0)) {
+    return true
+  }
+
+  if (char.length !== 1) {
+    console.warn(`MultiDict: word boundary can only operate on single characters! Not: "${char}"`)
+    return
+  }
+
+  const rxSeparators = /[\s\r\n.,:;!?_<>{}()[\]"`´^$°§½¼³%&¬+=*~#|/\\]/
+
+  return rxSeparators.test(char)
 }
 
 // load local dictionary files from supported languages based on user prefs (acceptLanguages)
 function loadDictionariesAndPrefs (languages) {
   const dicts = []
   let prefs = []
-  return _forEach(languages, async (language) => {
-    const dic = await _readTextFile(browser.runtime.getURL(`./dictionaries/${language}.dic`))
-    const aff = await _readTextFile(browser.runtime.getURL(`./dictionaries/${language}.aff`))
+  return asyncForEach(languages, async (language) => {
+    const dic = await readTextFile(browser.runtime.getURL(`./dictionaries/${language}.dic`))
+    const aff = await readTextFile(browser.runtime.getURL(`./dictionaries/${language}.aff`))
     if (!dic.error && !aff.error) {
       prefs.push(language)
       dicts.push({ language, dic, aff })
@@ -257,14 +318,67 @@ function prepareLanguages (languages) {
   }, [])
 }
 
+// read a text file, the firefox extension way
+function readTextFile (path) {
+  return new Promise((resolve, reject) => {
+    fetch(path, { mode: 'same-origin' })
+      .then(function (res) {
+        return res.blob()
+      })
+      .then(function (blob) {
+        const reader = new FileReader()
+
+        reader.addEventListener('loadend', function () {
+          resolve(this.result)
+        })
+
+        reader.readAsText(blob)
+      })
+      .catch(error => {
+        resolve({ error: error })
+      })
+  })
+}
+
+// replace Word inside of content with replacement by using the Word's boundaries
+function replaceInText (content, word, replacement) {
+  return `${content.slice(0, word.start)}${replacement}${content.slice(word.end)}`
+}
+
+// set properties based on domain (i.e. gmail or github)
+function setDomainSpecificStyles (hostname, properties, textarea) {
+  console.log('setting domain styles')
+  switch (hostname) {
+    case 'github.com':
+      properties.display = 'block'
+      break
+    default:
+      if (properties.display === 'inline' || properties.display === 'inline-block') {
+        properties.display = 'inline-flex'
+      } else {
+        properties.display = 'flex'
+        properties.width = `${textarea.offsetWidth}px`
+      }
+  }
+
+  return properties
+}
+
 module.exports = {
+  blinkMark,
   cleanText,
   cleanWord,
+  createClassyElement,
   createMenuItems,
+  css,
   debounce,
-  getCurrentWord,
-  getSelectedWord,
+  getCurrentWordBoundaries,
+  getMatchingWordIndex,
+  getRelativeBoundaries,
+  getSelectedWordBoundaries,
   isWholeWord,
   loadDictionariesAndPrefs,
-  prepareLanguages
+  prepareLanguages,
+  replaceInText,
+  setDomainSpecificStyles
 }
