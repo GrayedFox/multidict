@@ -53,7 +53,8 @@ function cleanText (content, filter = true) {
     return ''
   }
 
-  const rxUrls = /^(http|ftp|www)/
+  // ToDo: first split string by spaces in order to properly ignore urls
+  const rxUrls = /^(http|https|ftp|www)/
   const rxSeparators = /[\s\r\n.,:;!?_<>{}()[\]"`´^$°§½¼³%&¬+=*~#|/\\]/
   const rxSingleQuotes = /^'+|'+$/g
 
@@ -145,6 +146,7 @@ function debounce (callback, wait) {
 function getCurrentWordBoundaries (node) {
   if (!(node.selectionStart >= 0)) {
     console.warn('MultiDict: get current word failed to find a caret position')
+    console.log(node)
     return ''
   }
 
@@ -257,6 +259,16 @@ function getSelectedWordBoundaries (node = document.activeElement) {
   console.warn('MultiDict: get current selection failed to find any workable text.')
 }
 
+// conditionally return the text content of a node (including line breaks) based on node type
+function getTextContent (node) {
+  return node.nodeName === 'TEXTAREA' ? node.value : node.innerText
+}
+
+// retrun a boolean value that is true if the node is editable and has spellcheck set to true
+function isSpellCheckable (node) {
+  return node.spellCheck && (node.nodeName === 'DIV' && node.isContentEditable)
+}
+
 // return a boolean value that is true if a word, based on the content and startIndex, is a whole
 // word i.e. isWholeWord('lumber', 'he slumbers', 4) would return false
 function isWholeWord (word, content, start) {
@@ -284,6 +296,7 @@ function isWordBoundary (char) {
 
 // load local dictionary files from supported languages based on user prefs (acceptLanguages)
 function loadDictionariesAndPrefs (languages) {
+  // ToDo: check if this negatively impacts memory imprint (may need to fetch dict/aff files)
   const dicts = []
   let prefs = []
   return asyncForEach(languages, async (language) => {
@@ -376,6 +389,8 @@ module.exports = {
   getMatchingWordIndex,
   getRelativeBoundaries,
   getSelectedWordBoundaries,
+  getTextContent,
+  isSpellCheckable,
   isWholeWord,
   loadDictionariesAndPrefs,
   prepareLanguages,

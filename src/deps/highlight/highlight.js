@@ -12,8 +12,8 @@
  */
 
 const {
-  blinkMark, createClassyElement, css, getCurrentWordBoundaries,
-  getMatchingWordIndex, isWholeWord, replaceInText, setDomainSpecificStyles
+  blinkMark, createClassyElement, css, getCurrentWordBoundaries, getMatchingWordIndex,
+  getTextContent, isWholeWord, replaceInText, setDomainSpecificStyles
 } = require('../../helpers.js')
 
 const { Word, WordCarousel } = require('../../classes.js')
@@ -80,8 +80,13 @@ class Highlighter {
     // and replace the word with the carousel accepted word (if there is one)
     if (this.carousel && !(e.shiftKey && e.altKey)) {
       if (this.carousel.acceptedWord) {
+        const currentText = getTextContent(this.node)
         this.spelling.misspeltWords.remove(misspeltWordIndex)
-        this.node.value = replaceInText(this.node.value, this.currentWord, this.carousel.acceptedWord)
+        if (this.nodeName === 'TEXTAREA') {
+          this.node.value = replaceInText(currentText, this.currentWord, this.carousel.acceptedWord)
+        } else {
+          this.node.innerText = replaceInText(currentText, this.currentWord, this.carousel.acceptedWord)
+        }
         restoreSelection(this.node)
       }
       this.destroyCarousel()
@@ -149,14 +154,14 @@ class Highlighter {
   handleSelect () {
     console.log('handle select')
     this.currentWord = new Word(...getCurrentWordBoundaries(this.node))
-    this.currentMarkIndex = getMatchingWordIndex(this.node.value, this.currentWord)
+    this.currentMarkIndex = getMatchingWordIndex(getTextContent(this.node), this.currentWord)
     this.setCurrentMark(this.currentWord.text, this.currentMarkIndex)
     this.node.setAttribute('data-multidict-selected-word', [...this.currentWord])
   }
 
   highlightMistakes () {
     console.log('highlight mistakes')
-    let input = this.node.value
+    let input = getTextContent(this.node)
     let index = 0
 
     for (const word of this.spelling.misspeltWords) {
@@ -183,7 +188,7 @@ class Highlighter {
 
   // gets the index of the misspelt word used to generate the WordCarousel
   // if the misspelt word occurs more than once the reduced array will contain multiple entries
-  // in which case the duplicateWordIndex would need to be known before hand
+  // requiring the position of the misspelt word dupe (duplicateWordIndex) to be known before hand
   getMisspeltWordIndex (misspeltWord, duplicateWordIndex = 0) {
     return this.spelling.misspeltWords.reduce((acc, word, misspeltWordIndex) => {
       return word.text === misspeltWord ? acc.concat([misspeltWordIndex]) : acc
@@ -253,10 +258,10 @@ class Highlighter {
     this.node.focus()
     restoreSelection(this.node)
 
+    this.node.setAttribute('data-multidict-generated', true)
+
     this.handleSelect()
     this.highlightMistakes()
-
-    this.node.setAttribute('data-multidict-generated', true)
   }
 }
 

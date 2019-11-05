@@ -1,23 +1,25 @@
-const { debounce, getSelectedWordBoundaries } = require('./helpers.js')
+const { debounce, getSelectedWordBoundaries, getTextContent, isSpellCheckable } = require('./helpers.js')
 const { Highlighter } = require('./deps/highlight/highlight.js')
 
-const editableFields = ['TEXTAREA']
+const supportedNodeNames = ['TEXTAREA', 'DIV']
 
 let contentPort = null
 let highlighter = null
 let editableNode = null
-let oldValue = ''
+let previousText = ''
 
 // function is debounced on all keyup and click events
 async function edit (event) {
   const target = event.target
-  // don't spellcheck non-editable or unsupported fields
-  if (!editableFields.includes(target.nodeName) || target.contentEditable === false) {
+  const currentText = getTextContent(target)
+  // don't spellcheck unsupported or uncheckable nodes
+  if (!supportedNodeNames.includes(target.nodeName) && !isSpellCheckable(target)) {
+    console.log('unsupported', target)
     return
   }
 
   // don't spellcheck if text is identical to last spellchecked text
-  if (target.getAttribute('data-multidict-generated') && (target.value === oldValue)) {
+  if (target.getAttribute('data-multidict-generated') && (currentText === previousText)) {
     return
   }
 
@@ -26,10 +28,13 @@ async function edit (event) {
     await browser.runtime.sendMessage({ type: 'connectToActiveTab' })
   }
 
-  editableNode = event.target
-  oldValue = editableNode.value
+  // wait for connection to current/active tab before updating previousText and editableNode
+  editableNode = target
+  previousText = currentText
 
-  const detectedLanguage = await browser.i18n.detectLanguage(editableNode.value)
+  console.log(currentText)
+
+  const detectedLanguage = await browser.i18n.detectLanguage(currentText)
   const language = detectedLanguage.isReliable
     ? detectedLanguage.languages[0].language
     : 'unreliable'
@@ -37,7 +42,7 @@ async function edit (event) {
   contentPort.postMessage({
     type: 'spellCheck',
     detectedLanguage: language,
-    content: editableNode.value
+    content: currentText
   })
 }
 
@@ -53,7 +58,7 @@ function disconnect (p) {
   contentPort.onDisconnect.removeListener(disconnect)
   contentPort = null
   highlighter = null
-  oldValue = ''
+  previousText = ''
 }
 
 // handles incoming connections from the background script (port should update with each tab change)
@@ -69,6 +74,7 @@ async function connectionHandler (port, info) {
 function messageHandler (message) {
   switch (message.type) {
     case 'highlight':
+      console.log(message.spelling)
       if (highlighter && !editableNode.getAttribute('data-multidict-generated')) {
         highlighter.destroy()
         highlighter = null
@@ -87,8 +93,8 @@ function messageHandler (message) {
         type: message.type,
         word: getSelectedWordBoundaries()[0]
       })
-      // clearing oldValue after add/remove ensures we recheck spelling despite identical content
-      oldValue = ''
+      // clearing previousText after add/remove ensures we check spelling despite identical content
+      previousText = ''
       break
 
     default:
