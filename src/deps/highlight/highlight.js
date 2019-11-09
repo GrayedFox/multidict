@@ -12,8 +12,8 @@
  */
 
 const {
-  blinkMark, createClassyElement, css, getCurrentWordBoundaries, getMatchingWordIndex,
-  getTextContent, isWholeWord, replaceInText, getDomainSpecificProps
+  blinkMark, createClassyElement, css, getDomainSpecificProps,
+  getMatchingWordIndex, getTextContent, getSelectedWordBoundaries, isWholeWord, replaceInText
 } = require('../../helpers.js')
 
 const { Word, WordCarousel } = require('../../classes.js')
@@ -47,7 +47,7 @@ class Highlighter {
     console.log('choose suggestion')
     const currentWord = this.currentWord
     const currentText = getTextContent(this.node)
-    const restoreSelection = this.storeSelection(this.node.selectionStart, this.node.selectionEnd)
+    const restoreSelection = this.storeSelection()
     const misspeltWordIndex = this.getMisspeltWordIndex(currentWord.text, this.currentMarkIndex)
 
     this.spelling.misspeltWords.remove(misspeltWordIndex)
@@ -109,7 +109,7 @@ class Highlighter {
           this.carousel.showSuggestions()
         }
         // if we have no suggestions but the current word is misspelled, blink current mark
-        if (!currentWordSuggestions && misspeltWord) {
+        if (!currentWordSuggestions && misspeltWord && this.currentMark) {
           blinkMark(this.currentMark, this.color, 4, 600)
         }
         // rotate the carousel up or down
@@ -161,7 +161,7 @@ class Highlighter {
 
   handleSelect () {
     console.log('handle select')
-    this.currentWord = new Word(...getCurrentWordBoundaries(this.node))
+    this.currentWord = new Word(...getSelectedWordBoundaries(this.node))
     this.currentMarkIndex = getMatchingWordIndex(getTextContent(this.node), this.currentWord)
     this.setCurrentMark(this.currentWord.text, this.currentMarkIndex)
     this.node.setAttribute('data-multidict-selected-word', [...this.currentWord])
@@ -218,9 +218,32 @@ class Highlighter {
   }
 
   // used to restore a previous selection/cursor position after moving things around in the DOM
-  storeSelection (start, end) {
+  storeSelection () {
+    const selection = {
+      start: this.node.selectionStart,
+      end: this.node.selectionEnd
+    }
+
+    const storedSelection = window.getSelection()
+    const storedRange = storedSelection.rangeCount > 0
+      ? storedSelection.getRangeAt(0).cloneRange()
+      : undefined
+
+    if (!selection.start || !selection.end) {
+      selection.start = storedSelection.anchorOffset
+      selection.end = storedSelection.focusOffset
+    }
+
     return function (node) {
-      return node.setSelectionRange(start, end)
+      node.focus()
+      if (storedRange) {
+        window.getSelection().removeAllRanges()
+        window.getSelection().addRange(storedRange)
+      }
+
+      if (node.setSelectionRange) {
+        node.setSelectionRange(selection.start, selection.end)
+      }
     }
   }
 
@@ -231,7 +254,7 @@ class Highlighter {
     // unforunately a one size fits all approach simply doesn't work (i.e rich text editors gmail)
     // so some conditional logic is needed to set the correct node/styles
 
-    const restoreSelection = this.storeSelection(this.node.selectionStart, this.node.selectionEnd)
+    const restoreSelection = this.storeSelection()
     const textareaStyles = window.getComputedStyle(this.node)
     const backdropProps = css(textareaStyles, ['background-color'])
     const highlightsProps = css(textareaStyles, [
@@ -266,7 +289,6 @@ class Highlighter {
     this.container.appendChild(this.node)
     this.node.parentNode.insertBefore(this.backdrop, this.node)
 
-    this.node.focus()
     restoreSelection(this.node)
 
     this.node.setAttribute('data-multidict-generated', true)

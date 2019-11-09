@@ -146,7 +146,6 @@ function debounce (callback, wait) {
 function getCurrentWordBoundaries (node) {
   if (!(node.selectionStart >= 0)) {
     console.warn('MultiDict: get current word failed to find a caret position')
-    console.log(window.getSelection().toString())
     return ''
   }
 
@@ -190,8 +189,8 @@ function getCurrentWordBoundaries (node) {
   }
 }
 
-// helper function that gets the index of a Word by matching the Word boundaries against the chunk
-// of text being operated on (needed for when duplicate misspelt words appear inside content)
+// gets the index of a Word by matching the Word boundaries against the chunk of text being
+// operated on (needed for when duplicate misspelt words appear inside content)
 function getMatchingWordIndex (content, word) {
   if (!word.isValid() || !content) {
     return
@@ -232,28 +231,34 @@ function getRelativeBoundaries (word, content, startIndex) {
   return [start, start + word.length]
 }
 
-// use window selection if present, else the current node selection if selection start and end not
-// equal, otherwise get a selection based off the caret positioned at the start/end/within a node
+// get current text boundaries based on node start and end if defined and not equal, otherwise
+// get boundaries based off the caret positioned at the start/end/within a text node, otherwise
+// use window selection if present
 function getSelectedWordBoundaries (node = document.activeElement) {
   const selection = {
     start: node.selectionStart,
     end: node.selectionEnd
   }
 
+  // these are undefined if node is not a text node, so safe to use node.value
+  if (selection.start !== selection.end) {
+    const content = node.value
+    const word = node.value.slice(selection.start, selection.end)
+    return [word, ...getRelativeBoundaries(word, content, selection.start)]
+  }
+
+  // prefer method of getting whole word boundaries (using getCurrentWordBoundaries) over window
+  // selection
+  if (node.selectionStart >= 0) {
+    return getCurrentWordBoundaries(node)
+  }
+
+  // fallback to window.getSelection if all else fails
   if (window.getSelection().toString().length > 0) {
+    console.log(window.getSelection())
     const text = window.getSelection().toString()
     const word = cleanWord(text)
     return [word, ...getRelativeBoundaries(word, text, selection.start)]
-  }
-
-  if (selection.start !== selection.end) {
-    const text = node.value.slice(selection.start, selection.end)
-    const word = cleanWord(text)
-    return [word, ...getRelativeBoundaries(word, text, selection.start)]
-  }
-
-  if (node.selectionStart >= 0) {
-    return getCurrentWordBoundaries(node)
   }
 
   console.warn('MultiDict: get current selection failed to find any workable text.')

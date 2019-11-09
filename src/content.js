@@ -15,6 +15,7 @@ let previousText = ''
 async function edit (event) {
   const target = event.target
   const currentText = getTextContent(target)
+
   // don't spellcheck unsupported or uncheckable nodes
   if (!supportedNodeNames.includes(target.nodeName) && !isSpellCheckable(target)) {
     console.log('unsupported', target)
@@ -51,6 +52,7 @@ async function edit (event) {
 
 // properly resets all values and cleans up leftover html elements on disconnect event
 function disconnect (p) {
+  console.log('handle disconnect')
   if (p.error) {
     console.warn(`MultiDict: disconnected due to an error: ${p.error.message}. Please try refreshing the page`)
   }
@@ -77,7 +79,6 @@ async function connectionHandler (port, info) {
 function messageHandler (message) {
   switch (message.type) {
     case 'highlight':
-      console.log(message.spelling)
       if (highlighter && !editableNode.getAttribute('data-multidict-generated')) {
         highlighter.destroy()
         highlighter = null
