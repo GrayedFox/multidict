@@ -13,7 +13,7 @@
 
 const {
   blinkMark, createClassyElement, css, getCurrentWordBoundaries, getMatchingWordIndex,
-  getTextContent, isWholeWord, replaceInText, setDomainSpecificStyles
+  getTextContent, isWholeWord, replaceInText, getDomainSpecificProps
 } = require('../../helpers.js')
 
 const { Word, WordCarousel } = require('../../classes.js')
@@ -43,6 +43,28 @@ class Highlighter {
     this._buildHighlighter()
   }
 
+  chooseSuggestion () {
+    console.log('choose suggestion')
+    const currentWord = this.currentWord
+    const currentText = getTextContent(this.node)
+    const restoreSelection = this.storeSelection(this.node.selectionStart, this.node.selectionEnd)
+    const misspeltWordIndex = this.getMisspeltWordIndex(currentWord.text, this.currentMarkIndex)
+
+    this.spelling.misspeltWords.remove(misspeltWordIndex)
+
+    if (this.node.nodeName === 'TEXTAREA') {
+      this.node.value = replaceInText(currentText, currentWord, this.carousel.acceptedWord)
+    } else {
+      this.node.innerText = replaceInText(currentText, currentWord, this.carousel.acceptedWord)
+    }
+    restoreSelection(this.node)
+  }
+
+  createCarousel (words) {
+    console.log('create carousel')
+    this.carousel = new WordCarousel(this.node, this.currentMark, this.currentWord.text, words)
+  }
+
   destroy () {
     console.log('destroy highlighter')
     this.node.removeEventListener('click', boundClick)
@@ -54,11 +76,6 @@ class Highlighter {
     this.container.remove()
     this.node.removeAttribute('data-multidict-generated')
     this.node.classList.remove(`${ID}-content`, `${ID}-input`)
-  }
-
-  createCarousel (words) {
-    console.log('create carousel')
-    this.carousel = new WordCarousel(this.node, this.currentMark, this.currentWord.text, words)
   }
 
   destroyCarousel () {
@@ -73,21 +90,12 @@ class Highlighter {
     const currentWord = this.currentWord
     const currentWordSuggestions = this.spelling.suggestions[currentWord.text]
     const misspeltWord = this.spelling.misspeltWords[this.currentMarkIndex]
-    const misspeltWordIndex = this.getMisspeltWordIndex(currentWord.text, this.currentMarkIndex)
-    const restoreSelection = this.storeSelection(this.node.selectionStart, this.node.selectionEnd)
 
     // if we are showing the carousel but shift and alt are no longer both pressed, destroy it
     // and replace the word with the carousel accepted word (if there is one)
     if (this.carousel && !(e.shiftKey && e.altKey)) {
       if (this.carousel.acceptedWord) {
-        const currentText = getTextContent(this.node)
-        this.spelling.misspeltWords.remove(misspeltWordIndex)
-        if (this.nodeName === 'TEXTAREA') {
-          this.node.value = replaceInText(currentText, this.currentWord, this.carousel.acceptedWord)
-        } else {
-          this.node.innerText = replaceInText(currentText, this.currentWord, this.carousel.acceptedWord)
-        }
-        restoreSelection(this.node)
+        this.chooseSuggestion()
       }
       this.destroyCarousel()
       this.highlightMistakes()
@@ -219,7 +227,10 @@ class Highlighter {
   // build the Highlighter html elements, position them, and then insert them into the DOM
   // should only be called once during class instantiation
   _buildHighlighter () {
-    // Get styles from textarea being spell checked
+    // Highlighter is built based on styles from textarea being spell checked
+    // unforunately a one size fits all approach simply doesn't work (i.e rich text editors gmail)
+    // so some conditional logic is needed to set the correct node/styles
+
     const restoreSelection = this.storeSelection(this.node.selectionStart, this.node.selectionEnd)
     const textareaStyles = window.getComputedStyle(this.node)
     const backdropProps = css(textareaStyles, ['background-color'])
@@ -232,7 +243,7 @@ class Highlighter {
     ])
 
     let containerProps = css(textareaStyles, ['display', 'position'])
-    containerProps = setDomainSpecificStyles(window.location.hostname, containerProps, this.node)
+    containerProps = getDomainSpecificProps(window.location.hostname, containerProps, this.node)
 
     boundClick = this.handleClick.bind(this)
     boundKeyup = this.handleKeyup.bind(this)

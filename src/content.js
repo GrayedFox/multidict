@@ -1,4 +1,7 @@
-const { debounce, getSelectedWordBoundaries, getTextContent, isSpellCheckable } = require('./helpers.js')
+const {
+  debounce, getDomainSpecificNode, getSelectedWordBoundaries, getTextContent, isSpellCheckable
+} = require('./helpers.js')
+
 const { Highlighter } = require('./deps/highlight/highlight.js')
 
 const supportedNodeNames = ['TEXTAREA', 'DIV']
@@ -29,10 +32,10 @@ async function edit (event) {
   }
 
   // wait for connection to current/active tab before updating previousText and editableNode
-  editableNode = target
+  editableNode = getDomainSpecificNode(window.location.hostname, target)
   previousText = currentText
 
-  console.log(currentText)
+  console.log('currentText', currentText)
 
   const detectedLanguage = await browser.i18n.detectLanguage(currentText)
   const language = detectedLanguage.isReliable

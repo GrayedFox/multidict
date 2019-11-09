@@ -146,7 +146,7 @@ function debounce (callback, wait) {
 function getCurrentWordBoundaries (node) {
   if (!(node.selectionStart >= 0)) {
     console.warn('MultiDict: get current word failed to find a caret position')
-    console.log(node)
+    console.log(window.getSelection().toString())
     return ''
   }
 
@@ -358,10 +358,11 @@ function replaceInText (content, word, replacement) {
   return `${content.slice(0, word.start)}${replacement}${content.slice(word.end)}`
 }
 
-// set properties based on domain (i.e. gmail or github)
-function setDomainSpecificStyles (hostname, properties, textarea) {
-  console.log('setting domain styles')
+// get properties based on domain (i.e. gmail or github)
+function getDomainSpecificProps (hostname, properties, textarea) {
+  console.log('setting domain specific container props')
   switch (hostname) {
+    case 'mail.google.com':
     case 'github.com':
       properties.display = 'block'
       break
@@ -375,6 +376,15 @@ function setDomainSpecificStyles (hostname, properties, textarea) {
   }
 
   return properties
+}
+
+function getDomainSpecificNode (hostname, node) {
+  switch (hostname) {
+    case 'mail.google.com':
+      node = document.querySelector('div[aria-label="Message Body"]')
+      break
+  }
+  return node
 }
 
 module.exports = {
@@ -395,5 +405,6 @@ module.exports = {
   loadDictionariesAndPrefs,
   prepareLanguages,
   replaceInText,
-  setDomainSpecificStyles
+  getDomainSpecificProps,
+  getDomainSpecificNode
 }
