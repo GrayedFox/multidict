@@ -1,10 +1,8 @@
 const {
-  debounce, getDomainSpecificNode, getSelectedWordBoundaries, getTextContent, isSpellCheckable
+  debounce, getDomainSpecificNode, getSelectedWordBoundaries, getTextContent, isSupported
 } = require('./helpers.js')
 
 const { Highlighter } = require('./deps/highlight/highlight.js')
-
-const supportedNodeNames = ['TEXTAREA', 'DIV']
 
 let contentPort = null
 let highlighter = null
@@ -17,7 +15,7 @@ async function edit (event) {
   const currentText = getTextContent(target)
 
   // don't spellcheck unsupported or uncheckable nodes
-  if (!supportedNodeNames.includes(target.nodeName) && !isSpellCheckable(target)) {
+  if (!isSupported(target, window.location.hostname)) {
     console.log('unsupported', target)
     return
   }
@@ -77,6 +75,8 @@ async function connectionHandler (port, info) {
 
 // handles all incoming messages from the background script
 function messageHandler (message) {
+  console.log('editableNode:', editableNode)
+  console.log('highlighter:', highlighter)
   switch (message.type) {
     case 'highlight':
       if (highlighter && !editableNode.getAttribute('data-multidict-generated')) {
@@ -106,13 +106,18 @@ function messageHandler (message) {
   }
 }
 
+browser.runtime.onConnect.addListener(connectionHandler)
+
+document.body.addEventListener('keyup', debounce(edit, 700), true)
+document.body.addEventListener('click', debounce(edit, 700), true)
+
 // App Control/Execution Flow
 // 1. Page listeners generate Spellings of currently focused/current editable node content
 // 2. Single Highlighter instance (requires Spelling) attached to focused/current editable node
 // 3. Highlighter instance has own listeners to keep it in sync with editable node and allow user
 //    interaction
 // 4. Highlighter instance generates WordCarousel (suggestions node) as needed and controls the
-//    carousel (WordCarousel does not have own listeners)
+//    carousel (WordCarousel does not have own listeners, is instead driven by Highlighter)
 //
 // Architectural/Design Decisions
 // - Helper functions are Class agnostic (helpers can work with a class instance but never
@@ -120,8 +125,3 @@ function messageHandler (message) {
 // - Classes can and do use Helper fuctions/methods during instantiation
 // - All clean text for usage in app should be cleaned using core cleanText helper function (with
 //   or without specific params)
-
-browser.runtime.onConnect.addListener(connectionHandler)
-
-document.body.addEventListener('keyup', debounce(edit, 700))
-document.body.addEventListener('click', debounce(edit, 700))

@@ -189,6 +189,37 @@ function getCurrentWordBoundaries (node) {
   }
 }
 
+// due to nested divs inside editable nodes inside rich text editors (like gmail) we need to change
+// the target node used for highlighting for supported domains
+function getDomainSpecificNode (hostname, node) {
+  switch (hostname) {
+    case 'mail.google.com':
+      node = document.querySelector('div[aria-label="Message Body"]')
+      break
+  }
+  return node
+}
+
+// get properties based on domain (i.e. gmail or github)
+function getDomainSpecificProps (hostname, properties, textarea) {
+  console.log('setting domain specific container props')
+  switch (hostname) {
+    case 'mail.google.com':
+    case 'github.com':
+      properties.display = 'block'
+      break
+    default:
+      if (properties.display === 'inline' || properties.display === 'inline-block') {
+        properties.display = 'inline-flex'
+      } else {
+        properties.display = 'flex'
+        properties.width = `${textarea.offsetWidth}px`
+      }
+  }
+
+  return properties
+}
+
 // gets the index of a Word by matching the Word boundaries against the chunk of text being
 // operated on (needed for when duplicate misspelt words appear inside content)
 function getMatchingWordIndex (content, word) {
@@ -240,6 +271,8 @@ function getSelectedWordBoundaries (node = document.activeElement) {
     end: node.selectionEnd
   }
 
+  console.log(`window getSelection: "${window.getSelection()}"`)
+
   // these are undefined if node is not a text node, so safe to use node.value
   if (selection.start !== selection.end) {
     const content = node.value
@@ -247,21 +280,20 @@ function getSelectedWordBoundaries (node = document.activeElement) {
     return [word, ...getRelativeBoundaries(word, content, selection.start)]
   }
 
-  // prefer method of getting whole word boundaries (using getCurrentWordBoundaries) over window
-  // selection
+  // prefer using getCurrentWordBoundaries over window selection
   if (node.selectionStart >= 0) {
     return getCurrentWordBoundaries(node)
   }
 
-  // fallback to window.getSelection if all else fails
+  // fallback to window.getSelection if all else fails (content editable divs)
   if (window.getSelection().toString().length > 0) {
-    console.log(window.getSelection())
+    console.log('SELECTED:', window.getSelection().toString())
     const text = window.getSelection().toString()
     const word = cleanWord(text)
     return [word, ...getRelativeBoundaries(word, text, selection.start)]
   }
 
-  console.warn('MultiDict: get current selection failed to find any workable text.')
+  console.warn('MultiDict: get selected word boundaries failed to find any workable text.')
 }
 
 // conditionally return the text content of a node (including line breaks) based on node type
@@ -269,9 +301,26 @@ function getTextContent (node) {
   return node.nodeName === 'TEXTAREA' ? node.value : node.innerText
 }
 
-// retrun a boolean value that is true if the node is editable and has spellcheck set to true
-function isSpellCheckable (node) {
-  return node.spellCheck && (node.nodeName === 'DIV' && node.isContentEditable)
+// return a boolean value that is true if the domain/page is supported, element name matches
+// supported types, and content is marked as spell checkable
+function isSupported (node, hostname) {
+  const supportedNodeNames = ['TEXTAREA', 'DIV']
+  const supportedDomains = ['mail.google.com']
+
+  console.log(node)
+  console.log(hostname)
+
+  if (node.spellcheck && node.isContentEditable) {
+    if (node.nodeName === 'TEXTAREA') {
+      return true
+    }
+
+    if (supportedNodeNames.contains(node.nodeName) && supportedDomains.contains(hostname)) {
+      return true
+    }
+  }
+
+  return false
 }
 
 // return a boolean value that is true if a word, based on the content and startIndex, is a whole
@@ -363,35 +412,6 @@ function replaceInText (content, word, replacement) {
   return `${content.slice(0, word.start)}${replacement}${content.slice(word.end)}`
 }
 
-// get properties based on domain (i.e. gmail or github)
-function getDomainSpecificProps (hostname, properties, textarea) {
-  console.log('setting domain specific container props')
-  switch (hostname) {
-    case 'mail.google.com':
-    case 'github.com':
-      properties.display = 'block'
-      break
-    default:
-      if (properties.display === 'inline' || properties.display === 'inline-block') {
-        properties.display = 'inline-flex'
-      } else {
-        properties.display = 'flex'
-        properties.width = `${textarea.offsetWidth}px`
-      }
-  }
-
-  return properties
-}
-
-function getDomainSpecificNode (hostname, node) {
-  switch (hostname) {
-    case 'mail.google.com':
-      node = document.querySelector('div[aria-label="Message Body"]')
-      break
-  }
-  return node
-}
-
 module.exports = {
   blinkMark,
   cleanText,
@@ -405,7 +425,7 @@ module.exports = {
   getRelativeBoundaries,
   getSelectedWordBoundaries,
   getTextContent,
-  isSpellCheckable,
+  isSupported,
   isWholeWord,
   loadDictionariesAndPrefs,
   prepareLanguages,
