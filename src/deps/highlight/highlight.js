@@ -60,9 +60,9 @@ class Highlighter {
     restoreSelection(this.node)
   }
 
-  createCarousel (words) {
+  createCarousel (suggestions) {
     console.log('create carousel')
-    this.carousel = new WordCarousel(this.node, this.currentMark, this.currentWord.text, words)
+    this.carousel = new WordCarousel(this.node, this.currentMark, suggestions)
   }
 
   destroy () {

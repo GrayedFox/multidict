@@ -132,16 +132,16 @@ class Word {
 // A WordCarousel is a page/tab agnostic collection of HTML elements that together form a
 // vertically navigatable word carousel inserted into a given node overlaying a specific mark
 class WordCarousel {
-  constructor (node, mark, misspeltWord, suggestedWords) {
+  constructor (node, mark, suggestedWords) {
     this.node = node // an editable HTML node that we assume the user is currently editing
     this.mark = mark // the exact HTML mark to be used to position the word carousel
-    this.misspeltWord = misspeltWord // the misspelt Word that has been marked
     this.suggestedWords = suggestedWords.slice(0, 4) // array of up to 4 words ['word1', 'word2']
     this.acceptedWord = undefined // user chosen word string, can be cleared
     this.currentWord = undefined // active/visible word displayed by carousel
     this.currentSuggestionNode = undefined // active/visible suggestion node displayed by carousel
     this.wordCount = this.suggestedWords.length // amount of words/cells inside the carousel
-    this.opacity = 0 // used to set opacity of inactive/non-visible carousel words
+    this.opacity = this.wordCount > 2 ? 0.3 : 0 // used to set opacity of inactive/non-focused words
+    this.theta = 360 / this.wordCount //
     this.suggestionsIndex = 0 // used to keep track of which suggestion is being shown
     this.suggestionsContainer = createClassyElement('div', [`${ID}-suggestions-container`])
     this.suggestionsFrame = createClassyElement('div', [`${ID}-suggestions-frame`])
@@ -208,8 +208,6 @@ class WordCarousel {
     const words = this.suggestedWords
     const heightOffset = this.suggestionsContainer.offsetHeight
 
-    this.opacity = this.wordCount > 2 ? 0.3 : 0
-    this.theta = 360 / this.wordCount
     this.radius = Math.round((heightOffset / 2) / Math.tan(Math.PI / this.wordCount))
     this.radius = Math.sign(this.radius) < 1 ? 0 : this.radius
 
