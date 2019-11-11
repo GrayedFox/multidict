@@ -303,20 +303,18 @@ function getTextContent (node) {
 
 // return a boolean value that is true if the domain/page is supported, element name matches
 // supported types, and content is marked as spell checkable
-function isSupported (node, hostname) {
-  const supportedNodeNames = ['TEXTAREA', 'DIV']
+function isSupported (node, location) {
   const supportedDomains = ['mail.google.com']
+  const hostname = location.hostname
 
-  console.log(node)
-  console.log(hostname)
-
-  if (node.spellcheck && node.isContentEditable) {
+  if (node.spellcheck) {
     if (node.nodeName === 'TEXTAREA') {
       return true
     }
 
-    if (supportedNodeNames.contains(node.nodeName) && supportedDomains.contains(hostname)) {
-      return true
+    if (node.nodeName === 'DIV' && node.isContentEditable) {
+      return supportedDomains.contains(hostname) ||
+        (hostname === '' && location.protocol === 'file:')
     }
   }
 

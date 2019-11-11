@@ -15,7 +15,7 @@ async function edit (event) {
   const currentText = getTextContent(target)
 
   // don't spellcheck unsupported or uncheckable nodes
-  if (!isSupported(target, window.location.hostname)) {
+  if (!isSupported(target, window.location)) {
     console.log('unsupported', target)
     return
   }
