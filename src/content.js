@@ -28,10 +28,11 @@ async function edit (event) {
   // tell background script to connect to active tab if content port undefined
   if (!contentPort) {
     await browser.runtime.sendMessage({ type: 'connectToActiveTab' })
+    console.log('finished waiting')
   }
 
   // wait for connection to current/active tab before updating previousText and editableNode
-  editableNode = getDomainSpecificNode(window.location.hostname, target)
+  editableNode = getDomainSpecificNode(target, window.location.hostname)
   previousText = currentText
 
   console.log('currentText', currentText)
@@ -75,6 +76,7 @@ async function connectionHandler (port, info) {
 
 // handles all incoming messages from the background script
 function messageHandler (message) {
+  console.log('message:', message)
   console.log('editableNode:', editableNode)
   console.log('highlighter:', highlighter)
   switch (message.type) {

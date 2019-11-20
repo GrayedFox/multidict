@@ -191,7 +191,7 @@ function getCurrentWordBoundaries (node) {
 
 // due to nested divs inside editable nodes inside rich text editors (like gmail) we need to change
 // the target node used for highlighting for supported domains
-function getDomainSpecificNode (hostname, node) {
+function getDomainSpecificNode (node, hostname) {
   switch (hostname) {
     case 'mail.google.com':
       node = document.querySelector('div[aria-label="Message Body"]')
@@ -313,7 +313,7 @@ function isSupported (node, location) {
     }
 
     if (node.nodeName === 'DIV' && node.isContentEditable) {
-      return supportedDomains.contains(hostname) ||
+      return supportedDomains.includes(hostname) ||
         (hostname === '' && location.protocol === 'file:')
     }
   }

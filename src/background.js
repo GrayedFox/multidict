@@ -97,6 +97,7 @@ function contextListener (info) {
 
 // listen to incoming messages from the content script and on new tab creation
 async function connectToActiveTab () {
+  console.log('connect to active tab')
   let tab = await browser.tabs.query({ active: true, currentWindow: true })
   tab = tab[0]
   const tabName = `tab-${tab.id}`
