@@ -109,7 +109,7 @@ class User {
   }
 }
 
-// A Word is an iterable class that contains a word, its length, and word boundaries
+// A Word is an iterable class that contains some text, its length, and word boundaries
 class Word {
   constructor (word, start, end) {
     this.text = word

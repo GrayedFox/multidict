@@ -143,22 +143,20 @@ function debounce (callback, wait) {
 }
 
 // gets the current word and it's boundaries based on cursor position/selection
-function getCurrentWordBoundaries (node) {
-  if (!(node.selectionStart >= 0)) {
-    console.warn('MultiDict: get current word failed to find a caret position')
+function getCurrentWordBoundaries (node, text, startIndex) {
+  if (!(startIndex >= 0)) {
+    console.warn('MultiDict: cannot get current word boundaries if start index negative')
     return ''
   }
 
   const boundaries = {
-    start: node.selectionStart,
-    end: node.selectionStart
+    start: startIndex,
+    end: startIndex
   }
 
-  const text = node.value
-
   if (text) {
-    let i = 0
-    while (i < 1) {
+    let found = false
+    while (!found) {
       const start = boundaries.start
       const end = boundaries.end
       const prevChar = text.charAt(start - 1)
@@ -174,7 +172,7 @@ function getCurrentWordBoundaries (node) {
 
       // if we haven't moved either boundary, we have our word
       if (start === boundaries.start && end === boundaries.end) {
-        i = 1
+        found = true
         if (start < end) {
           const word = cleanWord(text.slice(start, end))
           return [word, ...getRelativeBoundaries(word, text, start)]
@@ -262,35 +260,49 @@ function getRelativeBoundaries (word, content, startIndex) {
   return [start, start + word.length]
 }
 
+// get selection boundaries of any currently selected text within a non input/textarea node
+// the start and end are relative to the text within the given node, not parent or children nodes
+function getSelectionBoundaries (node) {
+  console.log('getSelectionBoundaries')
+  const selection = document.getSelection()
+  const text = node.value || node.innerText
+  console.log('text', text)
+  console.log('selection', selection)
+
+  if (node.selectionStart && node.selectionEnd) {
+    return { start: node.selectionStart, end: node.selectionEnd }
+  }
+
+  if (selection.rangeCount > 0) {
+    const range = selection.getRangeAt(0)
+    return { start: range.startOffset, end: range.endOffset }
+  }
+}
+
 // get current text boundaries based on node start and end if defined and not equal, otherwise
 // get boundaries based off the caret positioned at the start/end/within a text node, otherwise
 // use window selection if present
 function getSelectedWordBoundaries (node = document.activeElement) {
-  const selection = {
-    start: node.selectionStart,
-    end: node.selectionEnd
-  }
+  const selection = getSelectionBoundaries(node)
+  const content = node.value || node.innerText
 
-  console.log(`window getSelection: "${window.getSelection()}"`)
+  console.log('selection:', selection)
 
-  // these are undefined if node is not a text node, so safe to use node.value
-  if (selection.start !== selection.end) {
-    const content = node.value
+  // selection start is undefined if node is not a text node, so safe to use node.value here
+  if (node.selectionStart && (selection.start !== selection.end)) {
     const word = node.value.slice(selection.start, selection.end)
     return [word, ...getRelativeBoundaries(word, content, selection.start)]
   }
 
   // prefer using getCurrentWordBoundaries over window selection
   if (node.selectionStart >= 0) {
-    return getCurrentWordBoundaries(node)
+    return getCurrentWordBoundaries(node, content, selection.start)
   }
 
   // fallback to window.getSelection if all else fails (content editable divs)
   if (window.getSelection().toString().length > 0) {
-    console.log('SELECTED:', window.getSelection().toString())
-    const text = window.getSelection().toString()
-    const word = cleanWord(text)
-    return [word, ...getRelativeBoundaries(word, text, selection.start)]
+    const word = window.getSelection().toString()
+    return [word, ...getRelativeBoundaries(word, content, selection.start)]
   }
 
   console.warn('MultiDict: get selected word boundaries failed to find any workable text.')
@@ -418,7 +430,6 @@ module.exports = {
   createMenuItems,
   css,
   debounce,
-  getCurrentWordBoundaries,
   getMatchingWordIndex,
   getRelativeBoundaries,
   getSelectedWordBoundaries,
