@@ -1,5 +1,5 @@
 const {
-  debounce, getDomainSpecificNode, getSelectedWordBoundaries, getTextContent, isSupported
+  debounce, getDomainSpecificNode, getCurrentWordBounds, getTextContent, isSupported
 } = require('./helpers.js')
 
 const { Highlighter } = require('./deps/highlight/highlight.js')
@@ -97,7 +97,7 @@ function messageHandler (message) {
     case 'remove':
       contentPort.postMessage({
         type: message.type,
-        word: getSelectedWordBoundaries()[0]
+        word: getCurrentWordBounds()[0]
       })
       // clearing previousText after add/remove ensures we check spelling despite identical content
       previousText = ''

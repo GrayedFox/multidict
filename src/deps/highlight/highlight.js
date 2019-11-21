@@ -12,8 +12,8 @@
  */
 
 const {
-  blinkMark, createClassyElement, css, getDomainSpecificProps,
-  getMatchingWordIndex, getTextContent, getSelectedWordBoundaries, isWholeWord, replaceInText
+  blinkMark, createClassyElement, css, getDomainSpecificProps, getMatchingWordIndex,
+  getTextContent, getCurrentWordBounds, getSelectionBounds, isWholeWord, replaceInText
 } = require('../../helpers.js')
 
 const { Word, WordCarousel } = require('../../classes.js')
@@ -31,6 +31,7 @@ let boundClick, boundKeyup, boundScroll, boundSelect
 class Highlighter {
   constructor (node, spelling, color) {
     this.node = node
+    this.textNode = node
     this.spelling = spelling
     this.color = color
     this.carousel = null // the WordCarousel (if active) showing word suggestions
@@ -47,7 +48,7 @@ class Highlighter {
     console.log('choose suggestion')
     const currentWord = this.currentWord
     const currentText = getTextContent(this.node)
-    const restoreSelection = this.storeSelection()
+    const restoreSelection = this.storeSelection(this.node)
     const misspeltWordIndex = this.getMisspeltWordIndex(currentWord.text, this.currentMarkIndex)
 
     this.spelling.misspeltWords.remove(misspeltWordIndex)
@@ -57,6 +58,7 @@ class Highlighter {
     } else {
       this.node.innerText = replaceInText(currentText, currentWord, this.carousel.acceptedWord)
     }
+
     restoreSelection(this.node)
   }
 
@@ -75,6 +77,7 @@ class Highlighter {
     this.container.parentNode.insertBefore(this.node, this.container)
     this.container.remove()
     this.node.removeAttribute('data-multidict-generated')
+    this.node.removeAttribute('data-multidict-selected-word')
     this.node.classList.remove(`${ID}-content`, `${ID}-input`)
   }
 
@@ -161,7 +164,7 @@ class Highlighter {
 
   handleSelect () {
     console.log('handle select')
-    this.currentWord = new Word(...getSelectedWordBoundaries(this.node))
+    this.currentWord = new Word(...getCurrentWordBounds(this.node))
     this.currentMarkIndex = getMatchingWordIndex(getTextContent(this.node), this.currentWord)
     this.setCurrentMark(this.currentWord.text, this.currentMarkIndex)
     this.node.setAttribute('data-multidict-selected-word', [...this.currentWord])
@@ -218,31 +221,33 @@ class Highlighter {
   }
 
   // used to restore a previous selection/cursor position after moving things around in the DOM
-  storeSelection () {
-    const selection = {
-      start: this.node.selectionStart,
-      end: this.node.selectionEnd
-    }
+  storeSelection (currentNode) {
+    const selection = window.getSelection()
+    const selectionBounds = getSelectionBounds(currentNode)
+    const selectionRange = selection.getRangeAt(0) || null
+    const storedRange = {}
 
-    const storedSelection = window.getSelection()
-    const storedRange = storedSelection.rangeCount > 0
-      ? storedSelection.getRangeAt(0).cloneRange()
-      : undefined
-
-    if (!selection.start || !selection.end) {
-      selection.start = storedSelection.anchorOffset
-      selection.end = storedSelection.focusOffset
+    if (selectionRange) {
+      storedRange.startContainer = selectionRange.startContainer
+      storedRange.startOffset = selectionRange.startOffset
+      storedRange.endContainer = selectionRange.endContainer
+      storedRange.endOffset = selectionRange.endOffset
+      storedRange.parentNode = selectionRange.startContainer.parentNode
     }
 
     return function (node) {
       node.focus()
-      if (storedRange) {
-        window.getSelection().removeAllRanges()
-        window.getSelection().addRange(storedRange)
-      }
-
       if (node.setSelectionRange) {
-        node.setSelectionRange(selection.start, selection.end)
+        node.setSelectionRange(selectionBounds.start, selectionBounds.end)
+      } else {
+        if (!storedRange.startContainer.isConnected) {
+          storedRange.startContainer = storedRange.parentNode.childNodes[0]
+          storedRange.endContainer = storedRange.parentNode.childNodes[0]
+        }
+        window.getSelection().setBaseAndExtent(
+          storedRange.startContainer, storedRange.startOffset,
+          storedRange.endContainer, storedRange.endOffset
+        )
       }
     }
   }
@@ -251,10 +256,10 @@ class Highlighter {
   // should only be called once during class instantiation
   _buildHighlighter () {
     // Highlighter is built based on styles from textarea being spell checked
-    // unforunately a one size fits all approach simply doesn't work (i.e rich text editors gmail)
+    // unforunately a one size fits all approach simply doesn't work (rich text editors i.e. gmail)
     // so some conditional logic is needed to set the correct node/styles
 
-    const restoreSelection = this.storeSelection()
+    const restoreSelection = this.storeSelection(this.node)
     const textareaStyles = window.getComputedStyle(this.node)
     const backdropProps = css(textareaStyles, ['background-color'])
     const highlightsProps = css(textareaStyles, [

@@ -260,20 +260,17 @@ function getRelativeBoundaries (word, content, startIndex) {
   return [start, start + word.length]
 }
 
-// get selection boundaries of any currently selected text within a non input/textarea node
-// the start and end are relative to the text within the given node, not parent or children nodes
-function getSelectionBoundaries (node) {
-  console.log('getSelectionBoundaries')
-  const selection = document.getSelection()
-  console.log('selection', selection)
-
+// get selection boundaries of any currently selected text - the start and end are relative to the
+// text within the given node, and not any parent or child nodes
+function getSelectionBounds (node) {
   if (node.selectionStart && node.selectionEnd) {
     return { start: node.selectionStart, end: node.selectionEnd }
   }
 
+  const selection = window.getSelection()
+
   if (selection.rangeCount > 0) {
     const range = selection.getRangeAt(0)
-    console.log('range', range)
     return { start: range.startOffset, end: range.endOffset }
   }
 }
@@ -281,11 +278,9 @@ function getSelectionBoundaries (node) {
 // get current text boundaries based on node start and end if defined and not equal, otherwise
 // get boundaries based off the caret positioned at the start/end/within a text node, otherwise
 // use window selection if present
-function getSelectedWordBoundaries (node = document.activeElement) {
-  const selection = getSelectionBoundaries(node)
+function getCurrentWordBounds (node = document.activeElement) {
+  const selection = getSelectionBounds(node)
   const content = node.value || node.innerText
-
-  console.log('selection:', selection)
 
   // selection start is undefined if node is not a text node, so safe to use node.value here
   if (selection.start !== selection.end) {
@@ -425,7 +420,8 @@ module.exports = {
   debounce,
   getMatchingWordIndex,
   getRelativeBoundaries,
-  getSelectedWordBoundaries,
+  getSelectionBounds,
+  getCurrentWordBounds,
   getTextContent,
   isSupported,
   isWholeWord,

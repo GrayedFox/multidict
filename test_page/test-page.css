@@ -26,6 +26,18 @@ body {
 }
 
 #three {
+  text-align: left;
+  font-family: inherit;
+  font-size: inherit;
+  height: 210px;
+  width: 310px;
+  border: 3px solid lightblue;
+  position: relative;
+  display: block;
+}
+
+#four {
+  text-align: left;
   font-family: inherit;
   font-size: inherit;
   height: 210px;
