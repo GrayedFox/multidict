@@ -265,8 +265,6 @@ function getRelativeBoundaries (word, content, startIndex) {
 function getSelectionBoundaries (node) {
   console.log('getSelectionBoundaries')
   const selection = document.getSelection()
-  const text = node.value || node.innerText
-  console.log('text', text)
   console.log('selection', selection)
 
   if (node.selectionStart && node.selectionEnd) {
@@ -275,6 +273,7 @@ function getSelectionBoundaries (node) {
 
   if (selection.rangeCount > 0) {
     const range = selection.getRangeAt(0)
+    console.log('range', range)
     return { start: range.startOffset, end: range.endOffset }
   }
 }
@@ -289,20 +288,14 @@ function getSelectedWordBoundaries (node = document.activeElement) {
   console.log('selection:', selection)
 
   // selection start is undefined if node is not a text node, so safe to use node.value here
-  if (node.selectionStart && (selection.start !== selection.end)) {
-    const word = node.value.slice(selection.start, selection.end)
+  if (selection.start !== selection.end) {
+    const word = content.slice(selection.start, selection.end)
     return [word, ...getRelativeBoundaries(word, content, selection.start)]
   }
 
   // prefer using getCurrentWordBoundaries over window selection
-  if (node.selectionStart >= 0) {
+  if (selection.start >= 0) {
     return getCurrentWordBoundaries(node, content, selection.start)
-  }
-
-  // fallback to window.getSelection if all else fails (content editable divs)
-  if (window.getSelection().toString().length > 0) {
-    const word = window.getSelection().toString()
-    return [word, ...getRelativeBoundaries(word, content, selection.start)]
   }
 
   console.warn('MultiDict: get selected word boundaries failed to find any workable text.')
