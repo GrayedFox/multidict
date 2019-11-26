@@ -98,7 +98,7 @@ function messageHandler (message) {
       word = word || getCurrentWordBounds(document.activeElement)[0]
       contentPort.postMessage({
         type: message.type,
-        word: cleanWord(word)
+        word: cleanWord(word) // always clean the text before adding/removing custom words
       })
       // clearing previousText after add/remove ensures we check spelling despite identical content
       previousText = ''
@@ -115,9 +115,9 @@ document.body.addEventListener('keyup', debounce(edit, 700), true)
 document.body.addEventListener('click', debounce(edit, 700), true)
 
 // App Control/Execution Flow
-// 1. Page listeners generate Spellings of currently focused/current editable node content
-// 2. Single Highlighter instance (requires Spelling) attached to focused/current editable node
-// 3. Highlighter instance has own listeners to keep it in sync with editable node and allow user
+// 1. Page listeners generate Spellings of currently focused textarea/editable node content
+// 2. Single Highlighter instance (requires Spelling) attached to textarea/node
+// 3. Highlighter instance has own listeners to keep it in sync with textarea/node and allow user
 //    interaction
 // 4. Highlighter instance generates WordCarousel (suggestions node) as needed and controls the
 //    carousel (WordCarousel does not have own listeners, is instead driven by Highlighter)
@@ -126,5 +126,5 @@ document.body.addEventListener('click', debounce(edit, 700), true)
 // - Helper functions are Class agnostic (helpers can work with a class instance but never
 //   instantiate or import/require classes.js)
 // - Classes can and do use Helper fuctions/methods during instantiation
-// - All clean text for usage in app should be cleaned using core cleanText helper function (with
-//   or without specific params)
+// - All spellchecked text and custom words should be cleaned with cleanText/cleanWord helper
+//   functions (with or without specific params)
