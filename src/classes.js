@@ -1,5 +1,5 @@
 const nspell = require('./deps/nspell/index.js')
-const { cleanText, createClassyElement, css, getRelativeBoundaries } = require('./helpers.js')
+const { cleanText, createClassyElement, css, getRelativeBounds } = require('./helpers.js')
 
 const ID = 'multidict'
 
@@ -20,7 +20,7 @@ class Spelling {
     return this.cleanedText.reduce((acc, word) => {
       if (!this.speller.correct(word)) {
         index = this.content.indexOf(word, index + word.length)
-        acc = acc.concat([new Word(word, ...getRelativeBoundaries(word, this.content, index))])
+        acc = acc.concat([new Word(word, ...getRelativeBounds(word, this.content, index))])
       }
       return acc
     }, [])

@@ -175,7 +175,7 @@ function getCurrentWordBoundaries (node, text, startIndex) {
         found = true
         if (start < end) {
           const word = cleanWord(text.slice(start, end))
-          return [word, ...getRelativeBoundaries(word, text, start)]
+          return [word, ...getRelativeBounds(word, text, start)]
         }
         // start and end can be equal if caret positioned between 2 word boundaries i.e. ' | '
         return ['', start, end]
@@ -251,7 +251,7 @@ function getMatchingWordIndex (content, word) {
 }
 
 // get the relative boundaries of a word given a specific start index within content
-function getRelativeBoundaries (word, content, startIndex) {
+function getRelativeBounds (word, content, startIndex) {
   if (!word) {
     console.warn(`MultiDict: cannot get relative boundaries of ${word}`)
     return
@@ -285,7 +285,7 @@ function getCurrentWordBounds (node = document.activeElement) {
   // selection start is undefined if node is not a text node, so safe to use node.value here
   if (selection.start !== selection.end) {
     const word = content.slice(selection.start, selection.end)
-    return [word, ...getRelativeBoundaries(word, content, selection.start)]
+    return [word, ...getRelativeBounds(word, content, selection.start)]
   }
 
   // prefer using getCurrentWordBoundaries over window selection
@@ -419,7 +419,7 @@ module.exports = {
   css,
   debounce,
   getMatchingWordIndex,
-  getRelativeBoundaries,
+  getRelativeBounds,
   getSelectionBounds,
   getCurrentWordBounds,
   getTextContent,
