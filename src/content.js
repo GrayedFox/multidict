@@ -1,5 +1,5 @@
 const {
-  cleanWord, debounce, getDomainSpecificNode, getCurrentWordBounds, getTextContent, isSupported
+  cleanWord, debounce, getTopMostEditableNode, getCurrentWordBounds, getTextContent, isSupported
 } = require('./helpers.js')
 
 const { Highlighter } = require('./deps/highlight/highlight.js')
@@ -11,12 +11,11 @@ let previousText = ''
 
 // function is debounced on all keyup and click events
 async function edit (event) {
-  const target = event.target
+  const target = getTopMostEditableNode(event.target)
   const currentText = getTextContent(target)
 
   // don't spellcheck unsupported or uncheckable nodes
   if (!isSupported(target, window.location)) {
-    // console.log('unsupported', target)
     return
   }
 
@@ -28,13 +27,13 @@ async function edit (event) {
   // tell background script to connect to active tab if content port undefined
   if (!contentPort) {
     await browser.runtime.sendMessage({ type: 'connectToActiveTab' })
-    console.log('finished waiting')
   }
 
   // wait for connection to current/active tab before updating previousText and editableNode
-  editableNode = getDomainSpecificNode(target, window.location.hostname)
+  editableNode = target
   previousText = currentText
 
+  console.log('editableNode', editableNode)
   console.log('currentText', currentText)
 
   const detectedLanguage = await browser.i18n.detectLanguage(currentText)

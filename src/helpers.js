@@ -187,14 +187,17 @@ function getWordBoundsFromCaret (node, text, startIndex) {
   }
 }
 
-// due to nested divs inside editable nodes inside rich text editors (like gmail) we need to change
-// the target node used for highlighting for supported domains
-function getDomainSpecificNode (node, hostname) {
-  switch (hostname) {
-    case 'mail.google.com':
-      node = document.querySelector('div[aria-label="Message Body"]')
-      break
+// return the top most node that is editable and spellcheckable and contains text from all
+// children
+function getTopMostEditableNode (node) {
+  const parent = node.parentNode
+
+  if (node.nodeName === 'DIV' && parent.spellcheck && parent.isContentEditable) {
+    if (parent.innerText.includes(node.innerText)) {
+      return getTopMostEditableNode(parent)
+    }
   }
+
   return node
 }
 
@@ -437,5 +440,5 @@ module.exports = {
   prepareLanguages,
   replaceInText,
   getDomainSpecificProps,
-  getDomainSpecificNode
+  getTopMostEditableNode
 }
