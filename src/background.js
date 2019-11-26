@@ -81,20 +81,14 @@ function popupListener (port) {
   }
 }
 
-// listens to all incoming commands (keyboard shortcuts)
-async function commandListener (command) {
+// listens to all incoming commands (keyboard shortcuts) and context menu messages
+async function commandAndContextListener (info) {
+  const command = info.menuItemId || info
   if (!contentPort) {
     await connectToActiveTab()
   }
   if (command === 'add' || command === 'remove') {
-    contentPort.postMessage({ type: command })
-  }
-}
-
-// listens to all incoming messages from the context menu items
-function contextListener (info) {
-  if (info.menuItemId === 'add' || info.menuItemId === 'remove') {
-    api({ type: info.menuItemId, word: info.selectionText })
+    contentPort.postMessage({ type: command, word: info.selectionText })
   }
 }
 
@@ -133,8 +127,8 @@ async function main () {
 
 main()
 
-browser.commands.onCommand.addListener(commandListener)
-browser.contextMenus.onClicked.addListener(contextListener)
+browser.commands.onCommand.addListener(commandAndContextListener)
+browser.contextMenus.onClicked.addListener(commandAndContextListener)
 browser.tabs.onCreated.addListener(connectToActiveTab)
 browser.runtime.onMessage.addListener(connectToActiveTab)
 browser.runtime.onConnect.addListener(popupListener)

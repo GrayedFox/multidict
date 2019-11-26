@@ -75,6 +75,7 @@ async function connectionHandler (port, info) {
 
 // handles all incoming messages from the background script
 function messageHandler (message) {
+  let word = message.word
   console.log('message:', message)
   console.log('editableNode:', editableNode)
   console.log('highlighter:', highlighter)
@@ -94,9 +95,10 @@ function messageHandler (message) {
 
     case 'add':
     case 'remove':
+      word = word || getCurrentWordBounds(document.activeElement)[0]
       contentPort.postMessage({
         type: message.type,
-        word: cleanWord(getCurrentWordBounds()[0])
+        word: cleanWord(word)
       })
       // clearing previousText after add/remove ensures we check spelling despite identical content
       previousText = ''
