@@ -143,7 +143,7 @@ function debounce (callback, wait) {
 }
 
 // gets the current word and it's boundaries based on cursor position/selection
-function getCurrentWordBoundaries (node, text, startIndex) {
+function getWordBoundsFromCaret (node, text, startIndex) {
   if (!(startIndex >= 0)) {
     console.warn('MultiDict: cannot get current word boundaries if start index negative')
     return ''
@@ -271,7 +271,7 @@ function getSelectionBounds (node) {
 
   if (selection.rangeCount > 0) {
     const range = selection.getRangeAt(0)
-    return { start: range.startOffset, end: range.endOffset }
+    return { start: range.startOffset, end: range.endOffset, text: selection.toString() }
   }
 }
 
@@ -282,15 +282,23 @@ function getCurrentWordBounds (node = document.activeElement) {
   const selection = getSelectionBounds(node)
   const content = node.value || node.innerText
 
-  // selection start is undefined if node is not a text node, so safe to use node.value here
+  // selection start will not equal selection end if both are defined
   if (selection.start !== selection.end) {
-    const word = content.slice(selection.start, selection.end)
+    const word = selection.text || content.slice(selection.start, selection.end)
     return [word, ...getRelativeBounds(word, content, selection.start)]
   }
 
-  // prefer using getCurrentWordBoundaries over window selection
+  // prefer using getWordBoundsFromCaret over window selection
   if (selection.start >= 0) {
-    return getCurrentWordBoundaries(node, content, selection.start)
+    return getWordBoundsFromCaret(node, content, selection.start)
+  }
+
+  // fallback to selection.text if all else fails - called when adding a custom word to a dictionary
+  // from a non editable div
+  if (selection.text.length > 0) {
+    const word = selection.text
+    console.warn('UNEXPECTED DERP', word)
+    return [word, ...getRelativeBounds(word, content, selection.start)]
   }
 
   console.warn('MultiDict: get selected word boundaries failed to find any workable text.')

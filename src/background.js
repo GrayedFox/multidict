@@ -1,5 +1,5 @@
 const { User, Spelling } = require('./classes.js')
-const { cleanWord, createMenuItems, loadDictionariesAndPrefs, prepareLanguages } = require('./helpers.js')
+const { createMenuItems, loadDictionariesAndPrefs, prepareLanguages } = require('./helpers.js')
 
 let user, customWords, contentPort, popupPort, currentPort
 
@@ -82,7 +82,10 @@ function popupListener (port) {
 }
 
 // listens to all incoming commands (keyboard shortcuts)
-function commandListener (command) {
+async function commandListener (command) {
+  if (!contentPort) {
+    await connectToActiveTab()
+  }
   if (command === 'add' || command === 'remove') {
     contentPort.postMessage({ type: command })
   }
@@ -91,7 +94,7 @@ function commandListener (command) {
 // listens to all incoming messages from the context menu items
 function contextListener (info) {
   if (info.menuItemId === 'add' || info.menuItemId === 'remove') {
-    api({ type: info.menuItemId, word: cleanWord(info.selectionText) })
+    api({ type: info.menuItemId, word: info.selectionText })
   }
 }
 

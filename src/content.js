@@ -1,5 +1,5 @@
 const {
-  debounce, getDomainSpecificNode, getCurrentWordBounds, getTextContent, isSupported
+  cleanWord, debounce, getDomainSpecificNode, getCurrentWordBounds, getTextContent, isSupported
 } = require('./helpers.js')
 
 const { Highlighter } = require('./deps/highlight/highlight.js')
@@ -16,7 +16,7 @@ async function edit (event) {
 
   // don't spellcheck unsupported or uncheckable nodes
   if (!isSupported(target, window.location)) {
-    console.log('unsupported', target)
+    // console.log('unsupported', target)
     return
   }
 
@@ -97,7 +97,7 @@ function messageHandler (message) {
     case 'remove':
       contentPort.postMessage({
         type: message.type,
-        word: getCurrentWordBounds()[0]
+        word: cleanWord(getCurrentWordBounds()[0])
       })
       // clearing previousText after add/remove ensures we check spelling despite identical content
       previousText = ''
