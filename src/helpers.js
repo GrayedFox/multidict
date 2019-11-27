@@ -264,51 +264,58 @@ function getRelativeBounds (word, content, startIndex) {
   return [start, start + word.length]
 }
 
+// recursively walk down the highlighter node (main textarea/editable node), increasing offset
+// based on node length
+// TODO: recursion returns too early, it will always exit after the 2nd child of the editable node
+function getOffset (children, finalNode, offset = 0) {
+  console.log('children', children)
+  for (let i = 0; i < children.length; i++) {
+    const childNode = children[i]
+    console.log('childNode', childNode)
+    console.log('offsetCount', offset)
+    // we already have the offset length of the finalNode so return here
+    if (childNode === finalNode) {
+      return offset
+    }
+    if (childNode.nodeName === '#text') {
+      offset += childNode.length
+    }
+    console.log('offsetEndCount', offset)
+    if (childNode.nodeType === Node.ELEMENT_NODE && childNode.childNodes) {
+      console.log('going deep')
+      return getOffset(childNode.childNodes, finalNode, offset)
+    }
+    console.log('end')
+  }
+  console.log('returningOffset', offset)
+  return offset
+}
+
 // get selection boundaries of any currently selected text - the start and end bounds of the
-// selection are relative to the text within the given specified parent
+// selection are relative to the text within the specified node
 function getSelectionBounds (node) {
+  // textareas are easy - just return the selectionStart and selectionEnd properties
   if (node.nodeName === 'TEXTAREA' && node.selectionStart && node.selectionEnd) {
     return { start: node.selectionStart, end: node.selectionEnd }
   }
 
   const selection = window.getSelection()
-  const selectedText = selection.toString()
-  const selectionBounds = { text: selectedText, start: 0, end: selectedText.length }
-  const targetNode = selection.focusNode.nodeName === '#text'
-    ? selection.focusNode.parentNode
-    : selection.focusNode
   const range = selection.getRangeAt(0)
+  const { endContainer, startOffset, endOffset } = range
 
-  if (selection.rangeCount > 0 && ((!targetNode.previousSibling) || (targetNode === node))) {
-    return { start: range.startOffset, end: range.endOffset }
+  // safe to use range offsets if endContainer is the firstChild of or equal to the editable node
+  if ((endContainer === node.firstChild) || (endContainer === node)) {
+    return { start: startOffset, end: endOffset }
   }
 
-  // recursively walk down the highlighter node (main textarea/editable node), increasing offset
-  function getOffsets (children) {
-    for (let i = 0; i < children.length; i++) {
-      const childNode = children[i]
-      if (childNode === targetNode) {
-        return
-      }
-      if (childNode.nodeName === '#text') {
-        const offset = childNode.nodeValue.length
-        selectionBounds.start += offset
-        selectionBounds.end += offset
-      }
-      if (childNode.nodeName === 'DIV' && childNode.isContentEditable) {
-        getOffsets(childNode)
-      }
-    }
-  }
-
-  getOffsets(node.childNodes)
-
-  console.log('targetNode', targetNode)
-  console.log('selection', selection)
+  // assumes you are working with innerText later on - childNode.length will cause hiccups if
+  // using innerHtml or possibly even textContent
+  const relativeOffset = getOffset(node.childNodes, endContainer)
   console.log('range', range)
-  console.log('selectionBounds', selectionBounds)
+  console.log('start and end offset', startOffset, endOffset)
+  console.log('relativeOffset', relativeOffset)
 
-  return selectionBounds
+  return { start: startOffset + relativeOffset, end: endOffset + relativeOffset }
 }
 
 // get current text boundaries based on node start and end if defined and not equal, otherwise
@@ -318,12 +325,13 @@ function getCurrentWordBounds (node) {
   const content = node.value || node.innerText
   const selection = getSelectionBounds(node)
 
-  console.log('node', node)
   console.log('content', content)
+  console.log('selection', selection)
 
-  // selection start will not equal selection end if both are defined
+  // selection is not collapsed if start and end not equal
   if (selection.start !== selection.end) {
-    const word = selection.text || content.slice(selection.start, selection.end)
+    const word = content.slice(selection.start, selection.end)
+    console.log('word', word)
     return [word, ...getRelativeBounds(word, content, selection.start)]
   }
 
