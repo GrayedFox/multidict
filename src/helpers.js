@@ -223,7 +223,7 @@ function getDomainSpecificProps (hostname, properties, textarea) {
 
 // gets the index of a Word by matching the Word boundaries against the chunk of text being
 // operated on (needed for when duplicate misspelt words appear inside content)
-function getMatchingWordIndex (content, word) {
+function getMatchingMarkIndex (content, word) {
   if (!word.isValid() || !content) {
     return
   }
@@ -260,30 +260,66 @@ function getRelativeBounds (word, content, startIndex) {
     return
   }
   const start = content.indexOf(word, startIndex)
+  console.log('result', word, start, start + word.length)
   return [start, start + word.length]
 }
 
-// get selection boundaries of any currently selected text - the start and end are relative to the
-// text within the given node, and not any parent or child nodes
+// get selection boundaries of any currently selected text - the start and end bounds of the
+// selection are relative to the text within the given specified parent
 function getSelectionBounds (node) {
-  if (node.selectionStart && node.selectionEnd) {
+  if (node.nodeName === 'TEXTAREA' && node.selectionStart && node.selectionEnd) {
     return { start: node.selectionStart, end: node.selectionEnd }
   }
 
   const selection = window.getSelection()
+  const selectedText = selection.toString()
+  const selectionBounds = { text: selectedText, start: 0, end: selectedText.length }
+  const targetNode = selection.focusNode.nodeName === '#text'
+    ? selection.focusNode.parentNode
+    : selection.focusNode
+  const range = selection.getRangeAt(0)
 
-  if (selection.rangeCount > 0) {
-    const range = selection.getRangeAt(0)
-    return { start: range.startOffset, end: range.endOffset, text: selection.toString() }
+  if (selection.rangeCount > 0 && ((!targetNode.previousSibling) || (targetNode === node))) {
+    return { start: range.startOffset, end: range.endOffset }
   }
+
+  // recursively walk down the highlighter node (main textarea/editable node), increasing offset
+  function getOffsets (children) {
+    for (let i = 0; i < children.length; i++) {
+      const childNode = children[i]
+      if (childNode === targetNode) {
+        return
+      }
+      if (childNode.nodeName === '#text') {
+        const offset = childNode.nodeValue.length
+        selectionBounds.start += offset
+        selectionBounds.end += offset
+      }
+      if (childNode.nodeName === 'DIV' && childNode.isContentEditable) {
+        getOffsets(childNode)
+      }
+    }
+  }
+
+  getOffsets(node.childNodes)
+
+  console.log('targetNode', targetNode)
+  console.log('selection', selection)
+  console.log('range', range)
+  console.log('selectionBounds', selectionBounds)
+
+  return selectionBounds
 }
 
 // get current text boundaries based on node start and end if defined and not equal, otherwise
 // get boundaries based off the caret positioned at the start/end/within a text node, otherwise
 // use window selection if present
-function getCurrentWordBounds (node = document.activeElement) {
-  const selection = getSelectionBounds(node)
+function getCurrentWordBounds (node) {
   const content = node.value || node.innerText
+  const selection = getSelectionBounds(node)
+
+  console.log('node', node)
+  console.log('content', content)
 
   // selection start will not equal selection end if both are defined
   if (selection.start !== selection.end) {
@@ -429,16 +465,16 @@ module.exports = {
   createMenuItems,
   css,
   debounce,
-  getMatchingWordIndex,
+  getCurrentWordBounds,
+  getDomainSpecificProps,
+  getMatchingMarkIndex,
   getRelativeBounds,
   getSelectionBounds,
-  getCurrentWordBounds,
   getTextContent,
+  getTopMostEditableNode,
   isSupported,
   isWholeWord,
   loadDictionariesAndPrefs,
   prepareLanguages,
-  replaceInText,
-  getDomainSpecificProps,
-  getTopMostEditableNode
+  replaceInText
 }

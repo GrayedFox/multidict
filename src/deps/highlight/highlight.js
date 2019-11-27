@@ -12,7 +12,7 @@
  */
 
 const {
-  blinkMark, createClassyElement, css, getDomainSpecificProps, getMatchingWordIndex,
+  blinkMark, createClassyElement, css, getDomainSpecificProps, getMatchingMarkIndex,
   getTextContent, getCurrentWordBounds, getSelectionBounds, isWholeWord, replaceInText
 } = require('../../helpers.js')
 
@@ -165,7 +165,7 @@ class Highlighter {
   handleSelect () {
     console.log('handle select')
     this.currentWord = new Word(...getCurrentWordBounds(this.node))
-    this.currentMarkIndex = getMatchingWordIndex(getTextContent(this.node), this.currentWord)
+    this.currentMarkIndex = getMatchingMarkIndex(getTextContent(this.node), this.currentWord)
     this.setCurrentMark(this.currentWord.text, this.currentMarkIndex)
     this.node.setAttribute('data-multidict-selected-word', [...this.currentWord])
   }
