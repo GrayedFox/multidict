@@ -12,7 +12,7 @@ let previousText = ''
 // function is debounced on all keyup and click events
 async function edit (event) {
   const target = getTopMostEditableNode(event.target)
-  const currentText = getTextContent(target)
+  const currentText = getTextContent(target, window.location.hostname)
 
   // don't spellcheck unsupported or uncheckable nodes
   if (!isSupported(target, window.location)) {
@@ -24,12 +24,12 @@ async function edit (event) {
     return
   }
 
-  // tell background script to connect to active tab if content port undefined
+  // tell background script to connect to active tab if content port falsy
   if (!contentPort) {
     await browser.runtime.sendMessage({ type: 'connectToActiveTab' })
   }
 
-  // wait for connection to current/active tab before updating previousText and editableNode
+  // update previousText and editableNode after connecting to current/active tab
   editableNode = target
   previousText = currentText
 

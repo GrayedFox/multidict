@@ -74,7 +74,6 @@ function popupListener (port) {
     popupPort = port
     popupPort.onMessage.addListener(api)
     popupPort.onDisconnect.addListener(() => {
-      console.log('popup closed')
       currentPort = contentPort
       popupPort = null
     })

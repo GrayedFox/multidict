@@ -325,9 +325,6 @@ function getCurrentWordBounds (node) {
   const content = node.value || node.innerText
   const selection = getSelectionBounds(node)
 
-  console.log('content', content)
-  console.log('selection', selection)
-
   // selection is not collapsed if start and end not equal
   if (selection.start !== selection.end) {
     const word = content.slice(selection.start, selection.end)
@@ -352,8 +349,21 @@ function getCurrentWordBounds (node) {
 }
 
 // conditionally return the text content of a node (including line breaks) based on node type
-function getTextContent (node) {
-  return node.nodeName === 'TEXTAREA' ? node.value : node.innerText
+function getTextContent (node, hostname) {
+  let result = ''
+  if (node.nodeName === 'TEXTAREA') {
+    result = node.value
+  }
+  // don't spell check the signature of an email
+  if (hostname === 'mail.google.com') {
+    const signature = document.querySelector('div[data-smartmail="gmail_signature"]')
+    console.log(signature)
+    result = node.innerText.slice(0, -signature.innerText.length)
+  } else {
+    result = node.innerText
+  }
+  console.log(result)
+  return result
 }
 
 // return a boolean value that is true if the domain/page is supported, element name matches
