@@ -53,7 +53,8 @@ function cleanText (content, filter = true) {
     return ''
   }
 
-  const rxUrls = /^(http|ftp|www)/
+  // ToDo: first split string by spaces in order to properly ignore urls
+  const rxUrls = /^(http|https|ftp|www)/
   const rxSeparators = /[\s\r\n.,:;!?_<>{}()[\]"`´^$°§½¼³%&¬+=*~#|/\\]/
   const rxSingleQuotes = /^'+|'+$/g
 
@@ -142,22 +143,20 @@ function debounce (callback, wait) {
 }
 
 // gets the current word and it's boundaries based on cursor position/selection
-function getCurrentWordBoundaries (node) {
-  if (!(node.selectionStart >= 0)) {
-    console.warn('MultiDict: get current word failed to find a caret position')
+function getWordBoundsFromCaret (node, text, startIndex) {
+  if (!(startIndex >= 0)) {
+    console.warn('MultiDict: cannot get current word boundaries if start index negative')
     return ''
   }
 
   const boundaries = {
-    start: node.selectionStart,
-    end: node.selectionStart
+    start: startIndex,
+    end: startIndex
   }
 
-  const text = node.value
-
   if (text) {
-    let i = 0
-    while (i < 1) {
+    let found = false
+    while (!found) {
       const start = boundaries.start
       const end = boundaries.end
       const prevChar = text.charAt(start - 1)
@@ -173,10 +172,10 @@ function getCurrentWordBoundaries (node) {
 
       // if we haven't moved either boundary, we have our word
       if (start === boundaries.start && end === boundaries.end) {
-        i = 1
+        found = true
         if (start < end) {
           const word = cleanWord(text.slice(start, end))
-          return [word, ...getRelativeBoundaries(word, text, start)]
+          return [word, ...getRelativeBounds(word, text, start)]
         }
         // start and end can be equal if caret positioned between 2 word boundaries i.e. ' | '
         return ['', start, end]
@@ -188,9 +187,28 @@ function getCurrentWordBoundaries (node) {
   }
 }
 
-// helper function that gets the index of a Word by matching the Word boundaries against the chunk
-// of text being operated on (needed for when duplicate misspelt words appear inside content)
-function getMatchingWordIndex (content, word) {
+// get properties based on domain (i.e. github)
+function getDomainSpecificProps (hostname, properties, textarea) {
+  console.log('getting domain specific container props')
+  switch (hostname) {
+    case 'github.com':
+      properties.display = 'block'
+      break
+    default:
+      if (properties.display === 'inline' || properties.display === 'inline-block') {
+        properties.display = 'inline-flex'
+      } else {
+        properties.display = 'flex'
+        properties.width = `${textarea.offsetWidth}px`
+      }
+  }
+
+  return properties
+}
+
+// gets the index of a Word by matching the Word boundaries against the chunk of text being
+// operated on (needed for when duplicate misspelt words appear inside content)
+function getMatchingMarkIndex (content, word) {
   if (!word.isValid() || !content) {
     return
   }
@@ -221,7 +239,7 @@ function getMatchingWordIndex (content, word) {
 }
 
 // get the relative boundaries of a word given a specific start index within content
-function getRelativeBoundaries (word, content, startIndex) {
+function getRelativeBounds (word, content, startIndex) {
   if (!word) {
     console.warn(`MultiDict: cannot get relative boundaries of ${word}`)
     return
@@ -230,31 +248,70 @@ function getRelativeBoundaries (word, content, startIndex) {
   return [start, start + word.length]
 }
 
-// use window selection if present, else the current node selection if selection start and end not
-// equal, otherwise get a selection based off the caret positioned at the start/end/within a node
-function getSelectedWordBoundaries (node = document.activeElement) {
-  const selection = {
-    start: node.selectionStart,
-    end: node.selectionEnd
+// get selection boundaries of any currently selected text - the start and end bounds of the
+// selection are relative to the text within the specified node
+function getSelectionBounds (node) {
+  // textareas are easy - just return the selectionStart and selectionEnd properties
+  if (node.nodeName === 'TEXTAREA' && node.selectionStart && node.selectionEnd) {
+    return { start: node.selectionStart, end: node.selectionEnd }
   }
 
-  if (window.getSelection().toString().length > 0) {
-    const text = window.getSelection().toString()
+  const selection = window.getSelection()
+  // needed for when adding/removing custom words from non-textareas i.e. divs
+  if (selection.toString().length > 0) {
+    const text = selection.toString()
     const word = cleanWord(text)
-    return [word, ...getRelativeBoundaries(word, text, selection.start)]
+    return [word, ...getRelativeBounds(word, text, node.selectionStart)]
   }
+}
 
+// get current text boundaries based on node start and end if defined and not equal, otherwise
+// get boundaries based off the caret positioned at the start/end/within a text node, otherwise
+// use window selection if present
+function getCurrentWordBounds (node) {
+  const content = node.value || node.innerText
+  const selection = getSelectionBounds(node)
+
+  // selection is not collapsed if start and end not equal
   if (selection.start !== selection.end) {
-    const text = node.value.slice(selection.start, selection.end)
-    const word = cleanWord(text)
-    return [word, ...getRelativeBoundaries(word, text, selection.start)]
+    const word = content.slice(selection.start, selection.end)
+    console.log('word', word)
+    return [word, ...getRelativeBounds(word, content, selection.start)]
   }
 
-  if (node.selectionStart >= 0) {
-    return getCurrentWordBoundaries(node)
+  // prefer using getWordBoundsFromCaret over window selection
+  if (selection.start >= 0) {
+    return getWordBoundsFromCaret(node, content, selection.start)
   }
 
-  console.warn('MultiDict: get current selection failed to find any workable text.')
+  console.warn('MultiDict: get selected word boundaries failed to find any workable text.')
+}
+
+// conditionally return the text content of a node (including line breaks) based on node type
+function getTextContent (node, hostname) {
+  return node.nodeName === 'TEXTAREA'
+    ? node.value
+    : node.innerText
+}
+
+// return a boolean value that is true if the domain/page is supported, element name matches
+// supported types, and content is marked as spell checkable
+function isSupported (node, location) {
+  const supportedDomains = [''] // fill with supported domains later
+  const hostname = location.hostname
+
+  if (node.spellcheck) {
+    if (node.nodeName === 'TEXTAREA') {
+      return true
+    }
+
+    if (node.nodeName === 'DIV' && node.isContentEditable) {
+      return supportedDomains.includes(hostname) ||
+        (hostname === '' && location.protocol === 'file:') // support local files for testing
+    }
+  }
+
+  return false
 }
 
 // return a boolean value that is true if a word, based on the content and startIndex, is a whole
@@ -284,6 +341,7 @@ function isWordBoundary (char) {
 
 // load local dictionary files from supported languages based on user prefs (acceptLanguages)
 function loadDictionariesAndPrefs (languages) {
+  // ToDo: check if this negatively impacts memory imprint (may need to fetch dict/aff files)
   const dicts = []
   let prefs = []
   return asyncForEach(languages, async (language) => {
@@ -345,25 +403,6 @@ function replaceInText (content, word, replacement) {
   return `${content.slice(0, word.start)}${replacement}${content.slice(word.end)}`
 }
 
-// set properties based on domain (i.e. gmail or github)
-function setDomainSpecificStyles (hostname, properties, textarea) {
-  console.log('setting domain styles')
-  switch (hostname) {
-    case 'github.com':
-      properties.display = 'block'
-      break
-    default:
-      if (properties.display === 'inline' || properties.display === 'inline-block') {
-        properties.display = 'inline-flex'
-      } else {
-        properties.display = 'flex'
-        properties.width = `${textarea.offsetWidth}px`
-      }
-  }
-
-  return properties
-}
-
 module.exports = {
   blinkMark,
   cleanText,
@@ -372,13 +411,15 @@ module.exports = {
   createMenuItems,
   css,
   debounce,
-  getCurrentWordBoundaries,
-  getMatchingWordIndex,
-  getRelativeBoundaries,
-  getSelectedWordBoundaries,
+  getCurrentWordBounds,
+  getDomainSpecificProps,
+  getMatchingMarkIndex,
+  getRelativeBounds,
+  getSelectionBounds,
+  getTextContent,
+  isSupported,
   isWholeWord,
   loadDictionariesAndPrefs,
   prepareLanguages,
-  replaceInText,
-  setDomainSpecificStyles
+  replaceInText
 }

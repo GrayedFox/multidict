@@ -1,5 +1,5 @@
 const { User, Spelling } = require('./classes.js')
-const { cleanWord, createMenuItems, loadDictionariesAndPrefs, prepareLanguages } = require('./helpers.js')
+const { createMenuItems, loadDictionariesAndPrefs, prepareLanguages } = require('./helpers.js')
 
 let user, customWords, contentPort, popupPort, currentPort
 
@@ -74,29 +74,26 @@ function popupListener (port) {
     popupPort = port
     popupPort.onMessage.addListener(api)
     popupPort.onDisconnect.addListener(() => {
-      console.log('popup closed')
       currentPort = contentPort
       popupPort = null
     })
   }
 }
 
-// listens to all incoming commands (keyboard shortcuts)
-function commandListener (command) {
-  if (command === 'add' || command === 'remove') {
-    contentPort.postMessage({ type: command })
+// listens to all incoming commands (keyboard shortcuts) and context menu messages
+async function commandAndContextListener (info) {
+  const command = info.menuItemId || info
+  if (!contentPort) {
+    await connectToActiveTab()
   }
-}
-
-// listens to all incoming messages from the context menu items
-function contextListener (info) {
-  if (info.menuItemId === 'add' || info.menuItemId === 'remove') {
-    api({ type: info.menuItemId, word: cleanWord(info.selectionText) })
+  if (command === 'add' || command === 'remove') {
+    contentPort.postMessage({ type: command, word: info.selectionText })
   }
 }
 
 // listen to incoming messages from the content script and on new tab creation
 async function connectToActiveTab () {
+  console.log('connect to active tab')
   let tab = await browser.tabs.query({ active: true, currentWindow: true })
   tab = tab[0]
   const tabName = `tab-${tab.id}`
@@ -129,8 +126,8 @@ async function main () {
 
 main()
 
-browser.commands.onCommand.addListener(commandListener)
-browser.contextMenus.onClicked.addListener(contextListener)
+browser.commands.onCommand.addListener(commandAndContextListener)
+browser.contextMenus.onClicked.addListener(commandAndContextListener)
 browser.tabs.onCreated.addListener(connectToActiveTab)
 browser.runtime.onMessage.addListener(connectToActiveTab)
 browser.runtime.onConnect.addListener(popupListener)
