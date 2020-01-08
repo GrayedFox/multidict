@@ -12,8 +12,8 @@
  */
 
 const {
-  blinkMark, createClassyElement, css, getCurrentWordBoundaries,
-  getMatchingWordIndex, isWholeWord, replaceInText, setDomainSpecificStyles
+  blinkMark, createClassyElement, css, getDomainSpecificProps, getMatchingMarkIndex,
+  getTextContent, getCurrentWordBounds, getSelectionBounds, isWholeWord, replaceInText
 } = require('../../helpers.js')
 
 const { Word, WordCarousel } = require('../../classes.js')
@@ -31,6 +31,7 @@ let boundClick, boundKeyup, boundScroll, boundSelect
 class Highlighter {
   constructor (node, spelling, color) {
     this.node = node
+    this.textNode = node
     this.spelling = spelling
     this.color = color
     this.carousel = null // the WordCarousel (if active) showing word suggestions
@@ -43,6 +44,23 @@ class Highlighter {
     this._buildHighlighter()
   }
 
+  chooseSuggestion () {
+    console.log('choose suggestion')
+    const currentWord = this.currentWord
+    const currentText = getTextContent(this.node)
+    const restoreSelection = this.storeSelection(this.node)
+    const misspeltWordIndex = this.getMisspeltWordIndex(currentWord.text, this.currentMarkIndex)
+
+    this.spelling.misspeltWords.remove(misspeltWordIndex)
+    this.node.value = replaceInText(currentText, currentWord, this.carousel.acceptedWord)
+    restoreSelection(this.node)
+  }
+
+  createCarousel (suggestions) {
+    console.log('create carousel')
+    this.carousel = new WordCarousel(this.node, this.currentMark, suggestions)
+  }
+
   destroy () {
     console.log('destroy highlighter')
     this.node.removeEventListener('click', boundClick)
@@ -53,12 +71,8 @@ class Highlighter {
     this.container.parentNode.insertBefore(this.node, this.container)
     this.container.remove()
     this.node.removeAttribute('data-multidict-generated')
+    this.node.removeAttribute('data-multidict-selected-word')
     this.node.classList.remove(`${ID}-content`, `${ID}-input`)
-  }
-
-  createCarousel (words) {
-    console.log('create carousel')
-    this.carousel = new WordCarousel(this.node, this.currentMark, this.currentWord.text, words)
   }
 
   destroyCarousel () {
@@ -73,16 +87,12 @@ class Highlighter {
     const currentWord = this.currentWord
     const currentWordSuggestions = this.spelling.suggestions[currentWord.text]
     const misspeltWord = this.spelling.misspeltWords[this.currentMarkIndex]
-    const misspeltWordIndex = this.getMisspeltWordIndex(currentWord.text, this.currentMarkIndex)
-    const restoreSelection = this.storeSelection(this.node.selectionStart, this.node.selectionEnd)
 
     // if we are showing the carousel but shift and alt are no longer both pressed, destroy it
     // and replace the word with the carousel accepted word (if there is one)
     if (this.carousel && !(e.shiftKey && e.altKey)) {
       if (this.carousel.acceptedWord) {
-        this.spelling.misspeltWords.remove(misspeltWordIndex)
-        this.node.value = replaceInText(this.node.value, this.currentWord, this.carousel.acceptedWord)
-        restoreSelection(this.node)
+        this.chooseSuggestion()
       }
       this.destroyCarousel()
       this.highlightMistakes()
@@ -96,7 +106,7 @@ class Highlighter {
           this.carousel.showSuggestions()
         }
         // if we have no suggestions but the current word is misspelled, blink current mark
-        if (!currentWordSuggestions && misspeltWord) {
+        if (!currentWordSuggestions && misspeltWord && this.currentMark) {
           blinkMark(this.currentMark, this.color, 4, 600)
         }
         // rotate the carousel up or down
@@ -148,15 +158,15 @@ class Highlighter {
 
   handleSelect () {
     console.log('handle select')
-    this.currentWord = new Word(...getCurrentWordBoundaries(this.node))
-    this.currentMarkIndex = getMatchingWordIndex(this.node.value, this.currentWord)
+    this.currentWord = new Word(...getCurrentWordBounds(this.node))
+    this.currentMarkIndex = getMatchingMarkIndex(getTextContent(this.node), this.currentWord)
     this.setCurrentMark(this.currentWord.text, this.currentMarkIndex)
     this.node.setAttribute('data-multidict-selected-word', [...this.currentWord])
   }
 
   highlightMistakes () {
     console.log('highlight mistakes')
-    let input = this.node.value
+    let input = getTextContent(this.node)
     let index = 0
 
     for (const word of this.spelling.misspeltWords) {
@@ -183,7 +193,7 @@ class Highlighter {
 
   // gets the index of the misspelt word used to generate the WordCarousel
   // if the misspelt word occurs more than once the reduced array will contain multiple entries
-  // in which case the duplicateWordIndex would need to be known before hand
+  // requiring the position of the misspelt word dupe (duplicateWordIndex) to be known before hand
   getMisspeltWordIndex (misspeltWord, duplicateWordIndex = 0) {
     return this.spelling.misspeltWords.reduce((acc, word, misspeltWordIndex) => {
       return word.text === misspeltWord ? acc.concat([misspeltWordIndex]) : acc
@@ -205,17 +215,45 @@ class Highlighter {
   }
 
   // used to restore a previous selection/cursor position after moving things around in the DOM
-  storeSelection (start, end) {
+  storeSelection (currentNode) {
+    const selection = window.getSelection()
+    const selectionBounds = getSelectionBounds(currentNode)
+    const selectionRange = selection.getRangeAt(0) || null
+    const storedRange = {}
+
+    if (selectionRange) {
+      storedRange.startContainer = selectionRange.startContainer
+      storedRange.startOffset = selectionRange.startOffset
+      storedRange.endContainer = selectionRange.endContainer
+      storedRange.endOffset = selectionRange.endOffset
+      storedRange.parentNode = selectionRange.startContainer.parentNode
+    }
+
     return function (node) {
-      return node.setSelectionRange(start, end)
+      node.focus()
+      if (node.setSelectionRange) {
+        node.setSelectionRange(selectionBounds.start, selectionBounds.end)
+      } else {
+        if (!storedRange.startContainer.isConnected) {
+          storedRange.startContainer = storedRange.parentNode.childNodes[0]
+          storedRange.endContainer = storedRange.parentNode.childNodes[0]
+        }
+        window.getSelection().setBaseAndExtent(
+          storedRange.startContainer, storedRange.startOffset,
+          storedRange.endContainer, storedRange.endOffset
+        )
+      }
     }
   }
 
   // build the Highlighter html elements, position them, and then insert them into the DOM
   // should only be called once during class instantiation
   _buildHighlighter () {
-    // Get styles from textarea being spell checked
-    const restoreSelection = this.storeSelection(this.node.selectionStart, this.node.selectionEnd)
+    // Highlighter is built based on styles from textarea being spell checked
+    // unforunately a one size fits all approach simply doesn't work (rich text editors i.e. gmail)
+    // so some conditional logic is needed to set the correct node/styles
+
+    const restoreSelection = this.storeSelection(this.node)
     const textareaStyles = window.getComputedStyle(this.node)
     const backdropProps = css(textareaStyles, ['background-color'])
     const highlightsProps = css(textareaStyles, [
@@ -227,7 +265,7 @@ class Highlighter {
     ])
 
     let containerProps = css(textareaStyles, ['display', 'position'])
-    containerProps = setDomainSpecificStyles(window.location.hostname, containerProps, this.node)
+    containerProps = getDomainSpecificProps(window.location.hostname, containerProps, this.node)
 
     boundClick = this.handleClick.bind(this)
     boundKeyup = this.handleKeyup.bind(this)
@@ -250,13 +288,12 @@ class Highlighter {
     this.container.appendChild(this.node)
     this.node.parentNode.insertBefore(this.backdrop, this.node)
 
-    this.node.focus()
     restoreSelection(this.node)
+
+    this.node.setAttribute('data-multidict-generated', true)
 
     this.handleSelect()
     this.highlightMistakes()
-
-    this.node.setAttribute('data-multidict-generated', true)
   }
 }
 
