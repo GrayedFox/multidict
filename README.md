@@ -22,17 +22,13 @@ LibreOffice, OpenOffice, and many more apps that rely on the Hunspell spell chec
 
 ## Usage
 
-### Disabling Built In Spellchecker
+### Should I disable the built in Spellchecker?
 
-The spell checking part of this extension is essentially a JavaScript only version of Hunspell, the
-exact spell checker used by Firefox in the first place, and it employs the same default
-dictionaries. So you can trust the add-on to do all the spell checking for you and behave the way
-you expect it would.
+The spell checking from this addon is only applied to textboxes and input fields, so editable divs
+will still use the built in spell checking from Firefox. In order not to get overlaps, you can opt
+into disabling the built in spell checking for input fields and textboxes in the settings page of
+the addon.
 
-To prevent double reports and conflicts please disable the built-in spell checker:
-
-1. open up Firefox and type `about:preferences` into the URL bar
-2. scroll down the page and uncheck the "Check your spelling as you type" checkbox
 
 ### Enabling Multi Language Spell Checking
 

@@ -1,5 +1,5 @@
 html, body {
-  width: 250px;
+  width: 18em;
   height: auto;
   margin: 0;
   padding: 0;
@@ -33,7 +33,6 @@ a:hover {
 
 #menu li {
   position: relative;
-  text-align: justify;
   right: 10%;
   padding-top: 0.5em;
   padding-bottom: 0.5em;
@@ -46,15 +45,24 @@ a:hover {
   background-color: #fafafa;
 }
 
-#dictionary div {
+#menu div {
   position: relative;
-  float: right;
   display: inline-block;
   font-size: small;
+  float: right;
+}
+
+.options {
+  list-style-type: none;
+}
+
+.options li:hover {
+  color: tomato;
 }
 
 .words {
   list-style-type: none;
+  word-wrap: break-word;
 }
 
 .words li {

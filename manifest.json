@@ -22,7 +22,7 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "che.fisher@gmail.com",
-      "strict_min_version": "69.0"
+      "strict_min_version": "71.0"
     }
   },
 

@@ -189,7 +189,6 @@ function getWordBoundsFromCaret (node, text, startIndex) {
 
 // get properties based on domain (i.e. github)
 function getDomainSpecificProps (hostname, properties, textarea) {
-  console.log('getting domain specific container props')
   switch (hostname) {
     case 'github.com':
       properties.display = 'block'
@@ -295,20 +294,18 @@ function getTextContent (node, hostname) {
 }
 
 // return a boolean value that is true if the domain/page is supported, element name matches
-// supported types, and content is marked as spell checkable
+// supported types
 function isSupported (node, location) {
   const supportedDomains = [''] // fill with supported domains later
   const hostname = location.hostname
 
-  if (node.spellcheck) {
-    if (node.nodeName === 'TEXTAREA') {
-      return true
-    }
+  if (node.nodeName === 'TEXTAREA') {
+    return true
+  }
 
-    if (node.nodeName === 'DIV' && node.isContentEditable) {
-      return supportedDomains.includes(hostname) ||
-        (hostname === '' && location.protocol === 'file:') // support local files for testing
-    }
+  if (node.nodeName === 'DIV' && node.isContentEditable) {
+    return supportedDomains.includes(hostname) ||
+      (hostname === '' && location.protocol === 'file:') // support local files for testing
   }
 
   return false
@@ -403,6 +400,15 @@ function replaceInText (content, word, replacement) {
   return `${content.slice(0, word.start)}${replacement}${content.slice(word.end)}`
 }
 
+// return new settings object based on settingsArray
+function updateSettingsObject (settingsArray) {
+  const settings = {}
+  settingsArray.forEach((setting) => {
+    settings[setting.split('-')[0]] = (setting.split('-')[1] === 'true')
+  })
+  return settings
+}
+
 module.exports = {
   blinkMark,
   cleanText,
@@ -421,5 +427,6 @@ module.exports = {
   isWholeWord,
   loadDictionariesAndPrefs,
   prepareLanguages,
-  replaceInText
+  replaceInText,
+  updateSettingsObject
 }

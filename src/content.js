@@ -1,6 +1,4 @@
-const {
-  cleanWord, debounce, getCurrentWordBounds, getTextContent, isSupported
-} = require('./helpers.js')
+const { debounce, getCurrentWordBounds, getTextContent, isSupported } = require('./helpers.js')
 
 const { Highlighter } = require('./deps/highlight/highlight.js')
 
@@ -67,6 +65,8 @@ async function connectionHandler (port, info) {
     contentPort = port
     contentPort.onMessage.addListener(messageHandler)
     contentPort.onDisconnect.addListener(disconnect)
+    // check settings in case we need to disable built in spell checking for textboxes and inputs
+    contentPort.postMessage({ type: 'getCustomSettings' })
   }
 }
 
@@ -92,9 +92,19 @@ function messageHandler (message) {
       word = word || getCurrentWordBounds(document.activeElement)[0]
       contentPort.postMessage({
         type: message.type,
-        word: cleanWord(word) // always clean the text before adding/removing custom words
+        word: word
       })
-      // clearing previousText after add/remove ensures we recheck spelling despite same content
+      break
+    case 'getCustomSettings':
+      if (message.customSettings.disableNativeSpellcheck) {
+        const editableNodes = document.querySelectorAll('textarea')
+        editableNodes.forEach((node) => {
+          node.setAttribute('spellcheck', false)
+        })
+      }
+      break
+    case 'refresh':
+      // clearing previousText after ensures we recheck spelling despite identical content
       previousText = ''
       break
 
@@ -109,10 +119,10 @@ document.body.addEventListener('keyup', debounce(edit, 700), true)
 document.body.addEventListener('click', debounce(edit, 700), true)
 
 // App Control/Execution Flow
-// 1. Page listeners generate Spellings of currently focused textarea/editable node content
-// 2. Single Highlighter instance (requires Spelling) attached to textarea/node
-// 3. Highlighter instance has own listeners to keep it in sync with textarea/node and allow user
-//    interaction
+// 1. Page listeners generate Spellings of currently focused textarea/input node content
+// 2. Single Highlighter instance (requires Spelling) attached to textarea/input node
+// 3. Highlighter instance has own listeners to keep it in sync with textarea/input node and allow
+//    user interaction
 // 4. Highlighter instance generates WordCarousel (suggestions node) as needed and controls the
 //    carousel (WordCarousel does not have own listeners, is instead driven by Highlighter)
 //

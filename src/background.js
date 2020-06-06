@@ -1,7 +1,11 @@
 const { User, Spelling } = require('./classes.js')
-const { createMenuItems, loadDictionariesAndPrefs, prepareLanguages } = require('./helpers.js')
+const {
+  cleanWord, createMenuItems, loadDictionariesAndPrefs, prepareLanguages, updateSettingsObject
+} = require('./helpers.js')
 
-let user, customWords, contentPort, popupPort, currentPort
+const defaultSettings = ['disableNativeSpellcheck-false']
+
+let user, customWords, contentPort, popupPort, currentPort, customSettings
 
 // saves a word in browser storage and calls user.addWord
 async function addCustomWord (word) {
@@ -35,8 +39,19 @@ async function removeCustomWord (word) {
   }
 }
 
-// returns an array of all current custom words (customWords array is in sync with user.ownWords)
+// saves user specified extension settings (i.e. from popup) in browser storage
+async function saveSettings (message) {
+  const error = await browser.storage.sync.set({ settings: message.settings })
+
+  if (error) {
+    console.warn(`MultiDict: Saving settings failed with error: ${error}`)
+  } else {
+    customSettings = updateSettingsObject(message.settings)
+  }
+}
+
 const getCustomWords = () => currentPort.postMessage({ type: 'getCustomWords', customWords })
+const getCustomSettings = () => currentPort.postMessage({ type: 'getCustomSettings', customSettings })
 
 // checks content for spelling errors and returns a new Spelling instance
 function spellCheck (message) {
@@ -47,14 +62,17 @@ function spellCheck (message) {
   })
 }
 
-// api that handles performing all actions (from content script, command messages, and popup menu)
+// api that handles performing all actions - core function should only ever be called by the api
 function api (message) {
   switch (message.type) {
+    // api always clean the text before adding/removing custom words
     case 'add':
-      addCustomWord(message.word)
+      addCustomWord(cleanWord(message.word))
+      contentPort.postMessage({ type: 'refresh' })
       break
     case 'remove':
-      removeCustomWord(message.word)
+      removeCustomWord(cleanWord(message.word))
+      contentPort.postMessage({ type: 'refresh' })
       break
     case 'spellCheck':
       spellCheck(message)
@@ -62,19 +80,30 @@ function api (message) {
     case 'getCustomWords':
       getCustomWords()
       break
+    case 'getCustomSettings':
+      getCustomSettings()
+      break
+    case 'saveSettings':
+      saveSettings(message)
+      break
     default:
-      console.warn(`MultDict: unrecognized message ${message}. Aborting.`)
+      console.warn(`MultDict: unrecognized message type ${message.type}. Aborting.`)
   }
 }
 
 // listens to all incoming messages from the popup/action menu and handle popup closing
-function popupListener (port) {
+async function popupListener (port) {
+  if (!contentPort) {
+    await connectToActiveTab()
+  }
+
+  popupPort = port
   currentPort = port
-  if (port.name === 'popup') {
-    popupPort = port
+
+  if (popupPort.name === 'popup') {
     popupPort.onMessage.addListener(api)
     popupPort.onDisconnect.addListener(() => {
-      currentPort = contentPort
+      popupPort.onMessage.removeListener(api)
       popupPort = null
     })
   }
@@ -93,7 +122,6 @@ async function commandAndContextListener (info) {
 
 // listen to incoming messages from the content script and on new tab creation
 async function connectToActiveTab () {
-  console.log('connect to active tab')
   let tab = await browser.tabs.query({ active: true, currentWindow: true })
   tab = tab[0]
   const tabName = `tab-${tab.id}`
@@ -106,12 +134,18 @@ async function connectToActiveTab () {
 
   contentPort = browser.tabs.connect(tab.id, { name: tabName })
   contentPort.onMessage.addListener(api)
+  currentPort = contentPort
 }
 
 // load dictionaries, create langauges from browser acceptLanguages, and instantiate user
 async function main () {
   const languages = prepareLanguages(await browser.i18n.getAcceptLanguages())
   const dictionariesAndPrefs = await loadDictionariesAndPrefs(languages)
+
+  customSettings = await browser.storage.sync.get('settings')
+  customSettings = Array.isArray(customSettings.settings)
+    ? updateSettingsObject(customSettings.settings)
+    : updateSettingsObject(defaultSettings)
 
   customWords = await browser.storage.sync.get('personal')
   customWords = Array.isArray(customWords.personal) ? customWords.personal : []
@@ -122,6 +156,7 @@ async function main () {
   console.log('langs', user.langs)
   console.log('prefs', user.prefs)
   console.log('words', user.ownWords)
+  console.log('settings', customSettings)
 }
 
 main()
