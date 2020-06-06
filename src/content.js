@@ -2,17 +2,55 @@ const { debounce, getCurrentWordBounds, getTextContent, isSupported } = require(
 
 const { Highlighter } = require('./deps/highlight/highlight.js')
 
-let contentPort = null
 let highlighter = null
 let editableNode = null
 let previousText = ''
 
-// function is debounced on all keyup and click events
+// handle highlighting misspelt words based on recieved spelling
+function handleHighlight (spelling) {
+  if (highlighter && !editableNode.getAttribute('data-multidict-generated')) {
+    highlighter.destroy()
+    highlighter = null
+  }
+
+  if (!highlighter) {
+    highlighter = new Highlighter(editableNode, spelling, 'red')
+  } else {
+    highlighter.setSpelling(spelling)
+  }
+}
+
+// handle refreshing any vars/temp settings if needed
+function handleRefresh () {
+  // clearing previousText after ensures we recheck spelling despite identical content
+  previousText = ''
+}
+
+// handle any user settings
+function handleSettings (settings) {
+  // set spellcheck=false on all text fields to prevent double spell checking
+  if (settings.disableNativeSpellcheck) {
+    const editableNodes = document.querySelectorAll('textarea')
+    editableNodes.forEach((node) => {
+      node.setAttribute('spellcheck', false)
+    })
+  }
+}
+
+// handle adding or removing word to personal dictionary
+function handleWord (message) {
+  let word = message.content.word
+  // if word undefined generate word from current selection/cursor position
+  word = word || getCurrentWordBounds(document.activeElement)[0]
+  browser.runtime.sendMessage({ type: message.type, word: word })
+}
+
+// edit function debounced on all keyup and click events
 async function edit (event) {
   const target = event.target
   const currentText = getTextContent(target, window.location.hostname)
 
-  // don't spellcheck unsupported or uncheckable nodes
+  // don't spellcheck unsupported nodes
   if (!isSupported(target, window.location)) {
     return
   }
@@ -20,11 +58,6 @@ async function edit (event) {
   // don't spellcheck if text is identical to last spellchecked text
   if (target.getAttribute('data-multidict-generated') && (currentText === previousText)) {
     return
-  }
-
-  // tell background script to connect to active tab if content port falsy
-  if (!contentPort) {
-    await browser.runtime.sendMessage({ type: 'connectToActiveTab' })
   }
 
   // update previousText and editableNode after connecting to current/active tab
@@ -36,76 +69,28 @@ async function edit (event) {
     ? detectedLanguage.languages[0].language
     : 'unreliable'
 
-  contentPort.postMessage({
+  browser.runtime.sendMessage({
     type: 'spellCheck',
     detectedLanguage: language,
     content: currentText
   })
 }
 
-// properly resets all values and cleans up leftover html elements on disconnect event
-function disconnect (p) {
-  console.log('handle disconnect')
-  if (p.error) {
-    console.warn(`MultiDict: disconnected due to an error: ${p.error.message}. Please try refreshing the page`)
-  }
-  if (highlighter) {
-    highlighter.destroy()
-  }
-  contentPort.onMessage.removeListener(messageHandler)
-  contentPort.onDisconnect.removeListener(disconnect)
-  contentPort = null
-  highlighter = null
-  previousText = ''
-}
-
-// handles incoming connections from the background script (port should update with each tab change)
-async function connectionHandler (port, info) {
-  if (!contentPort) {
-    contentPort = port
-    contentPort.onMessage.addListener(messageHandler)
-    contentPort.onDisconnect.addListener(disconnect)
-    // check settings in case we need to disable built in spell checking for textboxes and inputs
-    contentPort.postMessage({ type: 'getCustomSettings' })
-  }
-}
-
 // handles all incoming messages from the background script
 function messageHandler (message) {
-  let word = message.word
   switch (message.type) {
     case 'highlight':
-      if (highlighter && !editableNode.getAttribute('data-multidict-generated')) {
-        highlighter.destroy()
-        highlighter = null
-      }
-
-      if (!highlighter) {
-        highlighter = new Highlighter(editableNode, message.spelling, 'red')
-      } else {
-        highlighter.setSpelling(message.spelling)
-      }
+      handleHighlight(message.content)
       break
-
     case 'add':
     case 'remove':
-      word = word || getCurrentWordBounds(document.activeElement)[0]
-      contentPort.postMessage({
-        type: message.type,
-        word: word
-      })
+      handleWord(message)
       break
     case 'getCustomSettings':
-      if (message.customSettings.disableNativeSpellcheck) {
-        const editableNodes = document.querySelectorAll('textarea')
-        editableNodes.forEach((node) => {
-          node.setAttribute('spellcheck', false)
-        })
-      }
+      handleSettings(message.content)
       break
     case 'refresh':
-      // clearing previousText after ensures we recheck spelling despite identical content
-      previousText = ''
+      handleRefresh()
       break
 
     default:
@@ -113,15 +98,32 @@ function messageHandler (message) {
   }
 }
 
-browser.runtime.onConnect.addListener(connectionHandler)
+// need named function so we can clean it up later
+const editListener = debounce(edit, 700)
 
-document.body.addEventListener('keyup', debounce(edit, 700), true)
-document.body.addEventListener('click', debounce(edit, 700), true)
+function main () {
+  // don't add listener if one already present -- test how this works with multiple tabs
+  if (!browser.runtime.onMessage.hasListener(messageHandler)) {
+    browser.runtime.onMessage.addListener(messageHandler)
+  }
+
+  // ask for custom settings (handled by message handler)
+  browser.runtime.sendMessage({ type: 'getCustomSettings' })
+
+  // don't add listeners if body already has them
+  if (!document.body.getAttribute('data-multidict-listening')) {
+    document.body.addEventListener('keyup', editListener, true)
+    document.body.addEventListener('click', editListener, true)
+    document.body.setAttribute('data-multidict-listening', true)
+  }
+}
+
+main()
 
 // App Control/Execution Flow
-// 1. Page listeners generate Spellings of currently focused textarea/input node content
-// 2. Single Highlighter instance (requires Spelling) attached to textarea/input node
-// 3. Highlighter instance has own listeners to keep it in sync with textarea/input node and allow
+// 1. Page listeners generate Spellings of currently focused textarea node content
+// 2. Single Highlighter instance (requires Spelling) per page attached to active textarea
+// 3. Highlighter instance has own listeners to keep it in sync with textarea node and allow
 //    user interaction
 // 4. Highlighter instance generates WordCarousel (suggestions node) as needed and controls the
 //    carousel (WordCarousel does not have own listeners, is instead driven by Highlighter)

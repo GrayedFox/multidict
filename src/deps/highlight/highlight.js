@@ -218,7 +218,7 @@ class Highlighter {
   storeSelection (currentNode) {
     const selection = window.getSelection()
     const selectionBounds = getSelectionBounds(currentNode)
-    const selectionRange = selection.getRangeAt(0) || null
+    const selectionRange = selection.rangeCount > 0 ? selection.getRangeAt(0) : null
     const storedRange = {}
 
     if (selectionRange) {
