@@ -45,7 +45,7 @@
     }
   },
 
-  "permissions": ["storage", "contextMenus", "tabs"],
+  "permissions": ["storage", "menus", "tabs"],
 
   "web_accessible_resources": ["dictionaries/*.aff", "dictionaries/*.dic", "media/icons/*.svg"]
 }

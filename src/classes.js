@@ -152,7 +152,7 @@ class WordCarousel {
 
   showSuggestions () {
     this.suggestionsWrapper.visibility = null
-    this.node.style.filter = 'blur(2px)'
+    this.node.style.filter = 'blur(1px)'
     this.mark.style.visibility = 'hidden'
   }
 

@@ -93,7 +93,7 @@ function createClassyElement (type, classes) {
 
 // create Add and Remove multdict context menu items
 function createMenuItems () {
-  browser.contextMenus.create({
+  browser.menus.create({
     id: 'add',
     type: 'normal',
     title: 'Add word to personal dictionary',
@@ -101,7 +101,7 @@ function createMenuItems () {
     icons: { 16: 'media/icons/plus-icon.svg' }
   })
 
-  browser.contextMenus.create({
+  browser.menus.create({
     id: 'remove',
     type: 'normal',
     title: 'Remove word from personal dictionary',
@@ -251,7 +251,7 @@ function getRelativeBounds (word, content, startIndex) {
 // selection are relative to the text within the specified node
 function getSelectionBounds (node) {
   // textareas are easy - just return the selectionStart and selectionEnd properties
-  if (node.nodeName === 'TEXTAREA' && node.selectionStart && node.selectionEnd) {
+  if (node.nodeName === 'TEXTAREA') {
     return { start: node.selectionStart, end: node.selectionEnd }
   }
 

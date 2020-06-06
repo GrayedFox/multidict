@@ -98,11 +98,11 @@ function handleOptions (e) {
 // listen to incoming messages from background script
 messageHandler.onMessage.addListener((message) => {
   if (message.type === 'getCustomWords') {
-    populateList(document.querySelector('.words'), message.customWords)
+    populateList(document.querySelector('.words'), message.content)
   }
 
   if (message.type === 'getCustomSettings') {
-    populateOptions(document.querySelector('.options'), message.customSettings)
+    populateOptions(document.querySelector('.options'), message.content)
   }
 })
 
