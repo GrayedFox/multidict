@@ -1,10 +1,30 @@
-const { debounce, getCurrentWordBounds, getTextContent, isSupported } = require('./helpers.js')
+const {
+  debounce, disableNativeSpellcheck, getCssSelector, getCurrentWordBounds, getTextContent, isSupported
+} = require('./helpers.js')
 
 const { Highlighter } = require('./deps/highlight/highlight.js')
 
 let highlighter = null
 let editableNode = null
 let previousText = ''
+let settings = null
+
+// watch for dom content changes and do necessary work
+function handleChanges (mutationList, observer) {
+  // watch for additional textareas added to DOM and apply settings
+  if (settings.disableNativeSpellcheck) {
+    mutationList.forEach((mutation) => {
+      // nodeLists don't have a length property, so we check if 1st item is truthy
+      if (mutation.type === 'childList' && mutation.addedNodes[0]) {
+        const selector = getCssSelector(mutation.target)
+        const textareas = document.querySelectorAll(`${selector} textarea`)
+        if (textareas[0]) {
+          disableNativeSpellcheck(textareas)
+        }
+      }
+    })
+  }
+}
 
 // handle highlighting misspelt words based on recieved spelling
 function handleHighlight (spelling) {
@@ -27,13 +47,11 @@ function handleRefresh () {
 }
 
 // handle any user settings
-function handleSettings (settings) {
+function handleSettings (newSettings) {
+  settings = newSettings
   // set spellcheck=false on all text fields to prevent double spell checking
   if (settings.disableNativeSpellcheck) {
-    const editableNodes = document.querySelectorAll('textarea')
-    editableNodes.forEach((node) => {
-      node.setAttribute('spellcheck', false)
-    })
+    disableNativeSpellcheck(document.querySelectorAll('textarea'))
   }
 }
 
@@ -98,9 +116,6 @@ function messageHandler (message) {
   }
 }
 
-// need named function so we can clean it up later
-const editListener = debounce(edit, 700)
-
 function main () {
   // don't add listener if one already present -- test how this works with multiple tabs
   if (!browser.runtime.onMessage.hasListener(messageHandler)) {
@@ -117,6 +132,10 @@ function main () {
     document.body.setAttribute('data-multidict-listening', true)
   }
 }
+
+const editListener = debounce(edit, 700)
+const observer = new MutationObserver(handleChanges)
+observer.observe(document.body, { childList: true, subtree: true })
 
 main()
 

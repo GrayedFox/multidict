@@ -127,20 +127,18 @@ function popupListener (popupPort) {
 }
 
 // listens to all incoming commands (keyboard shortcuts) and context menu messages
-async function commandAndMenuListener (info, tab) {
+function commandAndMenuListener (info, tab) {
   const command = info.menuItemId || info
-  // tab parameter is blank when shortcut keys are used to add or remove a word
-  if (!tab) {
-    tab = await getCurrentTab
+  // tab parameter is undefined if listener triggered by shortcut keys
+  if (!tab && command) {
+    getCurrentTab().then(tab => respond({ tab }, { word: info.selectionText }, command))
   }
 
   // when using shortcuts or context menu, we add/remove words via the content script
-  // this enables the user to define a keyboard shortcut to trigger add/remove which will smartly
-  // detect the word based on selection or cursor position on the currently active tab
+  // this enables us to use info.selectedText when it is defined (context menu)
+  // or detect the caret position of the currently active tab when it's not (keyboard shortcut)
   if (tab && command) {
     respond({ tab }, { word: info.selectionText }, command)
-  } else {
-    console.warn(`MultiDict: Command ${command} failed. Tab info:`, tab)
   }
 }
 
@@ -168,9 +166,7 @@ browser.runtime.onConnect.addListener(popupListener)
 
 main()
 
-// browser.tabs.onCreated.addListener(connectToActiveTab)
-
 // Goal: enable multiple laguages to be used when spell checking by detecting content language
 //
-// MVP: spell check using dictionaries, detect language of each field, highlight misspelled words,
-// show suggestions, persistent personal dictionary
+// Note: do not use asnyc functions for any listener, as per the MDN docs, use normal functions
+// and Promises for delaying logic/responses

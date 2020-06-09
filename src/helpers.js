@@ -142,6 +142,14 @@ function debounce (callback, wait) {
   }
 }
 
+// take a single node, nodeList, or array of nodes and disables native spell checking
+function disableNativeSpellcheck (nodeList) {
+  if (!Array.isArray(nodeList)) {
+    nodeList = Array.from(nodeList)
+  }
+  nodeList.forEach((node) => node.setAttribute('spellcheck', false))
+}
+
 // gets the current word and it's boundaries based on cursor position/selection
 function getWordBoundsFromCaret (node, text, startIndex) {
   if (!(startIndex >= 0)) {
@@ -186,6 +194,17 @@ function getWordBoundsFromCaret (node, text, startIndex) {
     return ['', 0, 0]
   }
 }
+
+// generate a css selector of a given node
+function getCssSelector (node) {
+  const path = []
+  let parent
+  while (parent = node.parentNode) { // eslint-disable-line no-cond-assign
+    path.unshift(`${node.tagName}:nth-child(${[].indexOf.call(parent.children, node) + 1})`)
+    node = parent
+  }
+  return `${path.join(' > ')}`.toLowerCase()
+};
 
 // get properties based on domain (i.e. github)
 function getDomainSpecificProps (hostname, properties, textarea) {
@@ -417,6 +436,8 @@ module.exports = {
   createMenuItems,
   css,
   debounce,
+  disableNativeSpellcheck,
+  getCssSelector,
   getCurrentWordBounds,
   getDomainSpecificProps,
   getMatchingMarkIndex,
