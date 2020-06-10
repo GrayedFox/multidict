@@ -1,6 +1,7 @@
-# Multi Dict
+# MultiDict
 
-Smart language detection spell checker with configurable text highlights, customisable shortcuts
+Smart language detection spell checker with configurable word highlights, add/remove shortcuts, and
+multiple language support.
 
 Supported languages are based on the dictionaries used for spell checking in Chrome, Firefox,
 LibreOffice, OpenOffice, and many more apps that rely on the Hunspell spell checker.
@@ -24,10 +25,9 @@ LibreOffice, OpenOffice, and many more apps that rely on the Hunspell spell chec
 
 ### Should I disable the built in Spellchecker?
 
-The spell checking from this addon is only applied to textboxes and input fields, so editable divs
-will still use the built in spell checking from Firefox. In order not to get overlaps, you can opt
-into disabling the built in spell checking for input fields and textboxes in the settings page of
-the addon.
+The spell checking from this addon is only applied to textareas, so editable divs will still use the
+built in spell checking from Firefox. In order not to get overlaps, you can opt into disabling the
+built in spell checking for textareas in the settings page of the addon.
 
 
 ### Enabling Multi Language Spell Checking
@@ -41,8 +41,8 @@ To enable spell checking for multiple languages:
 
 ### How It Works: Spell Checking Language Preference
 
-The extension will detect which language is being used inside editable elements on the page and try
-to match that to one of your supported languages. If it can't find a match or cannot reliably detect
+The extension will detect which language is being used inside textareas on the page and try to
+match that to one of your supported languages. If it can't find a match or cannot reliably detect
 the language it will default to your primary preferred language.
 
 Let's take a look at a slightly complex example and go through it step by step:
@@ -50,19 +50,19 @@ Let's take a look at a slightly complex example and go through it step by step:
 1. you add the Australian English (en-au), American English (en-us), and standard German (de-de)
    languages to your Firefox preferred languages list via Firefox preferences pane in that order
 
-2. you write the sentence 'Ich leibe mein leben' as the subject of an email
-   - Multi Dict will detect the language as German (de) and attempt to match it like so: de-au
+2. you write the sentence 'Ich leibe mein Leben' inside a textarea
+   - MultiDict will detect the language as German (de) and attempt to match it like so: de-au
    - no match is found, so the next language in your preferred language list is checked: de-us
    - no match is found, so the next language in your preferred language list is checked: de-de
    - a match with a preferred language is found which matches the subject text field language, so
-     Multi Dict will use the German dictionary to spell check and offer suggestions for `leibe`
+     MultiDict will use the German dictionary to spell check and offer suggestions for `leibe`
      (which should be spelt `liebe`)
 
 3. you write the text "Such beautiful colours! Colorful days are great!" as the body of the email
-   - Multi Dict will detect the language as English (en) and attempt to match it like so: en-au
+   - MultiDict will detect the language as English (en) and attempt to match it like so: en-au
    - a match with a preferred language is found which matches the subject text field language
    - because Australian English has a higher preference than American English according to your
-     preferences, Multi Dict will use Australian English to spell check, and offer suggestions for
+     preferences, MultiDict will use Australian English to spell check, and offer suggestions for
      `Colorful` (which is misspelt in Australian English and missing a "u")
 
 This way you can use multiple dictionaries on the same page/tab without changing any preferences or
@@ -97,8 +97,9 @@ traffic coming from Firefox).
 - Dictionaries by [Hunspell][0] and available for download [here][1]
 - Icons by [SmashIcons][2], taken from [Flaticon.com][3]
 - Spellchecking powered by [NSpell][4], made by Titus Wormer, the brains behind the [retext][5] NLP
-- Highlighting logic based off heavily redacted [HighlightWithinTextarea][7] jQuery plugin by
-  Will Boyd
+- The [HighlightWithinTextarea][7] jQuery plugin by Will Boyd served as the base of a much earlier
+  version of the highlighter.js file. It has since been completely re-written from scratch, but
+  credit where credit is due: thankyou Mr. Boyd!
 - Async forEach helper function taken from Antonio V's [p-iteration][6] module
 - Language detection thanks to Dick Sites and the kick-ass [CLD2][9] (Compact Language Detector 2)
   software
