@@ -10,11 +10,34 @@
 <body>
     <h1> MultiDict</h1>
     <p> Spell checking made easy</p>
-    <div><textarea id="one" rows="20" cols="30">It was a dark and stormy night... kablam shizzle brot?</textarea></div>
+    <div class="container">
+      <textarea id="one" rows="20" cols="30">It was a dark and stormy night... kablam shizzle brot?</textarea>
+    </div>
     <textarea id="two" rows="20" cols="30">Guten Tag von MultiDict! Haben sie zeit für brot?</textarea>
     <textarea id="three" rows="20" cols="30">Hola desde MultiDict! ¿Quieres un corrector ortográfico inteligentesd? </textarea>
     <p> Known Bugs<br>
       - removing border from textarea misaligns backdrop/highlights
     </p>
+    <button class="display" type="button">Display</button>
+    <button class="position" type="button">Position</button>
 </body>
+<script>
+  const displayTypes = ['block', 'inline', 'inline-block', 'flex', 'inline-flex', 'none', 'inherit']
+  const positions = ['absolute', 'fixed', 'initial', 'relative', 'static', 'sticky']
+  let displayIndex = 0
+  let positionIndex = 0
+  document.querySelector('button.display').addEventListener('click', event => {
+    if (displayIndex >= displayTypes.length) displayIndex = 0
+    document.querySelector('.container').style.display = displayTypes[displayIndex]
+    event.target.textContent = `Display: ${displayTypes[displayIndex]}`
+    displayIndex++
+  })
+
+  document.querySelector('button.position').addEventListener('click', event => {
+    if (positionIndex >= positions.length) positionIndex = 0
+    document.querySelector('#one').style.position = positions[positionIndex]
+    event.target.textContent = `Position: ${positions[positionIndex]}`
+    positionIndex++
+  })
+</script>
 </html>

@@ -1,7 +1,6 @@
-const { User, Spelling } = require('./classes.js')
-const {
-  cleanWord, createMenuItems, loadDictionariesAndPrefs, prepareLanguages, updateSettingsObject
-} = require('./helpers.js')
+const { User, Spelling } = require('./classes')
+const { createMenuItems, loadDictionariesAndPrefs, prepareLanguages, updateSettingsObject } = require('./helpers')
+const { cleanWord } = require('./text-methods')
 
 const defaultSettings = ['disableNativeSpellcheck-false']
 
@@ -71,6 +70,8 @@ function respond (sender, content, type) {
   console.log('sender', sender)
   if (sender.tab) {
     browser.tabs.sendMessage(sender.tab.id, { type, content })
+  } else if (type === 'refresh') {
+    getCurrentTab().then(tab => browser.tabs.sendMessage(tab.id, { type, content }))
   } else if (sender.name === 'popup') {
     sender.postMessage({ type, content })
   } else {
@@ -79,7 +80,7 @@ function respond (sender, content, type) {
 }
 
 // checks content for spelling errors and returns a new Spelling instance
-function spellCheck (message) {
+function getSpelling (message) {
   const lang = user.getPreferredLanguage(message.detectedLanguage)
   return new Spelling(user.spellers[lang], message.content)
 }
@@ -96,8 +97,8 @@ function api (message, sender) {
       removeCustomWord(cleanWord(message.word))
         .then(() => respond(sender, null, 'refresh'))
       break
-    case 'spellCheck':
-      respond(sender, spellCheck(message), 'highlight')
+    case 'getSpelling':
+      respond(sender, getSpelling(message), 'highlight')
       break
     case 'getCustomWords':
       respond(sender, customWords, 'getCustomWords')
@@ -156,7 +157,6 @@ async function main () {
   console.log('langs', user.langs)
   console.log('prefs', user.prefs)
   console.log('words', user.ownWords)
-  console.log('settings', customSettings)
 }
 
 browser.commands.onCommand.addListener(commandAndMenuListener)
