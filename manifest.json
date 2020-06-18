@@ -15,7 +15,12 @@
 
   "browser_action" : {
     "default_icon": "media/icons/icon.svg",
-    "default_popup": "src/popup/popup.html",
+    "default_title": "MultiDict"
+  },
+
+  "sidebar_action": {
+    "default_icon": "media/icons/icon.svg",
+    "default_panel": "src/sidebar/sidebar.html",
     "default_title": "MultiDict"
   },
 

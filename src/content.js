@@ -7,9 +7,9 @@ const { Highlighter } = require('./highlighter')
 const dataGenString = 'data-multidict-native-spellcheck-disabled'
 const observer = new MutationObserver(handleDOMChanges)
 const currentLanguage = { lang: '', isReliable: false }
-const highlightColor = '#0098ff'
 
 let carousel = null
+let highlightColor = null
 let currentSpelling = null
 let currentTextarea = null
 let highlighter = null
@@ -118,7 +118,7 @@ function handleHighlight (tokens) {
   }
 
   try {
-    if (!highlighter) {
+    if (!highlighter && currentTextarea) {
       highlighter = new Highlighter(currentTextarea, tokens, highlightColor, 'multidict')
     } else {
       highlighter.tokens = tokens || highlighter.tokens
@@ -152,7 +152,7 @@ function handleCarousel (event, direction) {
       // if we have suggestions and no carousel present, create one using the word suggestions
       if (!carousel && suggestions) {
         const position = offsetBy(mark, currentTextarea)
-        const topSuggestions = suggestions.suggestedWords.slice(0, 4)
+        const topSuggestions = suggestions.suggestedWords
         setStyleValues(currentTextarea, { filter: 'blur(1px)' })
         setStyleValues(mark, { visibility: 'hidden' })
         carousel = new Carousel(currentTextarea, topSuggestions, mark.offsetHeight, position)
@@ -200,12 +200,27 @@ function handleKeyup (event) {
   }
 }
 
-// handle refreshing any vars/temp settings if needed before triggering a spellcheck
-function handleRefresh () {
+// handle refreshing any vars/temp settings if needed before triggering a recheck or color change
+function handleRefresh (message) {
   console.log('handle refresh')
-  // clearing previousSpellcheckedText ensures we recheck spelling despite identical content
-  previousSpellcheckedText = ''
-  spellcheck({ target: currentTextarea })
+  switch (message.content.type) {
+    case 'add':
+    case 'remove':
+      // clearing previousSpellcheckedText ensures we recheck spelling despite identical content
+      previousSpellcheckedText = ''
+      spellcheck({ target: currentTextarea })
+      break
+    case 'color':
+      highlightColor = message.content.color
+      highlighter.rebuild()
+      break
+    case 'preview':
+      highlighter.color = message.content.color
+      break
+    default:
+      console.warn('MultiDict: unrecognized refresh type', message.content.type)
+      break
+  }
 }
 
 // apply current user settings to applicable nodes
@@ -237,12 +252,15 @@ function messageHandler (message) {
     case 'remove':
       handleWord(message)
       break
-    case 'getCustomSettings':
+    case 'gotCustomColor':
+      highlightColor = message.content.color
+      break
+    case 'gotCustomSettings':
       settings = message.content
       handleSettings(document.querySelectorAll('textarea'))
       break
     case 'refresh':
-      handleRefresh()
+      handleRefresh(message)
       break
 
     default:
@@ -265,6 +283,7 @@ function main () {
   }
 
   browser.runtime.sendMessage({ type: 'getCustomSettings' })
+  browser.runtime.sendMessage({ type: 'getCustomHighlightColor' })
   observer.observe(document.body, { childList: true, subtree: true })
 }
 
