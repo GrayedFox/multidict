@@ -211,11 +211,12 @@ function setAllAttribute (nodeList, attribute, value = true) {
 }
 
 // return new settings object based on settingsArray
-function updateSettingsObject (settingsArray) {
+function getSettingsFromArray (settingsArray) {
   const settings = {}
   settingsArray.forEach((setting) => {
     settings[setting.split('-')[0]] = (setting.split('-')[1] === 'true')
   })
+  console.log('settings', settings)
   return settings
 }
 
@@ -233,5 +234,5 @@ module.exports = {
   offsetBy,
   setAllAttribute,
   setStyleValues,
-  updateSettingsObject
+  getSettingsFromArray
 }

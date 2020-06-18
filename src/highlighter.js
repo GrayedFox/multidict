@@ -23,6 +23,7 @@ class Highlighter {
     this._handleScroll = this._handleScroll.bind(this)
     this._handleStyles = this._handleStyles.bind(this)
     this.render = this.render.bind(this)
+    this.rebuild = this.rebuild.bind(this)
     this.destroy = this.destroy.bind(this)
     this.$highlighter = null
 
@@ -155,17 +156,16 @@ class Highlighter {
     highlights.innerHTML = text
   }
 
+  // this will update the currently displayed highlight color only (the original innerHTML will
+  // still reference the color used to instantiate the class)
   _setHighlightColor () {
     const marks = this.$highlighter.shadowRoot.querySelectorAll('mark')
     marks.forEach(mark => { mark.style.backgroundColor = this.color })
   }
 
-  // attach event listeners to the textarea that we are monitoring for changes and insert
-  // highlighter into DOM, using shadow dom to style and encapsulate it
-  _buildHighlighter () {
-    this.$highlighter = document.createElement('div')
-    this.$highlighter.attachShadow({ mode: 'open' })
-    this.$highlighter.shadowRoot.innerHTML = `
+  // return the template used for building the highlighter
+  _getInnerHtmlTemplate () {
+    return `
     <style>
     :host(div) {
       position: absolute;
@@ -181,7 +181,7 @@ class Highlighter {
       z-index: 1;
     }
     mark {
-      border-radius: 15%;
+      border-radius: 0.5em;
       background-color: ${this.color}33;
       color: transparent;
     }
@@ -192,7 +192,14 @@ class Highlighter {
 
     <div id="highlights"></div>
     `
+  }
 
+  // attach event listeners to the textarea that we are monitoring for changes and insert
+  // highlighter into DOM, using shadow dom to style and encapsulate it
+  _buildHighlighter () {
+    this.$highlighter = document.createElement('div')
+    this.$highlighter.attachShadow({ mode: 'open' })
+    this.$highlighter.shadowRoot.innerHTML = this._getInnerHtmlTemplate()
     this.$highlighter.setAttribute('class', 'data-multidict-highlights')
     this.$textarea.setAttribute('data-multidict-current', true)
     this.$textarea.addEventListener('input', this._handleInput)
@@ -217,6 +224,12 @@ class Highlighter {
     this.$textarea.removeEventListener('input', this._handleInput)
     this.$textarea.removeEventListener('scroll', this._handleScroll)
     this.$highlighter.remove()
+  }
+
+  // rebuild the innerHTML content of the highlighter (for when color is out of sync)
+  rebuild () {
+    this.$highlighter.shadowRoot.innerHTML = this._getInnerHtmlTemplate()
+    this.render()
   }
 
   // renders the highlighter in full (generates marks, sets highlight color)

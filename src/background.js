@@ -1,10 +1,12 @@
 const { User, Spelling } = require('./classes')
-const { createMenuItems, loadDictionariesAndPrefs, prepareLanguages, updateSettingsObject } = require('./helpers')
+const { createMenuItems, loadDictionariesAndPrefs, prepareLanguages, getSettingsFromArray } = require('./helpers')
 const { cleanWord } = require('./text-methods')
 
-const defaultSettings = ['disableNativeSpellcheck-false']
+// defaults are set when background script first loads
+let customSettings = { disableNativeSpellcheck: false }
+let customHighlightColor = { color: '#0098ff' }
 
-let customSettings, customWords, user
+let customWords, sidebarOpen, user
 
 // saves a word in browser storage and calls user.addWord
 async function addCustomWord (word) {
@@ -44,22 +46,41 @@ async function getCurrentTab () {
   return tabs[0]
 }
 
+// get color from browser storage
+async function getCustomColor () {
+  const storedColor = await browser.storage.sync.get('color')
+  if (storedColor.color) {
+    customHighlightColor = storedColor
+  }
+}
+
 // get user specified extension settings from browser storage
 async function getCustomSettings () {
-  customSettings = await browser.storage.sync.get('settings')
-  customSettings = Array.isArray(customSettings.settings)
-    ? updateSettingsObject(customSettings.settings)
-    : updateSettingsObject(defaultSettings)
+  const storedSettings = await browser.storage.sync.get('settings')
+  if (Array.isArray(storedSettings.settings)) {
+    customSettings = getSettingsFromArray(storedSettings.settings)
+  }
 }
 
 // saves user specified extension settings (i.e. from popup) to browser storage
-async function saveSettings (message) {
-  const error = await browser.storage.sync.set({ settings: message.settings })
+async function saveColor (color) {
+  const error = await browser.storage.sync.set({ color })
 
   if (error) {
     console.warn(`MultiDict: Saving settings failed with error: ${error}`)
   } else {
-    customSettings = updateSettingsObject(message.settings)
+    customHighlightColor = color
+  }
+}
+
+// saves user specified extension settings (i.e. from popup) to browser storage
+async function saveSettings (settings) {
+  const error = await browser.storage.sync.set({ settings })
+
+  if (error) {
+    console.warn(`MultiDict: Saving settings failed with error: ${error}`)
+  } else {
+    customSettings = getSettingsFromArray(settings)
   }
 }
 
@@ -71,7 +92,9 @@ function respond (sender, content, type) {
   if (sender.tab) {
     browser.tabs.sendMessage(sender.tab.id, { type, content })
   } else if (type === 'refresh') {
-    getCurrentTab().then(tab => browser.tabs.sendMessage(tab.id, { type, content }))
+    browser.tabs.query({}).then(tabs => {
+      tabs.forEach(tab => { browser.tabs.sendMessage(tab.id, { type, content }) })
+    })
   } else if (sender.name === 'popup') {
     sender.postMessage({ type, content })
   } else {
@@ -91,24 +114,39 @@ function api (message, sender) {
   switch (message.type) {
     case 'add':
       addCustomWord(cleanWord(message.word))
-        .then(() => respond(sender, null, 'refresh'))
+        .then(() => respond(sender, { type: 'add' }, 'refresh'))
       break
     case 'remove':
       removeCustomWord(cleanWord(message.word))
-        .then(() => respond(sender, null, 'refresh'))
+        .then(() => respond(sender, { type: 'remove' }, 'refresh'))
       break
     case 'getSpelling':
       respond(sender, getSpelling(message), 'highlight')
       break
+    case 'getCustomHighlightColor':
+      getCustomColor()
+        .then(() => respond(sender, customHighlightColor, 'gotCustomColor'))
+      break
     case 'getCustomWords':
-      respond(sender, customWords, 'getCustomWords')
+      respond(sender, customWords, 'gotCustomWords')
       break
     case 'getCustomSettings':
       getCustomSettings()
-        .then(() => respond(sender, customSettings, 'getCustomSettings'))
+        .then(() => respond(sender, customSettings, 'gotCustomSettings'))
+      break
+    case 'sidebar':
+      sidebarOpen = message.isOpen
+      break
+    case 'previewColor':
+      respond(sender, { type: 'preview', color: message.color }, 'refresh')
+      break
+    case 'saveColor':
+      saveColor(message.color)
+        .then(() => respond(sender, { type: 'color', color: customHighlightColor }, 'refresh'))
       break
     case 'saveSettings':
-      saveSettings(message)
+      saveSettings(message.settings)
+        .then(() => respond(sender, customSettings, 'savedSettings'))
       break
     default:
       console.warn(`MultDict: unrecognized message type ${message.type}. Aborting.`)
@@ -116,13 +154,13 @@ function api (message, sender) {
 }
 
 // listens to all incoming messages from the popup/action menu and handle popup closing
-function popupListener (popupPort) {
-  if (!popupPort.onMessage.hasListener(api)) {
-    popupPort.onMessage.addListener(api)
-    popupPort.onDisconnect.addListener(() => {
-      // remove listener and cleanup popupPort when popup closed
-      popupPort.onMessage.removeListener(api)
-      popupPort = null
+function sidebarListener (sidebarPort) {
+  if (!sidebarPort.onMessage.hasListener(api)) {
+    sidebarPort.onMessage.addListener(api)
+    sidebarPort.onDisconnect.addListener(() => {
+      // remove listener and cleanup sidebarPort when popup closed
+      sidebarPort.onMessage.removeListener(api)
+      sidebarPort = null
     })
   }
 }
@@ -148,6 +186,7 @@ async function main () {
   const languages = prepareLanguages(await browser.i18n.getAcceptLanguages())
   const dictionariesAndPrefs = await loadDictionariesAndPrefs(languages)
 
+  // TODO: only get custom words when needed
   customWords = await browser.storage.sync.get('personal')
   customWords = Array.isArray(customWords.personal) ? customWords.personal : []
   user = new User(dictionariesAndPrefs.dicts, dictionariesAndPrefs.prefs, languages, [...customWords])
@@ -162,11 +201,18 @@ async function main () {
 browser.commands.onCommand.addListener(commandAndMenuListener)
 browser.menus.onClicked.addListener(commandAndMenuListener)
 browser.runtime.onMessage.addListener(api)
-browser.runtime.onConnect.addListener(popupListener)
+browser.runtime.onConnect.addListener(sidebarListener)
+browser.browserAction.onClicked.addListener(() => {
+  sidebarOpen
+    ? browser.sidebarAction.close()
+    : browser.sidebarAction.open()
+  sidebarOpen = !sidebarOpen
+})
 
 main()
 
 // Goal: enable multiple laguages to be used when spell checking by detecting content language
 //
 // Note: do not use asnyc functions for any listener, as per the MDN docs, use normal functions
-// and Promises for delaying logic/responses
+// and Promises for delaying logic/responses (async listeners consume all messages and prevent
+// other listeners of the same event gettingt them).
