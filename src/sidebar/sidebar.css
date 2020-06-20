@@ -1,3 +1,9 @@
+:root {
+  --bg-hover-color: #fafafa;
+  --link-hover-color: tomato;
+  --text-color: #232323;
+}
+
 html, body {
   width: 100%;
   height: auto;
@@ -17,13 +23,13 @@ a {
   width: 100%;
   height: inherit;
   text-decoration: none;
-  color: #232323;
+  color: var(--text-color);
 
   transition: color 0.3s ease;
 }
 
 a:hover {
-  color: tomato;
+  color: var(--link-hover-color);
 }
 
 #menu {
@@ -42,7 +48,7 @@ a:hover {
 }
 
 #menu li:hover {
-  background-color: #fafafa;
+  background-color: var(--bg-hover-color);
 }
 
 #menu div {
@@ -53,10 +59,33 @@ a:hover {
 }
 
 #colorPicker input {
+  -webkit-appearance: none !important; /* Needed to clear default Mozilla styles */
+  border-style: hidden;
   position: relative;
   top: 0.5em;
   padding: 0.1em;
   width: 100%;
+}
+
+#colorPicker input:hover {
+  cursor: pointer;
+}
+
+#colorPicker label:hover {
+  cursor: pointer;
+}
+
+#suggestions input {
+  -webkit-appearance: none !important; /* Needed to reset default Mozilla styles */
+  background-color: var(--bg-hover-color);
+  position: relative;
+  top: 0.3em;
+  padding: 0.1em;
+  width: 100%;
+  height: 1.5em;
+  cursor: pointer;
+  transition: all 0.5s ease;
+  border-radius: 0.5em;
 }
 
 .options {
@@ -64,7 +93,11 @@ a:hover {
 }
 
 .options li:hover {
-  color: tomato;
+  color: var(--link-hover-color);
+}
+
+.options label:hover {
+  cursor: pointer;
 }
 
 .words {
@@ -93,7 +126,7 @@ a:hover {
 }
 
 .words li:hover {
-  color: tomato;
+  color: var(--link-hover-color);
   background: rgba(255,255,255,.2);
   border-radius: 3px;
   border-top: 1px solid rgba(255,255,255,.1);

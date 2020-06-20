@@ -2,11 +2,83 @@ const { User, Spelling } = require('./classes')
 const { createMenuItems, loadDictionariesAndPrefs, prepareLanguages, getSettingsFromArray } = require('./helpers')
 const { cleanWord } = require('./text-methods')
 
-// defaults are set when background script first loads
+// defaults set when background script first loads in case no values exist in storage yet
 let customSettings = { disableNativeSpellcheck: false }
-let customHighlightColor = { color: '#0098ff' }
+let customHighlightColor = { color: '#FF0000' }
+let maxSuggestions = { maxSuggestions: 4 }
 
 let customWords, sidebarOpen, user
+
+// respond to the sender or all tabs with an object containing message content and type
+function respond (sender, content, type) {
+  console.log('type', type)
+  console.log('content', content)
+  console.log('sender', sender)
+  if (sender.tab) {
+    browser.tabs.sendMessage(sender.tab.id, { type, content })
+  } else if (type === 'refresh') {
+    browser.tabs.query({}).then(tabs => {
+      tabs.forEach(tab => { browser.tabs.sendMessage(tab.id, { type, content }) })
+    })
+  } else if (sender.name === 'popup') {
+    sender.postMessage({ type, content })
+  } else {
+    console.warn('MultiDict: unrecognized sender structure. Cannot respond to sender:', sender)
+  }
+}
+
+// api that handles performing all actions - background functions should only ever be called by api
+// api always cleans the text before adding/removing custom words
+function api (message, sender) {
+  switch (message.type) {
+    case 'add':
+      addCustomWord(cleanWord(message.word))
+        .then(() => respond(sender, { type: 'recheck' }, 'refresh'))
+      break
+    case 'remove':
+      removeCustomWord(cleanWord(message.word))
+        .then(() => respond(sender, { type: 'recheck' }, 'refresh'))
+      break
+    case 'getSpelling':
+      respond(sender, getSpelling(message), 'highlight')
+      break
+    case 'getColor':
+      getColor()
+        .then(() => respond(sender, customHighlightColor, 'gotCustomColor'))
+      break
+    case 'getMaxSuggestions':
+      getMaxSuggestions()
+        .then(() => respond(sender, maxSuggestions, 'gotMaxSuggestions'))
+      break
+    case 'saveMaxSuggestions':
+      saveMaxSuggestions(message.limit)
+        .then(() => respond(sender, { type: 'suggestions', ...maxSuggestions }, 'refresh'))
+      break
+    case 'previewColor':
+      respond(sender, { type: 'preview', color: message.color }, 'refresh')
+      break
+    case 'saveColor':
+      saveColor(message.color)
+        .then(() => respond(sender, { type: 'color', ...customHighlightColor }, 'refresh'))
+      break
+    case 'getSettings':
+      getSettings()
+        .then(() => respond(sender, customSettings, 'gotCustomSettings'))
+      break
+    case 'getCustomWords':
+      respond(sender, customWords, 'gotCustomWords')
+      break
+    case 'sidebar':
+      sidebarOpen = message.isOpen
+      break
+    case 'saveSettings':
+      saveSettings(message.settings)
+        .then(() => respond(sender, customSettings, 'savedSettings'))
+      break
+    default:
+      console.warn(`MultDict: unrecognized message type ${message.type}. Aborting.`)
+  }
+}
 
 // saves a word in browser storage and calls user.addWord
 async function addCustomWord (word) {
@@ -46,30 +118,11 @@ async function getCurrentTab () {
   return tabs[0]
 }
 
-// get color from browser storage
-async function getCustomColor () {
-  const storedColor = await browser.storage.sync.get('color')
-  if (storedColor.color) {
-    customHighlightColor = storedColor
-  }
-}
-
 // get user specified extension settings from browser storage
-async function getCustomSettings () {
+async function getSettings () {
   const storedSettings = await browser.storage.sync.get('settings')
   if (Array.isArray(storedSettings.settings)) {
     customSettings = getSettingsFromArray(storedSettings.settings)
-  }
-}
-
-// saves user specified extension settings (i.e. from popup) to browser storage
-async function saveColor (color) {
-  const error = await browser.storage.sync.set({ color })
-
-  if (error) {
-    console.warn(`MultiDict: Saving settings failed with error: ${error}`)
-  } else {
-    customHighlightColor = color
   }
 }
 
@@ -84,21 +137,42 @@ async function saveSettings (settings) {
   }
 }
 
-// respond to the sender with an object containing message content and type
-function respond (sender, content, type) {
-  console.log('type', type)
-  console.log('content', content)
-  console.log('sender', sender)
-  if (sender.tab) {
-    browser.tabs.sendMessage(sender.tab.id, { type, content })
-  } else if (type === 'refresh') {
-    browser.tabs.query({}).then(tabs => {
-      tabs.forEach(tab => { browser.tabs.sendMessage(tab.id, { type, content }) })
-    })
-  } else if (sender.name === 'popup') {
-    sender.postMessage({ type, content })
+// gets color from browser storage
+async function getColor () {
+  const storedColor = await browser.storage.sync.get('color')
+  if (storedColor.color) {
+    customHighlightColor = storedColor
+  }
+}
+
+// saves color to browser storage
+async function saveColor (color) {
+  const error = await browser.storage.sync.set({ color })
+
+  if (error) {
+    console.warn(`MultiDict: Saving color failed with error: ${error}`)
   } else {
-    console.warn('MultiDict: unrecognized sender structure. Cannot respond to sender:', sender)
+    customHighlightColor.color = color
+  }
+}
+
+// gets max suggestions from browser storage
+async function getMaxSuggestions () {
+  const storedLimit = await browser.storage.sync.get('maxSuggestions')
+
+  if (storedLimit.maxSuggestions) {
+    maxSuggestions = storedLimit
+  }
+}
+
+// saves max suggestions to browser storage
+async function saveMaxSuggestions (limit) {
+  const error = await browser.storage.sync.set({ maxSuggestions: limit })
+
+  if (error) {
+    console.warn(`MultiDict: Saving suggestion limit failed with error: ${error}`)
+  } else {
+    maxSuggestions.maxSuggestions = limit
   }
 }
 
@@ -106,51 +180,6 @@ function respond (sender, content, type) {
 function getSpelling (message) {
   const lang = user.getPreferredLanguage(message.detectedLanguage)
   return new Spelling(user.spellers[lang], message.content)
-}
-
-// api that handles performing all actions - background functions should only ever be called by api
-// api always cleans the text before adding/removing custom words
-function api (message, sender) {
-  switch (message.type) {
-    case 'add':
-      addCustomWord(cleanWord(message.word))
-        .then(() => respond(sender, { type: 'add' }, 'refresh'))
-      break
-    case 'remove':
-      removeCustomWord(cleanWord(message.word))
-        .then(() => respond(sender, { type: 'remove' }, 'refresh'))
-      break
-    case 'getSpelling':
-      respond(sender, getSpelling(message), 'highlight')
-      break
-    case 'getCustomHighlightColor':
-      getCustomColor()
-        .then(() => respond(sender, customHighlightColor, 'gotCustomColor'))
-      break
-    case 'getCustomWords':
-      respond(sender, customWords, 'gotCustomWords')
-      break
-    case 'getCustomSettings':
-      getCustomSettings()
-        .then(() => respond(sender, customSettings, 'gotCustomSettings'))
-      break
-    case 'sidebar':
-      sidebarOpen = message.isOpen
-      break
-    case 'previewColor':
-      respond(sender, { type: 'preview', color: message.color }, 'refresh')
-      break
-    case 'saveColor':
-      saveColor(message.color)
-        .then(() => respond(sender, { type: 'color', color: customHighlightColor }, 'refresh'))
-      break
-    case 'saveSettings':
-      saveSettings(message.settings)
-        .then(() => respond(sender, customSettings, 'savedSettings'))
-      break
-    default:
-      console.warn(`MultDict: unrecognized message type ${message.type}. Aborting.`)
-  }
 }
 
 // listens to all incoming messages from the popup/action menu and handle popup closing
@@ -202,6 +231,8 @@ browser.commands.onCommand.addListener(commandAndMenuListener)
 browser.menus.onClicked.addListener(commandAndMenuListener)
 browser.runtime.onMessage.addListener(api)
 browser.runtime.onConnect.addListener(sidebarListener)
+
+// this is bugged when multiple windows are open and each of them shows the Multidict sidebar
 browser.browserAction.onClicked.addListener(() => {
   sidebarOpen
     ? browser.sidebarAction.close()
