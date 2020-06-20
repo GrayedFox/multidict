@@ -4,13 +4,16 @@ const optionLabels = {
   disableNativeSpellcheck: 'Disable duplicate spellchecking (requires page refresh)'
 }
 
-const colorPicker = document.querySelector('#colorPicker input')
 const dictionary = document.querySelector('#dictionary')
 const wordsList = document.querySelector('.words')
 const settings = document.querySelector('#settings')
 const optionsList = document.querySelector('.options')
+const colorPicker = document.querySelector('#colorPicker input')
+const suggestionSlider = document.querySelector('#suggestions input')
+const suggestionOutput = document.querySelector('#suggestions output')
 
 const listLinkItem = '<li><a href="#"></a></li>'
+let highlightColor = null
 
 // handles all messages received from background script
 function api (message) {
@@ -24,12 +27,23 @@ function api (message) {
     case 'gotCustomColor':
       setColorValue(message.content.color)
       break
+    case 'gotMaxSuggestions':
+      setMaxSuggestionsLimit(message.content.maxSuggestions)
+      break
     default:
       console.warn('MultiDict: popup did not recognize message type', message.type)
   }
 }
 
-const setColorValue = color => { colorPicker.setAttribute('value', color) }
+const setMaxSuggestionsLimit = limit => {
+  suggestionSlider.value = limit
+  suggestionOutput.textContent = limit
+}
+
+const setColorValue = color => {
+  highlightColor = color
+  colorPicker.setAttribute('value', color)
+}
 
 function populateCustomSettingsList (options) {
   const label = document.createElement('label')
@@ -69,9 +83,26 @@ function populateUserDictionaryList (customWords) {
   hideListItems(wordsList)
 }
 
+// handles updating the background color of the slider to match the highlight color
+function handleSliderColor (event) {
+  if (event.type === 'mouseenter') {
+    event.target.style.backgroundColor = highlightColor
+  }
+  if (event.type === 'mouseleave') {
+    event.target.style.backgroundColor = null
+  }
+}
+
+// handle the suggestions slider change event
+function handleSliderChange (event) {
+  setMaxSuggestionsLimit(event.target.value)
+  messageHandler.postMessage({ type: 'saveMaxSuggestions', limit: event.target.value })
+}
+
 // handle the colorPicker submission/dismissal event
 function handleColorChange (event) {
   const newColor = event.target.value
+  highlightColor = newColor
   messageHandler.postMessage({ type: 'saveColor', color: newColor })
 }
 
@@ -94,14 +125,14 @@ function handleWords (event) {
 }
 
 // checkbox related input event listener (displaying and updating persistent options)
-function handleOptions (e) {
+function handleOptions (event) {
   const visible = optionsList.hasAttribute('visible')
-  if (visible && e.target.parentNode === settings) {
+  if (visible && event.target.parentNode === settings) {
     hideListItems(optionsList)
   } else if (!visible) {
     showListItems(optionsList)
-  } else if (e.target.matches('.options input')) {
-    e.target.value = e.originalTarget.checked
+  } else if (event.target.matches('.options input')) {
+    event.target.value = event.originalTarget.checked
     messageHandler.postMessage({ type: 'saveSettings', settings: getSettingsFromPopup() })
   }
 }
@@ -149,14 +180,18 @@ function main () {
   // listen to incoming messages from background script
   messageHandler.onMessage.addListener(api)
   messageHandler.postMessage({ type: 'getCustomWords' })
-  messageHandler.postMessage({ type: 'getCustomSettings' })
-  messageHandler.postMessage({ type: 'getCustomHighlightColor' })
+  messageHandler.postMessage({ type: 'getSettings' })
+  messageHandler.postMessage({ type: 'getColor' })
+  messageHandler.postMessage({ type: 'getMaxSuggestions' })
   messageHandler.postMessage({ type: 'sidebar', isOpen: true })
 
   dictionary.addEventListener('click', handleWords)
   settings.addEventListener('click', handleOptions)
   colorPicker.addEventListener('change', handleColorChange)
   colorPicker.addEventListener('input', handleColorPreview)
+  suggestionSlider.addEventListener('input', handleSliderChange)
+  suggestionSlider.addEventListener('mouseenter', handleSliderColor)
+  suggestionSlider.addEventListener('mouseleave', handleSliderColor)
 
   window.addEventListener('unload',
     () => { messageHandler.postMessage({ type: 'sidebar', isOpen: false }) })
