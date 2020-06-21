@@ -25,6 +25,7 @@ class Highlighter {
     this.render = this.render.bind(this)
     this.rebuild = this.rebuild.bind(this)
     this.destroy = this.destroy.bind(this)
+    this.$highlights = null
     this.$highlighter = null
 
     this._buildHighlighter()
@@ -66,12 +67,10 @@ class Highlighter {
       'border-top-width', 'border-right-width', 'border-bottom-width', 'border-left-width',
       'border-top-style', 'border-right-style', 'border-bottom-style', 'border-left-style',
       'font-size', 'font-family', 'font-weight', 'line-height', 'letter-spacing', 'text-align',
-      'margin-top', 'margin-right', 'margin-bottom', 'margin-left', 'max-height', 'min-height',
-      'padding-top', 'padding-right', 'padding-bottom', 'padding-left', 'box-sizing'
+      'padding-top', 'padding-right', 'padding-bottom', 'padding-left', 'box-sizing',
+      'max-height', 'min-height', 'width', 'height'
     ]
-    const geometricStyles = ['width', 'height']
-
-    const highlights = this.$highlighter.shadowRoot.querySelector('#highlights')
+    const geometricStyles = []
     const offsetStyles = this._offset(this.$textarea, this.$highlighter)
 
     // only offset top and left values for non static textareas - otherwise highlight layout breaks
@@ -82,11 +81,11 @@ class Highlighter {
 
     reflectedStyles.forEach(style => {
       const value = this._textareaStyles.getPropertyValue(style)
-      highlights.style[style] = value
+      this.$highlights.style[style] = value
     })
 
     geometricStyles.forEach(style => {
-      highlights.style[style] = offsetStyles[style]
+      this.$highlights.style[style] = offsetStyles[style]
     })
   }
 
@@ -100,14 +99,9 @@ class Highlighter {
     const targetRect = targetNode.getBoundingClientRect()
     const offsetRect = offsetNode.getBoundingClientRect()
 
-    // const offsetTop = (rect.top + window.pageYOffset - document.documentElement.clientTop)
-    // const offsetLeft = (rect.left + window.pageXOffset - document.documentElement.clientLeft)
-
     return {
       top: `${targetRect.top - offsetRect.top}px`,
-      left: `${targetRect.left - offsetRect.left}px`,
-      width: `${targetNode.clientWidth}px`,
-      height: `${targetNode.clientHeight}px`
+      left: `${targetRect.left - offsetRect.left}px`
     }
   }
 
@@ -120,31 +114,51 @@ class Highlighter {
    * @param  {string} word - The sequence of characters we are testing appears as a whole word
    * @param  {string} content - Text content to be tested with regex
    * @param  {number=0} start - Optional index to begin searching content from
-   * @returns {boolean} - True if a word appears at least once as a whole word (as of start)
+   * @returns {boolean} - True if a word appears as a whole word (as of start)
    */
 
+  // FIXME: this is bugged, may need to use isWordBoundary
   _isWholeWord (word, content, start = 0) {
+    let begin = start
+    let end = start + word.length
+    if (content.length > (start + word.length)) end++
+    if (start > 0) begin--
+
     const rxWordBounds = new RegExp(`\\b${word}\\b`)
-    return rxWordBounds.test(content.slice(start))
+    return rxWordBounds.test(content.slice(begin, end))
   }
 
   // generates mark tags for each token found within the current text content
   _generateMarks () {
     let text = this._text
-    let index = 0
+    let searchIndex = 0
+    let done = false
+    let i = 0
 
-    for (const token of this.tokens) {
-      // continue but don't update search index if we don't find current token inside remaining text
-      if (text.indexOf(token, index) === -1) {
+    while (!done) {
+      const token = this.tokens[i]
+
+      if (!token) {
+        done = true
         continue
       }
-      index = text.indexOf(token, index)
-      if (this._isWholeWord(token, text, index)) {
+
+      // continue but don't update searchIndex if we don't find current token inside remaining text
+      if (text.indexOf(token, searchIndex) === -1) {
+        i++
+        continue
+      }
+
+      searchIndex = text.indexOf(token, searchIndex)
+      if (this._isWholeWord(token, text, searchIndex)) {
         const markup = `<mark class="color">${token}</mark>`
-        const start = index
-        const end = index + token.length
+        const start = searchIndex
+        const end = searchIndex + token.length
         text = text.slice(0, start) + markup + text.slice(end)
-        index += markup.length
+        searchIndex += markup.length
+        i++
+      } else {
+        searchIndex += token.length
       }
     }
 
@@ -152,8 +166,7 @@ class Highlighter {
     text = text.replace(/\n$/, '\n\n')
 
     // TODO: may have to figure out another way to do this in case Moz rejects the extension
-    const highlights = this.$highlighter.shadowRoot.querySelector('#highlights')
-    highlights.innerHTML = text
+    this.$highlights.innerHTML = text
   }
 
   // this will update the currently displayed highlight color only (the original innerHTML will
@@ -172,10 +185,10 @@ class Highlighter {
     }
     #highlights {
       background: none transparent;
+      border-color: transparent;
       color: transparent;
       pointer-events: none;
       position: absolute;
-      opacity: 35%;
       overflow: hidden;
       white-space: pre-wrap;
       z-index: 1;
@@ -184,6 +197,7 @@ class Highlighter {
       border-radius: 0.5em;
       background-color: ${this.color}33;
       color: transparent;
+      opacity: 35%;
     }
     mark.color{
       background-color: ${this.color};
@@ -199,8 +213,9 @@ class Highlighter {
   _buildHighlighter () {
     this.$highlighter = document.createElement('div')
     this.$highlighter.attachShadow({ mode: 'open' })
-    this.$highlighter.shadowRoot.innerHTML = this._getInnerHtmlTemplate()
     this.$highlighter.setAttribute('class', 'data-multidict-highlights')
+    this.$highlighter.shadowRoot.innerHTML = this._getInnerHtmlTemplate()
+    this.$highlights = this.$highlighter.shadowRoot.querySelector('#highlights')
     this.$textarea.setAttribute('data-multidict-current', true)
     this.$textarea.addEventListener('input', this._handleInput)
     this.$textarea.addEventListener('scroll', this._handleScroll)
@@ -229,6 +244,7 @@ class Highlighter {
   // rebuild the innerHTML content of the highlighter (for when color is out of sync)
   rebuild () {
     this.$highlighter.shadowRoot.innerHTML = this._getInnerHtmlTemplate()
+    this.$highlights = this.$highlighter.shadowRoot.querySelector('#highlights')
     this.render()
   }
 

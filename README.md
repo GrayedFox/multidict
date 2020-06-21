@@ -11,13 +11,16 @@ LibreOffice, OpenOffice, and many more apps that rely on the Hunspell spell chec
 - [Supported Languages](#supported-languages)
 - [Usage](#usage)
   - [Keyboard Shortcuts](#keyboard-shortcuts)
-  - [Enabling Multiple Language Spellchecking](#enabling-multiple-language-spellchecking)
-  - [I want a different lightsaber (highlights colour)!](#i-want-a-different-lightsaber!)
+  - [Enabling Multiple Language Spellchecking](#enabling-multiple-language-spell-checking)
+  - [I want a different lightsaber (highlight colour)!](#i-want-a-different-lightsaber)
   - [Disabling the built in spellchecker](#disabling-the-built-in-spellchecker)
-  - [Limiting Words Suggestions](#limiting-words-suggestions)
+  - [Limiting Word Suggestions](#limiting-word-suggestions)
   - [Spell Checking Language Preference](#spell-checking-language-preference)
+- [FAQ](#frequently-asked-questions)
+  - [Where are the suggestions?](#where-is-the-suggestions-list)
 - [Privacy Policy](#privacy-policy)
 - [Contact Details](#contact-details)
+- [Credits](#credits)
 
 ## Feature List
 
@@ -27,6 +30,10 @@ Multidict ships with these nifty features:
   personality/mood/unicorn mojo
 - personal dictionary shared across all languages: if shizzle is a word for you in English, one
   assumes you probably annoy your friends with it in German too (my nizzle)
+- easily view and manage all custom words: you can view any word added to your personal dictionary
+  in the Multidict sidebar any time you please
+- proximity based suggestions! suggestions are ordered based on how "close" they are to the misspelt
+  word
 - get inline spelling suggestions and navigate through them with alt+shift up or alt+shift down
 - cancel choosing a spelling suggestion by navigating away with alt+shift left or alt+shift right
 - easily add or remove a word from your personal dictionary using the sidebar, a context menu, or
@@ -64,7 +71,7 @@ If you're like me and prefer to use your keyboard over your mouse, check out the
 
 All of the keyboard shortcuts require alt and shift to be pressed. This is to prevent accidental
 word insertions or dictionary edits. Some of these keyboard shortcuts are configurable, others may
-become so in the future (let's see!).
+become so in the future (let's see!). Defaults:
 
 - ALT+SHIFT+A: add a word to your personal dictionary
 - ALT+SHIFT+D: delete a word from your personal dictionary
@@ -162,12 +169,40 @@ Let's take a look at a slightly complex example and go through it step by step:
 
 This way you can use multiple dictionaries on the same page/tab without changing any preferences or
 using any hotkeys. It is especially useful if you are used to rapidly switching between contexts and
-languages in a work setting or if you are simply doing your best to learn a new language, as I am!
+languages in a work setting or if you are simply doing your best to learn a new language, as I am.
 
 > Note: your first specified language is also your default language and is used when no matches
 can be found. Thus if you are editing content in French and (for whatever reason) French is not in
 your supported languages list, in the above example, spell checking would be done against Australian
 English.
+
+## Frequently Asked Questions
+
+Currently just one, watch this space.
+
+### Where Are The Suggestions?
+
+The suggestions list for any given word is hidden from the user. While this might seem like an odd
+choice for a spellchecker plugin, there are good reasons for it: one is that cycling each suggestion
+is actually faster than opening a list, scanning it for the right word, and then selecting that word
+with your mouse. The other is because each suggestion is ordered based on it's proximity to the
+misspelt word. That means that by cycling **UP** through the suggestions, the user will naturally
+cycle through words that are more likely to be what the user intended with as few as one or two
+key presses.
+
+To illustrate let's take a step-by-step look at what happens when a user makes a common misspelling
+and inputs "releived":
+
+1. The user sees the word "releived" highlighted
+2. Multidict creates a list with the following words, in ascending order from bottom to top:
+
+   - relived  (3rd and final suggestion, user sees this if pressing alt+shift+up 3 times)
+   - relieved (2nd suggestion, user sees this if pressing alt+shift+up 2 times)
+   - received (1st suggestion, user will immediately see this upon pressing alt+shift+up 1 times)
+
+Multidict doesn't always get things right: sometimes the suggestion you want will not be in 1st
+place, but it will rarely, if ever, be at the last place (and especially when there is a longer list
+of suggestions). 
 
 ## Privacy Policy
 
@@ -206,6 +241,11 @@ friends, and the friends of my friends") it makes absolutely no sense to give yo
 company run by shady people you've never met that profit off of using and sharing your data with
 their friends and the friends of their friends so they can target you in some way.
 
+## Contact Details
+
+For bug reports and feature requests use the GitHub issue tracker, to enquire about something else
+send an email to [che.fisher+mutidict@gmail.com][12]
+
 ## Credits
 
 - Dictionaries by [Hunspell][0] and available for download [here][1]
@@ -224,11 +264,6 @@ their friends and the friends of their friends so they can target you in some wa
 
 Thank you for using this software. Please feel free to leave a bug report or feedback via the GitHub
 [issue tracker][13] or send me an email if you prefer (contact details below) :)
-
-## Contact Details
-
-For bug reports and feature requests use the GitHub issue tracker, to enquire about something else
-send an email to [che.fisher+mutidict@gmail.com][12]
 
  [0]: https://hunspell.github.io/
  [1]: https://src.chromium.org/viewvc/chrome/trunk/deps/third_party/hunspell_dictionaries/

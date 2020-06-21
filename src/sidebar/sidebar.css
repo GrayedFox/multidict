@@ -60,6 +60,7 @@ a:hover {
 
 #colorPicker input {
   -webkit-appearance: none !important; /* Needed to clear default Mozilla styles */
+  opacity: 35%;
   border-style: hidden;
   position: relative;
   top: 0.5em;
@@ -78,6 +79,7 @@ a:hover {
 #suggestions input {
   -webkit-appearance: none !important; /* Needed to reset default Mozilla styles */
   background-color: var(--bg-hover-color);
+  opacity: 35%;
   position: relative;
   top: 0.3em;
   padding: 0.1em;

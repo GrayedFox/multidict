@@ -7,15 +7,15 @@ class Spelling {
   constructor (speller, content) {
     this.content = content // raw text string 'Hello c137! 1234 C137? email@fu.com'
     this.speller = speller // an nspell instance
-    this.cleanedText = cleanText(content) // array of cleaned text ['Hello', 'c137', 'C137']
+    this._cleanedText = cleanText(content) // array of cleaned text ['Hello', 'c137', 'C137']
     this.misspeltStrings = this._checkSpelling() // array of misspelt strings ['word', 'word']
     this.misspeltWords = this._generateWords() // array of misspelt Words [{Word}, {Word}]
     this.suggestions = this._generateSuggestions() // suggestion object (see generator)
   }
 
-  // returns array of misspelt word strings only
+  // returns array of misspelt strings only
   _checkSpelling () {
-    return this.cleanedText.filter(word => !this.speller.correct(word))
+    return this._cleanedText.filter(word => !this.speller.correct(word))
   }
 
   // constructs array of misspelt Words by checking the spelling of each bit of cleaned text
@@ -25,11 +25,6 @@ class Spelling {
       index = this.content.indexOf(word, index + word.length)
       return new Word(word, ...getRelativeBounds(word, this.content, index))
     })
-  }
-
-  // return the top N suggestions for a misspelt word
-  getSuggestions (word, limit = 9) {
-    return this.suggestions[word].suggestedWords.slice(0, limit)
   }
 
   // generates a suggestions object: { misspeltWord: { suggestions: ['word1', 'word2'], count: 1 }}
@@ -49,6 +44,31 @@ class Spelling {
     }
 
     return this.suggestions
+  }
+}
+
+// A SuggestionTracker is used to keep track of which suggestion is currently being shown to the
+// user. It requires a suggestions object (from a Spelling) and will update suggestionsIndex
+// variable based on the direction a user is 'scrolling' through any suggestions
+class SuggestionTracker {
+  constructor (suggestions) {
+    this.suggestions = suggestions
+    this._suggestionIndex = 0
+  }
+
+  get currentSuggestion () {
+    return this.suggestions[this._suggestionIndex]
+  }
+
+  // rotate the suggestions up or down
+  rotate (direction) {
+    direction === 'up' ? this._suggestionIndex++ : this._suggestionIndex--
+    if (this._suggestionIndex === this.suggestions.length) {
+      this._suggestionIndex = 0
+    }
+    if (this._suggestionIndex < 0) {
+      this._suggestionIndex = this.suggestions.length - 1
+    }
   }
 }
 
@@ -133,6 +153,7 @@ class Word {
 
 module.exports = {
   Spelling,
+  SuggestionTracker,
   User,
   Word
 }

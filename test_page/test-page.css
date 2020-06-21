@@ -13,18 +13,19 @@ textarea {
   font-size: inherit;
   height: 210px;
   width: 310px;
+  margin: 0.2em auto;
 }
 
 #one {
   border: 3px solid limegreen;
   position: relative;
-  display: inline-block;
+  display: block;
 }
 
 #two {
   border: 3px solid tomato;
   position: relative;
-  display: inline;
+  display: block;
 }
 
 #three {

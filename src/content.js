@@ -1,20 +1,25 @@
-const { blinkMark, debounce, getAllChildren, isSupported, offsetBy, setAllAttribute, setStyleValues } = require('./helpers')
-const { getCurrentMark, getCurrentWordBounds, getMatchingMarkIndex, getSelectionBounds, getTextContent, replaceInText, storeSelection } = require('./text-methods')
-const { Word } = require('./classes')
-const { Carousel } = require('./carousel')
+const { blinkMark, debounce, getAllChildren, isSupported, setAllAttribute } = require('./helpers')
+const {
+  getCurrentMark, getCurrentWordBounds, getMatchingMarkIndex, getSelectionBounds, getTextContent,
+  getMisspeltWordIndex, replaceInText, storeSelection
+} = require('./text-methods')
+const { SuggestionTracker, Word } = require('./classes')
 const { Highlighter } = require('./highlighter')
 
 const dataGenString = 'data-multidict-native-spellcheck-disabled'
 const observer = new MutationObserver(handleDOMChanges)
 const currentLanguage = { lang: '', isReliable: false }
 
-let carousel = null
+let suggestionTracker = null
 let highlightColor = null
 let currentSpelling = null
 let currentTextarea = null
 let highlighter = null
 let settings = null
 let maxSuggestions = null
+let originalMarkIndex = null
+let originalWord = null
+let originalText = ''
 let previousSpellcheckedText = ''
 
 function init () {
@@ -25,7 +30,7 @@ function init () {
   // don't add listeners if body already has them
   if (!document.body.getAttribute('data-multidict-listening')) {
     document.body.addEventListener('click', handleClick)
-    document.body.addEventListener('click', debounce(spellcheck, 700), true)
+    document.body.addEventListener('click', debounce(spellcheck, 400), true)
     document.body.addEventListener('keyup', handleKeyup)
     document.body.addEventListener('keyup', debounce(spellcheck, 700), true)
     document.body.setAttribute('data-multidict-listening', true)
@@ -83,6 +88,9 @@ function handleRefresh (message) {
     case 'preview':
       if (highlighter) highlighter.color = message.content.color
       break
+    case 'render':
+      if (highlighter) highlighter.render()
+      break
     case 'suggestions':
       maxSuggestions = message.content.maxSuggestions
       break
@@ -98,8 +106,8 @@ function spellcheck (event) {
   const node = event.target
   const currentText = getTextContent(node)
 
-  // don't spellcheck unsupported nodes
-  if (!isSupported(node)) {
+  // don't spellcheck unsupported nodes or spellcheck when user cycling suggestions
+  if (!isSupported(node) || suggestionTracker) {
     return
   }
 
@@ -138,56 +146,71 @@ function handleHighlight (words = currentSpelling.misspeltStrings) {
   }
 }
 
-// handle rotating the carousel
-function handleCarousel (event, direction) {
-  console.log('handle carousel')
+// handle cycling through suggestions
+function handleSuggestions (event, direction) {
+  console.log('handle suggestions')
   const word = new Word(...getCurrentWordBounds(currentTextarea))
   const currentMarkIndex = getMatchingMarkIndex(getTextContent(currentTextarea), word)
   const mark = getCurrentMark(word.text, currentMarkIndex, highlighter)
   const suggestions = currentSpelling.suggestions[word.text]
-  const topSuggestions = suggestions.suggestedWords.slice(0, maxSuggestions)
+  const topSuggestions = suggestions && suggestions.suggestedWords.slice(0, maxSuggestions)
   const misspeltWord = currentSpelling.misspeltWords[currentMarkIndex]
-  // if we are showing the carousel but shift and alt are no longer pressed replace the word with
-  // the chosen cell/suggestion
-  if (carousel && !(event.shiftKey && event.altKey)) {
-    chooseSuggestion(currentTextarea, carousel.currentCell.textContent, word)
-    carousel.destroy()
-    carousel = null
-    setStyleValues(mark, { visibility: null })
-    setStyleValues(currentTextarea, { filter: null })
+
+  // if we are cycling suggestions but shift and alt are no longer pressed destroy tracker
+  if (suggestionTracker && !(event.shiftKey && event.altKey)) {
+    suggestionTracker = null
   }
 
   if (event.shiftKey && event.altKey && direction) {
-    // we create a carousel when we get a directional keypress (up arrow, down arrow)
+    // we create a suggestionTracker when we get a directional keypress (up or down arrow)
     if (direction === 'up' || direction === 'down') {
-      // if we have suggestions and no carousel present, create one using the word suggestions
-      if (!carousel && topSuggestions.length > 0) {
-        const position = offsetBy(mark, currentTextarea)
-        setStyleValues(currentTextarea, { filter: 'blur(1px)' })
-        setStyleValues(mark, { visibility: 'hidden' })
-        carousel = new Carousel(currentTextarea, topSuggestions, mark.offsetHeight, position)
+      // if we have suggestions and no suggestionTracker present, create one
+      if (!suggestionTracker && topSuggestions && topSuggestions.length > 0) {
+        // keep reference of original text, word, and mark index
+        originalText = getTextContent(currentTextarea)
+        originalWord = word
+        originalMarkIndex = getMisspeltWordIndex(word, currentSpelling, currentMarkIndex)
+        // remove misspelt word from misspeltStrings array
+        currentSpelling.misspeltStrings.splice(originalMarkIndex, 1)
+        // ensures that suggestion with closest proximity to misspelt word is at second index
+        topSuggestions.unshift(topSuggestions.pop())
+        suggestionTracker = new SuggestionTracker(topSuggestions)
       }
       // if we have no suggestions but the current word is misspelt, blink current mark
-      if (topSuggestions.length < 0 && misspeltWord && mark) {
+      if (!topSuggestions && misspeltWord && mark) {
         blinkMark(mark, 4, 600)
       }
-      // rotate the carousel up or down
-      if (carousel) {
-        carousel.rotate(direction)
+      // cycle through suggestionTracker up or down and replace the word with the suggestion
+      if (suggestionTracker) {
+        suggestionTracker.rotate(direction)
+        chooseSuggestion(currentTextarea, suggestionTracker.currentSuggestion, word)
       }
     } else {
-      // if direction left or right, destroy carousel so user can navigate away without choosing
-      if (carousel && carousel.visible) {
-        carousel.destroy()
-        carousel = null
-        setStyleValues(mark, { visibility: null })
-        setStyleValues(currentTextarea, { filter: null })
+      // if direction left or right, destroy tracker and restore original text and spelling
+      if (suggestionTracker) {
+        suggestionTracker = null
+        const restoreSelection = storeSelection(getSelectionBounds(currentTextarea))
+        currentSpelling.misspeltStrings.splice(originalMarkIndex, 0, originalWord.text)
+        currentTextarea.value = originalText
+        restoreSelection(currentTextarea)
+        handleHighlight()
       }
     }
   }
 }
 
-// handle keyup events of textarea, used to drive carousel/word suggestions behaviour
+// replace the text inside the target node with the chosen suggestion
+function chooseSuggestion (node, suggestion, word) {
+  console.log('choose suggestion')
+  const currentText = getTextContent(node)
+  const restoreSelection = storeSelection(getSelectionBounds(node))
+
+  node.value = replaceInText(currentText, word, suggestion)
+  restoreSelection(node)
+  handleHighlight()
+}
+
+// handle keyup events of textarea, used to instantiate or cycle suggestionTracker
 function handleKeyup (event) {
   console.log('handle keyup')
   const directions = { 37: 'left', 38: 'up', 39: 'right', 40: 'down' }
@@ -198,14 +221,14 @@ function handleKeyup (event) {
     return
   }
 
-  // don't update current text are or detect language while carousel showing
-  if (!carousel) {
+  // don't update current textarea or detect language while cycling suggestions
+  if (!suggestionTracker) {
     updateCurrentTextarea(node)
   }
 
-  // handle carousel if user holding shift+alt+direction or when they release the alt or shift keys
+  // handle suggestions when shift+alt+direction or when user releases the alt or shift keys
   if ((direction && event.shiftKey && event.altKey) || event.key === 'Alt' || event.key === 'Shift') {
-    handleCarousel(event, direction)
+    handleSuggestions(event, direction)
   }
 }
 
@@ -225,17 +248,6 @@ function handleWord (message) {
   // if word undefined generate word from current selection/cursor position
   word = word || getCurrentWordBounds(document.activeElement)[0]
   browser.runtime.sendMessage({ type: message.type, word: word })
-}
-
-// replace the text inside the target node with
-function chooseSuggestion (node, suggestion, word) {
-  console.log('choose suggestion')
-  const currentText = getTextContent(node)
-  const restoreSelection = storeSelection(getSelectionBounds(node))
-
-  node.value = replaceInText(currentText, word, suggestion)
-  restoreSelection(node)
-  handleHighlight()
 }
 
 // detect and update currentLanguage
@@ -298,10 +310,10 @@ init()
 // 1. spellcheck listener generate Spellings of currently focused textarea node content
 // 2. Single Highlighter instance (requires Spelling) per page per focused textarea
 // 3. Highlighter instance has own listeners to keep it in sync with textarea node
-// 4. Content script drives the Carousel (suggestions) as needed; Carousel does not have own
-//    listeners but has a rotate method for rotating the carousel
+// 4. Content script drives the suggestions as needed; SuggestionTracker does not have own listeners
+//    but has a rotate method for cycling through and tracking shown suggestion
 // 5. Content script keeps track of where the caret/cursor position is inside of focused textarea,
-//    which is used when generating a Carousel
+//    which is used when placing suggestions or adding/removing a word
 //
 // Architectural/Design Decisions
 // - Helper functions are Class agnostic (helpers can work with a class instance but never
@@ -309,5 +321,5 @@ init()
 // - Classes can and do use Helper fuctions/methods during instantiation
 // - All spellchecked text and custom words should be cleaned with cleanText/cleanWord helper
 //   functions (with or without specific params)
-// - Carousel and Highlighter instances function indepdently of eachother, however a Highlighter
-//   needs a textarea and a Carousel needs a parent element and position to be placed correctly
+// - SuggestionTracker and Highlighter classes function indepdently of eachother, however a
+//   Highlighter needs a textarea to be positioned correctly

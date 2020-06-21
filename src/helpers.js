@@ -152,15 +152,15 @@ function loadDictionariesAndPrefs (languages) {
  *
  * @param  {node} childNode - The node whos position we want to calculate
  * @param  {node} parentNode - The node to offset the parentNode's position by
- * @returns {object} - An object containing the top and left offset coordinates measured in pixels
+ * @returns {object} - An object containing the top and left offset coordinates
  */
 function offsetBy (targetNode, offsetNode) {
   const targetRect = targetNode.getBoundingClientRect()
   const offsetRect = offsetNode.getBoundingClientRect()
 
   return {
-    top: `${targetRect.top - offsetRect.top}px`,
-    left: `${targetRect.left - offsetRect.left}px`
+    top: targetRect.top - offsetRect.top,
+    left: targetRect.left - offsetRect.left
   }
 }
 
