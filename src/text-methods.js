@@ -67,7 +67,7 @@ function getCurrentWordBounds (node) {
   console.warn('MultiDict: get selected word boundaries failed to find any workable text.')
 }
 
-// gets the index of a Word by matching the Word boundaries against the chunk of text being
+// gets the relative index of a Word by matching the Word boundaries against the chunk of text being
 // operated on (needed for when duplicate misspelt words appear inside content)
 function getMatchingMarkIndex (content, word) {
   if (!word.isValid() || !content) {
@@ -87,7 +87,7 @@ function getMatchingMarkIndex (content, word) {
         found = true
       } else {
         searchIndex += word.length
-        if (isWholeWord(word, content, start)) {
+        if (isWholeWord(word.text, content, start)) {
           markIndex++
         }
       }
@@ -102,9 +102,9 @@ function getMatchingMarkIndex (content, word) {
 // gets the index of the misspelt word used to generate the Carousel
 // if the misspelt word occurs more than once the reduced array will contain multiple entries
 // requiring the position of the misspelt word dupe (duplicateWordIndex) to be known before hand
-function getMisspeltWordIndex (misspeltWord, duplicateWordIndex = 0) {
-  return this.spelling.misspeltWords.reduce((acc, word, misspeltWordIndex) => {
-    return word.text === misspeltWord ? acc.concat([misspeltWordIndex]) : acc
+function getMisspeltWordIndex (misspeltWord, spelling, duplicateWordIndex = 0) {
+  return spelling.misspeltStrings.reduce((acc, misspeltString, index) => {
+    return misspeltString === misspeltWord.text ? acc.concat([index]) : acc
   }, [])[duplicateWordIndex]
 }
 
@@ -191,8 +191,13 @@ function getWordBoundsFromCaret (node, text, startIndex) {
  */
 
 function isWholeWord (word, content, start = 0) {
+  let begin = start
+  let end = start + word.length
+  if (content.length > (start + word.length)) end++
+  if (start > 0) begin--
+
   const rxWordBounds = new RegExp(`\\b${word}\\b`)
-  return rxWordBounds.test(content.slice(start))
+  return rxWordBounds.test(content.slice(begin, end))
 }
 
 // return a boolean value that checks whether or not a character is a word boundary

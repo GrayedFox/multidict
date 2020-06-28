@@ -18,11 +18,17 @@ let highlightColor = null
 // handles all messages received from background script
 function api (message) {
   switch (message.type) {
+    case 'addWord':
+    case 'removeWord':
+      populateUserDictionaryList(message.content)
+      break
     case 'gotCustomWords':
       populateUserDictionaryList(message.content)
+      hideListItems(wordsList)
       break
     case 'gotCustomSettings':
       populateCustomSettingsList(message.content)
+      hideListItems(optionsList)
       break
     case 'gotCustomColor':
       setColorValue(message.content.color)
@@ -68,10 +74,10 @@ function populateCustomSettingsList (options) {
     child.appendChild(label)
   }
   optionsList.appendChild(fragment)
-  hideListItems(optionsList)
 }
 
 function populateUserDictionaryList (customWords) {
+  while (wordsList.firstChild) { wordsList.removeChild(wordsList.firstChild) }
   const fragment = new DocumentFragment()
   let child
   customWords.forEach(word => {
@@ -80,7 +86,6 @@ function populateUserDictionaryList (customWords) {
     child.textContent = word
   })
   wordsList.appendChild(fragment)
-  hideListItems(wordsList)
 }
 
 // handles updating the background color of the slider to match the highlight color

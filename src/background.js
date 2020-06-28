@@ -7,24 +7,26 @@ let customSettings = { disableNativeSpellcheck: false }
 let customHighlightColor = { color: '#FF0000' }
 let maxSuggestions = { maxSuggestions: 4 }
 
-let customWords, sidebarOpen, user
+let customWords, sidebarOpen, sidebarPort, user
 
-// respond to the sender or all tabs with an object containing message content and type
-function respond (sender, content, type) {
-  console.log('type', type)
-  console.log('content', content)
-  console.log('sender', sender)
-  if (sender.tab) {
-    browser.tabs.sendMessage(sender.tab.id, { type, content })
-  } else if (type === 'refresh') {
-    browser.tabs.query({}).then(tabs => {
-      tabs.forEach(tab => { browser.tabs.sendMessage(tab.id, { type, content }) })
-    })
-  } else if (sender.name === 'popup') {
-    sender.postMessage({ type, content })
-  } else {
-    console.warn('MultiDict: unrecognized sender structure. Cannot respond to sender:', sender)
-  }
+// load dictionaries, create langauges from browser acceptLanguages, and instantiate user
+async function init () {
+  browser.commands.onCommand.addListener(commandAndMenuListener)
+  browser.menus.onClicked.addListener(commandAndMenuListener)
+  browser.runtime.onMessage.addListener(api)
+  browser.runtime.onConnect.addListener(sidebarListener)
+  browser.browserAction.onClicked.addListener(popupListener)
+  // FIXME: sidebar open/close bugged if multiple windows open and showing Multidict sidebar
+
+  const languages = prepareLanguages(await browser.i18n.getAcceptLanguages())
+  const dictionariesAndPrefs = await loadDictionariesAndPrefs(languages)
+
+  // TODO: only get custom words when needed
+  customWords = await browser.storage.sync.get('personal')
+  customWords = Array.isArray(customWords.personal) ? customWords.personal : []
+  user = new User(dictionariesAndPrefs.dicts, dictionariesAndPrefs.prefs, languages, [...customWords])
+
+  createMenuItems()
 }
 
 // api that handles performing all actions - background functions should only ever be called by api
@@ -32,12 +34,16 @@ function respond (sender, content, type) {
 function api (message, sender) {
   switch (message.type) {
     case 'add':
-      addCustomWord(cleanWord(message.word))
-        .then(() => respond(sender, { type: 'recheck' }, 'refresh'))
+      addCustomWord(cleanWord(message.word)).then(() => {
+        respond(sender, { type: 'recheck' }, 'refresh')
+        if (sidebarPort) sidebarPort.postMessage({ type: 'addWord', content: customWords })
+      })
       break
     case 'remove':
-      removeCustomWord(cleanWord(message.word))
-        .then(() => respond(sender, { type: 'recheck' }, 'refresh'))
+      removeCustomWord(cleanWord(message.word)).then(() => {
+        respond(sender, { type: 'recheck' }, 'refresh')
+        if (sidebarPort) sidebarPort.postMessage({ type: 'removeWord', content: customWords })
+      })
       break
     case 'getSpelling':
       respond(sender, getSpelling(message), 'highlight')
@@ -70,6 +76,7 @@ function api (message, sender) {
       break
     case 'sidebar':
       sidebarOpen = message.isOpen
+      respond(sender, { type: 'render' }, 'refresh')
       break
     case 'saveSettings':
       saveSettings(message.settings)
@@ -77,6 +84,24 @@ function api (message, sender) {
       break
     default:
       console.warn(`MultDict: unrecognized message type ${message.type}. Aborting.`)
+  }
+}
+
+// respond to the sender or all tabs with an object containing message content and type
+function respond (sender, content, type) {
+  console.log('type', type)
+  console.log('content', content)
+  console.log('sender', sender)
+  if (sender.tab) {
+    browser.tabs.sendMessage(sender.tab.id, { type, content })
+  } else if (type === 'refresh') {
+    browser.tabs.query({}).then(tabs => {
+      tabs.forEach(tab => { browser.tabs.sendMessage(tab.id, { type, content }) })
+    })
+  } else if (sender.name === 'popup') {
+    sender.postMessage({ type, content })
+  } else {
+    console.warn('MultiDict: unrecognized sender structure. Cannot respond to sender:', sender)
   }
 }
 
@@ -183,7 +208,8 @@ function getSpelling (message) {
 }
 
 // listens to all incoming messages from the popup/action menu and handle popup closing
-function sidebarListener (sidebarPort) {
+function sidebarListener (port) {
+  sidebarPort = port
   if (!sidebarPort.onMessage.hasListener(api)) {
     sidebarPort.onMessage.addListener(api)
     sidebarPort.onDisconnect.addListener(() => {
@@ -210,37 +236,15 @@ function commandAndMenuListener (info, tab) {
   }
 }
 
-// load dictionaries, create langauges from browser acceptLanguages, and instantiate user
-async function main () {
-  const languages = prepareLanguages(await browser.i18n.getAcceptLanguages())
-  const dictionariesAndPrefs = await loadDictionariesAndPrefs(languages)
-
-  // TODO: only get custom words when needed
-  customWords = await browser.storage.sync.get('personal')
-  customWords = Array.isArray(customWords.personal) ? customWords.personal : []
-  user = new User(dictionariesAndPrefs.dicts, dictionariesAndPrefs.prefs, languages, [...customWords])
-
-  createMenuItems()
-
-  console.log('langs', user.langs)
-  console.log('prefs', user.prefs)
-  console.log('words', user.ownWords)
-}
-
-browser.commands.onCommand.addListener(commandAndMenuListener)
-browser.menus.onClicked.addListener(commandAndMenuListener)
-browser.runtime.onMessage.addListener(api)
-browser.runtime.onConnect.addListener(sidebarListener)
-
-// this is bugged when multiple windows are open and each of them shows the Multidict sidebar
-browser.browserAction.onClicked.addListener(() => {
+// listen to the browser action icon being clicked and open or close the sidebar
+function popupListener () {
   sidebarOpen
     ? browser.sidebarAction.close()
     : browser.sidebarAction.open()
   sidebarOpen = !sidebarOpen
-})
+}
 
-main()
+init()
 
 // Goal: enable multiple laguages to be used when spell checking by detecting content language
 //
