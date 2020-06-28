@@ -44,7 +44,7 @@ Multidict ships with these nifty features:
 - word suggestions will match the font and style of whatever text area you are editing, because
   having 7 different fonts and sizes on any given website is already criminal enough
 
-![Multidict in action!](media/demo/multi-dict-demo.gif?raw=true "Multidict")
+![Multidict in action!](media/demo/demo-multidict.gif?raw=true "Multidict")
 
 ## Supported Languages
 
@@ -202,7 +202,7 @@ and inputs "releived":
 
 Multidict doesn't always get things right: sometimes the suggestion you want will not be in 1st
 place, but it will rarely, if ever, be at the last place (and especially when there is a longer list
-of suggestions). 
+of suggestions).
 
 ## Privacy Policy
 
