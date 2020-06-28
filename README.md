@@ -17,7 +17,7 @@ LibreOffice, OpenOffice, and many more apps that rely on the Hunspell spell chec
   - [Limiting Word Suggestions](#limiting-word-suggestions)
   - [Spell Checking Language Preference](#spell-checking-language-preference)
 - [FAQ](#frequently-asked-questions)
-  - [Where are the suggestions?](#where-is-the-suggestions-list)
+  - [Where are the suggestions?](#where-are-the-suggestions)
 - [Privacy Policy](#privacy-policy)
 - [Contact Details](#contact-details)
 - [Credits](#credits)
