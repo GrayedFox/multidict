@@ -129,7 +129,7 @@ disable the browsers built in spellchecking for text areas.
 
 ### Limiting Word Suggestions
 
-The default maximum number of suggestions shown for any one word is 4. You can change this value in
+The default maximum number of suggestions shown for any one word is 6. You can change this value in
 the Options sub-menu in the Multidict settings panel:
 
 1. Click the Multidict icon located at the top right of the browser window nearby all those other
@@ -257,13 +257,14 @@ send an email to [che.fisher+mutidict@gmail.com][12]
 - Async forEach helper function taken from Antonio V's [p-iteration][6] module
 - Language detection thanks to Dick Sites and the kick-ass [CLD2][9] (Compact Language Detector 2)
   software
-- Word suggestions carousel made possible by the good graces of David DeSandro, who wrote an
-  excellent tutorial called [Introduction to CSS 3D transforms][11]. Give it a read, it's awesome.
+- Word suggestions carousel (not in current version) made possible by the good graces of David
+  DeSandro, who wrote an excellent tutorial called [Introduction to CSS 3D transforms][11]. Give it
+  a read, it's awesome.
 - Mozilla and all her contributors
 - All of you, duh!
 
 Thank you for using this software. Please feel free to leave a bug report or feedback via the GitHub
-[issue tracker][13] or send me an email if you prefer (contact details below) :)
+[issue tracker][13] or send me an email if you prefer (contact details above) :)
 
  [0]: https://hunspell.github.io/
  [1]: https://src.chromium.org/viewvc/chrome/trunk/deps/third_party/hunspell_dictionaries/

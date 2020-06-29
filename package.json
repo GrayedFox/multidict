@@ -1,9 +1,10 @@
 {
-  "name": "multi-dict",
-  "version": "1.0.0",
+  "name": "Multidict",
+  "version": "1.0.1",
   "description": "Spell check in multiple languages with this Firefox addon",
   "main": "multidict.js",
   "scripts": {
+    "publish": "web-ext build && zip dist/sourcecode -r src/**",
     "build": "bash build.sh",
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",
@@ -12,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/GrayedFox/multi-dict.git"
+    "url": "git+https://github.com/GrayedFox/multidict.git"
   },
   "keywords": [
     "firefox",

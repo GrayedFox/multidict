@@ -153,8 +153,13 @@ function handleSuggestions (event, direction) {
   const currentMarkIndex = getMatchingMarkIndex(getTextContent(currentTextarea), word)
   const mark = getCurrentMark(word.text, currentMarkIndex, highlighter)
   const suggestions = currentSpelling.suggestions[word.text]
-  const topSuggestions = suggestions && suggestions.suggestedWords.slice(0, maxSuggestions)
   const misspeltWord = currentSpelling.misspeltWords[currentMarkIndex]
+
+  // topSuggestions based on user specified limit (defaults to 6). A maxSuggestions setting of 10
+  // means don't limit the suggestions, a setting of 0 means don't show suggestions
+  const topSuggestions = suggestions && maxSuggestions !== 0 && maxSuggestions !== 10
+    ? suggestions.suggestedWords.slice(0, maxSuggestions)
+    : suggestions
 
   // if we are cycling suggestions but shift and alt are no longer pressed destroy tracker
   if (suggestionTracker && !(event.shiftKey && event.altKey)) {
@@ -164,8 +169,8 @@ function handleSuggestions (event, direction) {
   if (event.shiftKey && event.altKey && direction) {
     // we create a suggestionTracker when we get a directional keypress (up or down arrow)
     if (direction === 'up' || direction === 'down') {
-      // if we have suggestions and no suggestionTracker present, create one
-      if (!suggestionTracker && topSuggestions && topSuggestions.length > 0) {
+      // if we have suggestions and user wants them, and no suggestionTracker is present, create one
+      if (!suggestionTracker && topSuggestions && topSuggestions.length > 0 && maxSuggestions > 0) {
         // keep reference of original text, word, and mark index
         originalText = getTextContent(currentTextarea)
         originalWord = word
@@ -176,8 +181,9 @@ function handleSuggestions (event, direction) {
         topSuggestions.unshift(topSuggestions.pop())
         suggestionTracker = new SuggestionTracker(topSuggestions)
       }
+      console.log('maxSuggestions', maxSuggestions)
       // if we have no suggestions but the current word is misspelt, blink current mark
-      if (!topSuggestions && misspeltWord && mark) {
+      if ((misspeltWord && mark) && (maxSuggestions === 0 || !topSuggestions)) {
         blinkMark(mark, 4, 600)
       }
       // cycle through suggestionTracker up or down and replace the word with the suggestion
