@@ -21,6 +21,7 @@ function api (message) {
     case 'addWord':
     case 'removeWord':
       populateUserDictionaryList(message.content)
+      showListItems(wordsList)
       break
     case 'gotCustomWords':
       populateUserDictionaryList(message.content)
@@ -43,6 +44,10 @@ function api (message) {
 
 const setMaxSuggestionsLimit = limit => {
   suggestionSlider.value = limit
+  if (limit === 10 || limit === '10') {
+    limit += '+'
+    console.log('limit', limit)
+  }
   suggestionOutput.textContent = limit
 }
 

@@ -1,9 +1,9 @@
 {
   "manifest_version": 2,
-  "name": "MultiDict",
+  "name": "Multidict",
   "description": "Because spell checking should be smart, not difficult.",
   "homepage_url": "https://github.com/GrayedFox/multi-dict",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "icons": {
     "48": "media/icons/icon-64.png",
     "96": "media/icons/icon-128.png"
@@ -20,13 +20,13 @@
 
   "sidebar_action": {
     "default_icon": "media/icons/icon.svg",
-    "default_panel": "src/sidebar/sidebar.html",
+    "default_panel": "dist/sidebar/sidebar.html",
     "default_title": "MultiDict"
   },
 
   "browser_specific_settings": {
     "gecko": {
-      "id": "che.fisher@gmail.com",
+      "id": "{9f589d36-a49a-4eef-b43f-f6bdb94379fe}",
       "strict_min_version": "71.0"
     }
   },

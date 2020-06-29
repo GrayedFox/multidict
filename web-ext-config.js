@@ -16,6 +16,11 @@ module.exports = {
   },
   ignoreFiles: [
     'package-lock.json',
-    'src/**'
+    'src/',
+    'src/**',
+    'test_page/',
+    'test_page/**',
+    'build.sh',
+    '_config.yml'
   ]
 }

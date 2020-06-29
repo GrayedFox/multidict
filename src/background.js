@@ -5,7 +5,7 @@ const { cleanWord } = require('./text-methods')
 // defaults set when background script first loads in case no values exist in storage yet
 let customSettings = { disableNativeSpellcheck: false }
 let customHighlightColor = { color: '#FF0000' }
-let maxSuggestions = { maxSuggestions: 4 }
+const maxSuggestions = { maxSuggestions: 6 }
 
 let customWords, sidebarOpen, sidebarPort, user
 
@@ -186,7 +186,7 @@ async function getMaxSuggestions () {
   const storedLimit = await browser.storage.sync.get('maxSuggestions')
 
   if (storedLimit.maxSuggestions) {
-    maxSuggestions = storedLimit
+    maxSuggestions.maxSuggestions = parseInt(storedLimit.maxSuggestions, 10)
   }
 }
 
