@@ -1,8 +1,8 @@
 {
-  "name": "Multidict",
-  "version": "1.0.1",
+  "name": "multidict",
+  "version": "1.0.3",
   "description": "Spell check in multiple languages with this Firefox addon",
-  "main": "multidict.js",
+  "main": "src/background.js",
   "scripts": {
     "publish": "web-ext build && zip dist/sourcecode -r src/**",
     "build": "bash build.sh",
@@ -31,7 +31,7 @@
     "browserify": "^16.5.1",
     "eslint": "^6.8.0",
     "eslint-config-standard": "^14.1.1",
-    "eslint-plugin-import": "^2.21.1",
+    "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-node": "^9.2.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1"

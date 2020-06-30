@@ -193,7 +193,6 @@ function handleWords (event) {
 
 // checkbox related input event listener (displaying and updating persistent options)
 function handleOptions (event) {
-  console.log(event.target)
   const parent = event.target.parentNode
   const list = parent.querySelector('.options')
   const visible = list && list.hasAttribute('visible')
@@ -225,7 +224,6 @@ function notify (title, message) {
 function getSettingsFromList (list) {
   const settingsArray = []
   list.querySelectorAll('input').forEach((setting) => {
-    console.log('setting', setting)
     if (setting.value === 'true') {
       settingsArray.push(setting.id)
     }

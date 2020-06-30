@@ -3,7 +3,7 @@
   "name": "Multidict",
   "description": "Because spell checking should be smart, not difficult.",
   "homepage_url": "https://github.com/GrayedFox/multi-dict",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "icons": {
     "48": "media/icons/icon-64.png",
     "96": "media/icons/icon-128.png"
