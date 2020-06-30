@@ -74,7 +74,6 @@ function messageHandler (message) {
 
 // handle refreshing any variables/temp settings and trigger a recheck or color change if needed
 function handleRefresh (message) {
-  console.log('handle refresh')
   switch (message.content.type) {
     case 'recheck':
       // clearing previousSpellcheckedText ensures we recheck spelling despite identical content
@@ -106,7 +105,6 @@ function handleRefresh (message) {
 
 // spellcheck function debounced on all keyup and click events
 function spellcheck (event) {
-  console.log('handle spellcheck')
   const node = event.target
   const currentText = getTextContent(node)
 
@@ -133,7 +131,6 @@ function spellcheck (event) {
 
 // highlight misspelt words based on the current spelling
 function handleHighlight (words = currentSpelling.misspeltStrings) {
-  console.log('handle highlight')
   if (highlighter && !currentTextarea.getAttribute('data-multidict-current')) {
     highlighter.destroy()
     highlighter = null
@@ -152,7 +149,6 @@ function handleHighlight (words = currentSpelling.misspeltStrings) {
 
 // handle cycling through suggestions
 function handleSuggestions (event, direction) {
-  console.log('handle suggestions')
   const word = new Word(...getCurrentWordBounds(currentTextarea))
   const currentMarkIndex = getMatchingMarkIndex(getTextContent(currentTextarea), word)
   const mark = getCurrentMark(word.text, currentMarkIndex, highlighter)
@@ -214,7 +210,6 @@ function handleSuggestions (event, direction) {
 
 // replace the text inside the target node with the chosen suggestion
 function chooseSuggestion (node, suggestion, word) {
-  console.log('choose suggestion')
   const currentText = getTextContent(node)
   const restoreSelection = storeSelection(getSelectionBounds(node))
 
@@ -225,7 +220,6 @@ function chooseSuggestion (node, suggestion, word) {
 
 // handle keyup events of textarea, used to instantiate or cycle suggestionTracker
 function handleKeyup (event) {
-  console.log('handle keyup')
   const directions = { 37: 'left', 38: 'up', 39: 'right', 40: 'down' }
   const direction = directions[event.keyCode]
   const node = event.target
@@ -247,7 +241,6 @@ function handleKeyup (event) {
 
 // apply current user settings to applicable nodes
 function handleSettings (nodeList) {
-  console.log('handle settings')
   // set spellcheck=false on all text fields to prevent double spell checking
   if (settings.includes('disableNativeSpellcheck') && nodeList.length > 0) {
     setAllAttribute(nodeList, 'spellcheck', false)
@@ -286,7 +279,6 @@ function getSpelling (currentText) {
 
 // update current mark and currently selected word based on caret position
 function updateCurrentTextarea (node) {
-  console.log('update current textarea')
   if (currentTextarea) currentTextarea.removeAttribute('data-multidict-selected-word')
   updateDetectedLanguage(getTextContent(node))
   currentTextarea = node
@@ -296,7 +288,6 @@ function updateCurrentTextarea (node) {
 
 // detect content language when user clicks and update current selection
 function handleClick (event) {
-  console.log('handle click')
   const node = event.target
   if (!isSupported(node)) {
     return
@@ -307,7 +298,6 @@ function handleClick (event) {
 
 // watch for dom content changes and do necessary work
 function handleDOMChanges (mutationList, observer) {
-  console.log('handle dom changes')
   // watch for additional textareas added to DOM and apply user settings
   if (settings.disableNativeSpellcheck) {
     mutationList.forEach((mutation) => {

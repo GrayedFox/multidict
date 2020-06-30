@@ -8,11 +8,15 @@ function cleanText (content, filter = true) {
 
   // ToDo: first split string by spaces in order to properly ignore urls
   const rxUrls = /^(http|https|ftp|www)/
-  const rxSeparators = /[\s\r\n.,:;!?_<>{}()[\]"`´^$°§½¼³%&¬+=*~#|/\\]/
+  const rxSeparators = /[.,:;!?¿_<>{}()[\]"`´^$°§½¼³%&¬+=*~#|/\\]/
   const rxSingleQuotes = /^'+|'+$/g
 
-  // split all content by any character that should not form part of a word
-  return content.split(rxSeparators)
+  // split all content by spaces, or new lines, our safest delimiters
+  return content.split(/[\s\r\n]/)
+    // filter out any URLS and emails
+    .filter(string => !rxUrls.test(string) && !string.includes('@'))
+    // split all content by any character that does not form part of a word
+    .flatMap(string => string.split(rxSeparators))
     .reduce((acc, string) => {
       // remove any number of single quotes that do not form part of a word i.e. 'y'all' > y'all
       string = string.replace(rxSingleQuotes, '')
@@ -24,8 +28,8 @@ function cleanText (content, filter = true) {
       if (!filter) {
         return acc.concat([string])
       }
-      // filter out emails, URLs, numbers, and strings less than 2 characters in length
-      if (!string.includes('@') && !rxUrls.test(string) && isNaN(string) && string.length > 1) {
+      // filter out emails, numbers, and strings less than 2 characters in length
+      if (isNaN(string) && string.length > 1) {
         return acc.concat([string])
       }
       return acc

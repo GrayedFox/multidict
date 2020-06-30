@@ -2,6 +2,8 @@ const { User, Spelling } = require('./classes')
 const { createMenuItems, getDefaultLanguages, loadDictionariesAndPrefs, prepareLanguages } = require('./helpers')
 const { cleanWord } = require('./text-methods')
 
+const DEBUG = false
+
 // default values for when background script first loads in case no values yet exist in storage
 const maxSuggestions = { maxSuggestions: 6 }
 const customHighlightColor = { color: '#FF0000' }
@@ -104,9 +106,11 @@ function api (message, sender) {
 
 // respond to the sender or all tabs with an object containing message content and type
 function respond (sender, content, type) {
-  console.log('type', type)
-  console.log('content', content)
-  console.log('sender', sender)
+  if (DEBUG) {
+    console.log('type', type)
+    console.log('content', content)
+    console.log('sender', sender)
+  }
   if (sender.tab) {
     browser.tabs.sendMessage(sender.tab.id, { type, content })
   } else if (type === 'refresh') {

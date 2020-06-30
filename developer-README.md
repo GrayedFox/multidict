@@ -16,5 +16,6 @@ and then open a Firefox browser with some specific pages that can be used for te
 
 ## Dependencies
 
-While there are developer dependencies there are no runtime user dependencies. Extensions are always
-shipped as a standalone, packaged app.
+The app depends on nspell, a JavaScript implementation of Hunspell, to provide spell checking.
+
+You can check it out here: https://github.com/wooorm/nspell
