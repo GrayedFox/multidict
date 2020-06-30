@@ -12,12 +12,12 @@ LibreOffice, OpenOffice, and many more apps that rely on the Hunspell spell chec
 - [Usage](#usage)
   - [Keyboard Shortcuts](#keyboard-shortcuts)
   - [Enabling Multiple Language Spellchecking](#enabling-multiple-language-spell-checking)
-  - [I want a different lightsaber (highlight colour)!](#i-want-a-different-lightsaber)
-  - [Disabling the built in spellchecker](#disabling-the-built-in-spellchecker)
+  - [I Want A Different Lightsaber (Highlight Colour)!](#i-want-a-different-lightsaber)
+  - [Disabling The Built In Spellchecker](#disabling-the-built-in-spellchecker)
   - [Limiting Word Suggestions](#limiting-word-suggestions)
   - [Spell Checking Language Preference](#spell-checking-language-preference)
 - [FAQ](#frequently-asked-questions)
-  - [Where are the suggestions?](#where-are-the-suggestions)
+  - [Where Are The Suggestions?](#where-are-the-suggestions)
 - [Privacy Policy](#privacy-policy)
 - [Contact Details](#contact-details)
 - [Credits](#credits)
@@ -62,10 +62,14 @@ Multidict ships with these nifty features:
 ## Usage
 
 You don't need to configure anything if you don't want to: Multidict will detect whatever languages
-and dictionaries you have already added via the addons store and spell check content based on those
-languages, as long as you have [added those languages as a preferred display language](#enabling-multiple-language-spell-checking).
+and dictionaries you have already added via the add-ons store and spell check content based on those
+languages, so long as you have [added those languages as a preferred display language](https://support.mozilla.org/en-US/kb/choose-display-languages-multilingual-web-pages).
 
-If you're like me and prefer to use your keyboard over your mouse, check out the shortcuts section.
+If it doesn't find all the languages you currently use you can easily manage which languages are
+used via the [Multidict settings panel](#enabling-multiple-language-spell-checking).
+
+If you're like me and prefer to use your keyboard over your mouse, check out the shortcuts section
+below.
 
 ### Keyboard Shortcuts
 
@@ -76,18 +80,18 @@ become so in the future (let's see!). Defaults:
 - ALT+SHIFT+A: add a word to your personal dictionary
 - ALT+SHIFT+D: delete a word from your personal dictionary
 - ALT+SHIFT+UP: rotate the word carousel up
-- ALT+SHIFT+DOWN: rotate the word carousel down!
-- ALT+SHIFT+LEFT: close the carousel without choosing a word suggestion
-- ALT+SHIFT+RIGHT: same behaviour as left, this will close the suggestions list without choosing one
+- ALT+SHIFT+DOWN: rotate the word carousel down
+- ALT+SHIFT+LEFT: cancel cycling through words without choosing a word suggestion
+- ALT+SHIFT+RIGHT: same behaviour as left, this will cancel suggestions without choosing one
 
 > Note: you can, if you so choose, change the shortcuts for adding and removing words from your
-personal dictionary from the main settings of the addon:
+personal dictionary from the main settings of the add-on:
 
 1. Click the Firefox burger menu button
-2. Click `Addons` and then select `Extensions` (if the extensions view is not already open)
+2. Click `Add-ons` and then select `Extensions` (if the extensions view is not already open)
 3. To the right of Manage your Extensions is a cogwheel/settings icon. Click is and choose
   `Manage Extension Shortcuts`
-4. You should now see Multidict and any other addon shortcut options listed
+4. You should now see Multidict and any other add-on shortcut options listed
 5. Click inside the text box that lists the current short cut combination to start recording the
    shortcut combination you would like to use.
 
@@ -95,10 +99,12 @@ personal dictionary from the main settings of the addon:
 
 To enable spell checking for multiple languages:
 
-1. Open up Firefox and type `about:preferences` into the URL bar
-2. Scroll down the page and click the `Choose` button next to "Choose your preferred language for
-   displaying pages"
-3. Add your desired languages by choosing the "Select a language to add" checkbox
+1. Click the Multidict icon located at the top right of the browser window nearby all those other
+   pesky extensions
+2. Click the `Languages` menu
+3. Check any languages you desire spell checking in
+
+> Note that you will need to restart your browser to add/remove support for languages.
 
 ### I Want A Different Lightsaber!
 
@@ -206,7 +212,7 @@ of suggestions).
 
 ## Privacy Policy
 
-_No information is_ ___ever___ _collected by this addon or sent to any 3rd party._
+_No information is_ ___ever___ _collected by this add-on or sent to any 3rd party._
 
 This extension doesn't track, spy, collect, or record information about you or your browser or your
 "session" in any way, shape, or form. Everything you write - from the language you write in to the

@@ -51,9 +51,7 @@ a:hover {
   background-color: var(--bg-hover-color);
 }
 
-#menu div {
-  position: relative;
-  display: inline-block;
+#menu .arrow {
   font-size: small;
   float: right;
 }
@@ -100,6 +98,10 @@ a:hover {
 
 .options label:hover {
   cursor: pointer;
+}
+
+.options input {
+  float: right;
 }
 
 .words {

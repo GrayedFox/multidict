@@ -49,8 +49,8 @@ function messageHandler (message) {
       currentSpelling = message.content
       handleHighlight()
       break
-    case 'add':
-    case 'remove':
+    case 'addCustomWord':
+    case 'removeCustomWord':
       handleWord(message)
       break
     case 'gotCustomColor':
@@ -68,7 +68,7 @@ function messageHandler (message) {
       break
 
     default:
-      console.warn(`MultiDict: unrecognized background message ${JSON.stringify(message)}`)
+      console.warn(`Multidict: unrecognized background message ${JSON.stringify(message)}`)
   }
 }
 
@@ -79,7 +79,7 @@ function handleRefresh (message) {
     case 'recheck':
       // clearing previousSpellcheckedText ensures we recheck spelling despite identical content
       previousSpellcheckedText = ''
-      spellcheck({ target: currentTextarea })
+      if (currentTextarea) spellcheck({ target: currentTextarea })
       break
     case 'color':
       highlightColor = message.content.color
@@ -94,8 +94,12 @@ function handleRefresh (message) {
     case 'suggestions':
       maxSuggestions = message.content.maxSuggestions
       break
+    case 'settings':
+      settings = message.content.customSettings
+      handleSettings(document.querySelectorAll('textarea'))
+      break
     default:
-      console.warn('MultiDict: unrecognized refresh type', message.content.type)
+      console.warn('Multidict: unrecognized refresh type', message.content.type)
       break
   }
 }
@@ -155,11 +159,15 @@ function handleSuggestions (event, direction) {
   const suggestions = currentSpelling.suggestions[word.text]
   const misspeltWord = currentSpelling.misspeltWords[currentMarkIndex]
 
-  // topSuggestions based on user specified limit (defaults to 6). A maxSuggestions setting of 10
-  // means don't limit the suggestions, a setting of 0 means don't show suggestions
-  const topSuggestions = suggestions && maxSuggestions !== 0 && maxSuggestions !== 10
-    ? suggestions.suggestedWords.slice(0, maxSuggestions)
-    : suggestions
+  let topSuggestions
+
+  if (suggestions) {
+    // topSuggestions based on user specified limit (defaults to 6). A maxSuggestions setting of 10
+    // means don't limit the suggestions, a setting of 0 means don't show suggestions
+    topSuggestions = maxSuggestions !== 0 && maxSuggestions !== 10
+      ? suggestions.suggestedWords.slice(0, maxSuggestions)
+      : suggestions.suggestedWords
+  }
 
   // if we are cycling suggestions but shift and alt are no longer pressed destroy tracker
   if (suggestionTracker && !(event.shiftKey && event.altKey)) {
@@ -181,7 +189,6 @@ function handleSuggestions (event, direction) {
         topSuggestions.unshift(topSuggestions.pop())
         suggestionTracker = new SuggestionTracker(topSuggestions)
       }
-      console.log('maxSuggestions', maxSuggestions)
       // if we have no suggestions but the current word is misspelt, blink current mark
       if ((misspeltWord && mark) && (maxSuggestions === 0 || !topSuggestions)) {
         blinkMark(mark, 4, 600)
@@ -240,11 +247,14 @@ function handleKeyup (event) {
 
 // apply current user settings to applicable nodes
 function handleSettings (nodeList) {
+  console.log('handle settings')
   // set spellcheck=false on all text fields to prevent double spell checking
-  if (settings.disableNativeSpellcheck && nodeList.length > 0) {
-    console.log('handle settings')
+  if (settings.includes('disableNativeSpellcheck') && nodeList.length > 0) {
     setAllAttribute(nodeList, 'spellcheck', false)
-    setAllAttribute(nodeList, dataGenString)
+    setAllAttribute(nodeList, dataGenString, true)
+  } else {
+    setAllAttribute(nodeList, 'spellcheck', null)
+    setAllAttribute(nodeList, dataGenString, false)
   }
 }
 

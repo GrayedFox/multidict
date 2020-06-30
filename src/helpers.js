@@ -49,7 +49,7 @@ function blinkMark (mark, times, milliseconds) {
 // create Add and Remove multdict context menu items
 function createMenuItems () {
   browser.menus.create({
-    id: 'add',
+    id: 'addCustomWord',
     type: 'normal',
     title: 'Add word to personal dictionary',
     contexts: ['selection'],
@@ -57,7 +57,7 @@ function createMenuItems () {
   })
 
   browser.menus.create({
-    id: 'remove',
+    id: 'removeCustomWord',
     type: 'normal',
     title: 'Remove word from personal dictionary',
     contexts: ['selection'],
@@ -107,6 +107,14 @@ function getCssSelector (node) {
   return `${path.join(' > ')}`.toLowerCase()
 }
 
+// returns an array of languages based on getAcceptLanguages and getUILanguage to use as defaults
+async function getDefaultLanguages () {
+  const acceptedLanguages = await browser.i18n.getAcceptLanguages()
+  const uiLanguage = await browser.i18n.getUILanguage()
+
+  return [...acceptedLanguages, uiLanguage]
+}
+
 // gets the values of each property of a given style sheet and returns a key value pair object
 function getStyleValues (properties, stylesheet) {
   return Object.fromEntries(properties.map(property => {
@@ -126,7 +134,7 @@ function isSupported (node) {
   return node.nodeName === 'TEXTAREA'
 }
 
-// load local dictionary files from supported languages based on user prefs (acceptLanguages)
+// load local dictionary files from supported languages based on user prefs
 function loadDictionariesAndPrefs (languages) {
   // ToDo: check if this negatively impacts memory imprint (may need to fetch dict/aff files)
   const dicts = []
@@ -164,17 +172,17 @@ function offsetBy (targetNode, offsetNode) {
   }
 }
 
-// prepares a language array from the browser accept languages
+// prepares a language array from the browser accepted and UI languages
 function prepareLanguages (languages) {
   return languages.reduce((acc, language, index) => {
-    // if we come accross a language code without a locale, use the language as the locale
+    // if we come across a language code without a locale, use the language code as the locale
     if (language.length === 2) {
       language += `-${language}`
       languages[index] = language
     }
-    // do not add duplicate languages to language array
+    // this prevents adding duplicate languages to language array
     if (languages.indexOf(language) === index) {
-      return [...acc, language]
+      return [...acc, language.toLowerCase()]
     }
     return acc
   }, [])
@@ -210,22 +218,13 @@ function setAllAttribute (nodeList, attribute, value = true) {
   nodeList.forEach((node) => node.setAttribute(attribute, value))
 }
 
-// return new settings object based on settingsArray
-function getSettingsFromArray (settingsArray) {
-  const settings = {}
-  settingsArray.forEach((setting) => {
-    settings[setting.split('-')[0]] = (setting.split('-')[1] === 'true')
-  })
-  console.log('settings', settings)
-  return settings
-}
-
 module.exports = {
   blinkMark,
   createMenuItems,
   debounce,
   getAllChildren,
   getCssSelector,
+  getDefaultLanguages,
   getStyleValues,
   hasChildNodes,
   isSupported,
@@ -233,6 +232,5 @@ module.exports = {
   prepareLanguages,
   offsetBy,
   setAllAttribute,
-  setStyleValues,
-  getSettingsFromArray
+  setStyleValues
 }
