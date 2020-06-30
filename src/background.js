@@ -1,13 +1,14 @@
 const { User, Spelling } = require('./classes')
-const { createMenuItems, loadDictionariesAndPrefs, prepareLanguages, getSettingsFromArray } = require('./helpers')
+const { createMenuItems, getDefaultLanguages, loadDictionariesAndPrefs, prepareLanguages } = require('./helpers')
 const { cleanWord } = require('./text-methods')
 
-// defaults set when background script first loads in case no values exist in storage yet
-let customSettings = { disableNativeSpellcheck: false }
-let customHighlightColor = { color: '#FF0000' }
+// default values for when background script first loads in case no values yet exist in storage
 const maxSuggestions = { maxSuggestions: 6 }
+const customHighlightColor = { color: '#FF0000' }
+let customSettings = ['disableNativeSpellcheck']
+let customWords = ['Multidict']
 
-let customWords, sidebarOpen, sidebarPort, user
+let customLanguages, sidebarOpen, sidebarPort, user
 
 // load dictionaries, create langauges from browser acceptLanguages, and instantiate user
 async function init () {
@@ -16,41 +17,51 @@ async function init () {
   browser.runtime.onMessage.addListener(api)
   browser.runtime.onConnect.addListener(sidebarListener)
   browser.browserAction.onClicked.addListener(popupListener)
-  // FIXME: sidebar open/close bugged if multiple windows open and showing Multidict sidebar
 
-  const languages = prepareLanguages(await browser.i18n.getAcceptLanguages())
-  const dictionariesAndPrefs = await loadDictionariesAndPrefs(languages)
+  // browser.storage.sync.clear()
 
-  // TODO: only get custom words when needed
-  customWords = await browser.storage.sync.get('personal')
-  customWords = Array.isArray(customWords.personal) ? customWords.personal : []
-  user = new User(dictionariesAndPrefs.dicts, dictionariesAndPrefs.prefs, languages, [...customWords])
+  await getLanguages()
+  await getCustomWords()
+
+  if (!Array.isArray(customLanguages)) {
+    const languages = await getDefaultLanguages()
+    customLanguages = prepareLanguages(languages) // remove any duplicates and format languages
+    saveLanguages(customLanguages)
+  }
+
+  const dictionariesAndPrefs = await loadDictionariesAndPrefs(customLanguages)
+  user = new User(dictionariesAndPrefs.dicts, dictionariesAndPrefs.prefs, customLanguages, [...customWords])
 
   createMenuItems()
 }
 
 // api that handles performing all actions - background functions should only ever be called by api
 // api always cleans the text before adding/removing custom words
+// api will push relevant settings/changes to content scripts to trigger a recheck/rehighlight
 function api (message, sender) {
   switch (message.type) {
-    case 'add':
+    case 'addCustomWord':
       addCustomWord(cleanWord(message.word)).then(() => {
         respond(sender, { type: 'recheck' }, 'refresh')
-        if (sidebarPort) sidebarPort.postMessage({ type: 'addWord', content: customWords })
+        if (sidebarPort) sidebarPort.postMessage({ type: 'addedWord', content: customWords })
       })
       break
-    case 'remove':
+    case 'removeCustomWord':
       removeCustomWord(cleanWord(message.word)).then(() => {
         respond(sender, { type: 'recheck' }, 'refresh')
-        if (sidebarPort) sidebarPort.postMessage({ type: 'removeWord', content: customWords })
+        if (sidebarPort) sidebarPort.postMessage({ type: 'removedWord', content: customWords })
       })
       break
-    case 'getSpelling':
-      respond(sender, getSpelling(message), 'highlight')
+    case 'getCustomWords':
+      respond(sender, customWords, 'gotCustomWords')
       break
-    case 'getColor':
-      getColor()
-        .then(() => respond(sender, customHighlightColor, 'gotCustomColor'))
+    case 'getLanguages':
+      getLanguages()
+        .then(() => respond(sender, customLanguages, 'gotLanguages'))
+      break
+    case 'saveLanguages':
+      saveLanguages(message.languages)
+        .then(() => respond(sender, { type: 'recheck' }, 'refresh'))
       break
     case 'getMaxSuggestions':
       getMaxSuggestions()
@@ -59,6 +70,10 @@ function api (message, sender) {
     case 'saveMaxSuggestions':
       saveMaxSuggestions(message.limit)
         .then(() => respond(sender, { type: 'suggestions', ...maxSuggestions }, 'refresh'))
+      break
+    case 'getColor':
+      getColor()
+        .then(() => respond(sender, customHighlightColor, 'gotCustomColor'))
       break
     case 'previewColor':
       respond(sender, { type: 'preview', color: message.color }, 'refresh')
@@ -71,16 +86,16 @@ function api (message, sender) {
       getSettings()
         .then(() => respond(sender, customSettings, 'gotCustomSettings'))
       break
-    case 'getCustomWords':
-      respond(sender, customWords, 'gotCustomWords')
+    case 'saveSettings':
+      saveSettings(message.settings)
+        .then(() => respond(sender, { type: 'settings', customSettings }, 'refresh'))
+      break
+    case 'getSpelling':
+      respond(sender, getSpelling(message), 'highlight')
       break
     case 'sidebar':
       sidebarOpen = message.isOpen
       respond(sender, { type: 'render' }, 'refresh')
-      break
-    case 'saveSettings':
-      saveSettings(message.settings)
-        .then(() => respond(sender, customSettings, 'savedSettings'))
       break
     default:
       console.warn(`MultDict: unrecognized message type ${message.type}. Aborting.`)
@@ -101,113 +116,11 @@ function respond (sender, content, type) {
   } else if (sender.name === 'popup') {
     sender.postMessage({ type, content })
   } else {
-    console.warn('MultiDict: unrecognized sender structure. Cannot respond to sender:', sender)
+    console.warn('Multidict: unrecognized sender structure. Cannot respond to sender:', sender)
   }
 }
 
-// saves a word in browser storage and calls user.addWord
-async function addCustomWord (word) {
-  if (!word || customWords.includes(word)) {
-    return
-  }
-
-  const error = await browser.storage.sync.set({ personal: [...customWords, word] })
-
-  if (error) {
-    console.warn(`MultiDict: Adding to personal dictionary failed with error: ${error}`)
-  } else {
-    customWords.push(word)
-    user.addWord(word)
-  }
-}
-
-// removes a word from browser storage and calls user.removeWord
-async function removeCustomWord (word) {
-  if (!word || !customWords.includes(word)) {
-    return
-  }
-
-  const error = await browser.storage.sync.set({ personal: [...customWords].remove(word) })
-
-  if (error) {
-    console.warn(`MultiDict: Removing from personal dictionary failed with error: ${error}`)
-  } else {
-    customWords.remove(word)
-    user.removeWord(word)
-  }
-}
-
-// get current active tab
-async function getCurrentTab () {
-  const tabs = await browser.tabs.query({ active: true, currentWindow: true })
-  return tabs[0]
-}
-
-// get user specified extension settings from browser storage
-async function getSettings () {
-  const storedSettings = await browser.storage.sync.get('settings')
-  if (Array.isArray(storedSettings.settings)) {
-    customSettings = getSettingsFromArray(storedSettings.settings)
-  }
-}
-
-// saves user specified extension settings (i.e. from popup) to browser storage
-async function saveSettings (settings) {
-  const error = await browser.storage.sync.set({ settings })
-
-  if (error) {
-    console.warn(`MultiDict: Saving settings failed with error: ${error}`)
-  } else {
-    customSettings = getSettingsFromArray(settings)
-  }
-}
-
-// gets color from browser storage
-async function getColor () {
-  const storedColor = await browser.storage.sync.get('color')
-  if (storedColor.color) {
-    customHighlightColor = storedColor
-  }
-}
-
-// saves color to browser storage
-async function saveColor (color) {
-  const error = await browser.storage.sync.set({ color })
-
-  if (error) {
-    console.warn(`MultiDict: Saving color failed with error: ${error}`)
-  } else {
-    customHighlightColor.color = color
-  }
-}
-
-// gets max suggestions from browser storage
-async function getMaxSuggestions () {
-  const storedLimit = await browser.storage.sync.get('maxSuggestions')
-
-  if (storedLimit.maxSuggestions) {
-    maxSuggestions.maxSuggestions = parseInt(storedLimit.maxSuggestions, 10)
-  }
-}
-
-// saves max suggestions to browser storage
-async function saveMaxSuggestions (limit) {
-  const error = await browser.storage.sync.set({ maxSuggestions: limit })
-
-  if (error) {
-    console.warn(`MultiDict: Saving suggestion limit failed with error: ${error}`)
-  } else {
-    maxSuggestions.maxSuggestions = limit
-  }
-}
-
-// checks content for spelling errors and returns a new Spelling instance
-function getSpelling (message) {
-  const lang = user.getPreferredLanguage(message.detectedLanguage)
-  return new Spelling(user.spellers[lang], message.content)
-}
-
-// listens to all incoming messages from the popup/action menu and handle popup closing
+// listens to all incoming messages from the popup/action menu and handle sidebar closing
 function sidebarListener (port) {
   sidebarPort = port
   if (!sidebarPort.onMessage.hasListener(api)) {
@@ -238,10 +151,141 @@ function commandAndMenuListener (info, tab) {
 
 // listen to the browser action icon being clicked and open or close the sidebar
 function popupListener () {
+  // FIXME: sidebar open/close bugged if multiple windows open and showing Multidict sidebar
   sidebarOpen
     ? browser.sidebarAction.close()
     : browser.sidebarAction.open()
   sidebarOpen = !sidebarOpen
+}
+
+// saves a word in browser storage and calls user.addWord
+async function addCustomWord (word) {
+  if (!word || customWords.includes(word)) {
+    return
+  }
+
+  const error = await browser.storage.sync.set({ personal: [...customWords, word] })
+
+  if (error) {
+    console.warn(`Multidict: Adding to personal dictionary failed with error: ${error}`)
+  } else {
+    customWords.push(word)
+    user.addWord(word)
+  }
+}
+
+// removes a word from browser storage and calls user.removeWord
+async function removeCustomWord (word) {
+  if (!word || !customWords.includes(word)) {
+    return
+  }
+
+  const error = await browser.storage.sync.set({ personal: [...customWords].remove(word) })
+
+  if (error) {
+    console.warn(`Multidict: Removing from personal dictionary failed with error: ${error}`)
+  } else {
+    customWords.remove(word)
+    user.removeWord(word)
+  }
+}
+
+// get custom words from storage, used during init
+async function getCustomWords () {
+  const storedWords = await browser.storage.sync.get('personal')
+
+  if (Array.isArray(storedWords.personal)) {
+    customWords = storedWords.personal
+  }
+}
+
+// get user languages from browser storage
+async function getLanguages () {
+  const storedLanguages = await browser.storage.sync.get('languages')
+  if (Array.isArray(storedLanguages.languages)) {
+    customLanguages = storedLanguages.languages
+  }
+}
+
+// saves an array of user specified languages to browser storage
+async function saveLanguages (languages) {
+  const error = await browser.storage.sync.set({ languages })
+
+  if (error) {
+    console.warn(`Multidict: Saving languages failed with error: ${error}`)
+  } else {
+    customLanguages = languages
+  }
+}
+
+// get user specified extension settings from browser storage
+async function getSettings () {
+  const storedSettings = await browser.storage.sync.get('settings')
+  if (Array.isArray(storedSettings.settings)) {
+    customSettings = storedSettings.settings
+  }
+}
+
+// saves user specified extension settings (i.e. from popup) to browser storage
+async function saveSettings (settings) {
+  const error = await browser.storage.sync.set({ settings })
+
+  if (error) {
+    console.warn(`Multidict: Saving settings failed with error: ${error}`)
+  } else {
+    customSettings = settings
+  }
+}
+
+// gets color from browser storage
+async function getColor () {
+  const storedColor = await browser.storage.sync.get('color')
+  if (storedColor.color) {
+    customHighlightColor.color = storedColor.color
+  }
+}
+
+// saves color to browser storage
+async function saveColor (color) {
+  const error = await browser.storage.sync.set({ color })
+
+  if (error) {
+    console.warn(`Multidict: Saving color failed with error: ${error}`)
+  } else {
+    customHighlightColor.color = color
+  }
+}
+
+// gets max suggestions from browser storage
+async function getMaxSuggestions () {
+  const storedLimit = await browser.storage.sync.get('maxSuggestions')
+
+  if (storedLimit.maxSuggestions) {
+    maxSuggestions.maxSuggestions = parseInt(storedLimit.maxSuggestions, 10)
+  }
+}
+
+// saves max suggestions to browser storage
+async function saveMaxSuggestions (limit) {
+  const error = await browser.storage.sync.set({ maxSuggestions: limit })
+
+  if (error) {
+    console.warn(`Multidict: Saving suggestion limit failed with error: ${error}`)
+  } else {
+    maxSuggestions.maxSuggestions = limit
+  }
+}
+
+// checks content for spelling errors and returns a new Spelling instance
+function getSpelling (message) {
+  const lang = user.getPreferredLanguage(message.detectedLanguage)
+  return new Spelling(user.spellers[lang], message.content)
+}
+
+// get current active tab
+async function getCurrentTab () {
+  const tabs = await browser.tabs.query({ active: true, currentWindow: true })
+  return tabs[0]
 }
 
 init()

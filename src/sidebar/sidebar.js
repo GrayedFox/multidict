@@ -1,13 +1,28 @@
 const messageHandler = browser.runtime.connect({ name: 'popup' })
 
 const optionLabels = {
-  disableNativeSpellcheck: 'Disable duplicate spellchecking (requires page refresh)'
+  disableNativeSpellcheck: 'Disable duplicate spell checking'
+}
+
+const languageLabels = {
+  'en-us': 'American English',
+  'en-au': 'Australian English',
+  'en-gb': 'British English',
+  'fr-fr': 'French',
+  'de-de': 'German',
+  'it-it': 'Italian',
+  'pl-pl': 'Polish',
+  'ro-ro': 'Romanian',
+  'ru-ru': 'Russian',
+  'es-es': 'Spanish'
 }
 
 const dictionary = document.querySelector('#dictionary')
 const wordsList = document.querySelector('.words')
 const settings = document.querySelector('#settings')
-const optionsList = document.querySelector('.options')
+const settingsOptionsList = document.querySelector('#settings .options')
+const languages = document.querySelector('#languages')
+const languagesOptionsList = document.querySelector('#languages .options')
 const colorPicker = document.querySelector('#colorPicker input')
 const suggestionSlider = document.querySelector('#suggestions input')
 const suggestionOutput = document.querySelector('#suggestions output')
@@ -15,11 +30,37 @@ const suggestionOutput = document.querySelector('#suggestions output')
 const listLinkItem = '<li><a href="#"></a></li>'
 let highlightColor = null
 
+function init () {
+  // listen to incoming messages from background script
+  messageHandler.onMessage.addListener(api)
+  messageHandler.postMessage({ type: 'getLanguages' })
+  messageHandler.postMessage({ type: 'getCustomWords' })
+  messageHandler.postMessage({ type: 'getSettings' })
+  messageHandler.postMessage({ type: 'getColor' })
+  messageHandler.postMessage({ type: 'getMaxSuggestions' })
+  messageHandler.postMessage({ type: 'sidebar', isOpen: true })
+
+  dictionary.addEventListener('click', handleWords)
+  settings.addEventListener('click', handleOptions)
+  languages.addEventListener('click', handleOptions)
+  colorPicker.addEventListener('change', handleColorChange)
+  colorPicker.addEventListener('input', handleColorPreview)
+  suggestionSlider.addEventListener('input', handleSliderChange)
+  suggestionSlider.addEventListener('mouseenter', handleSliderColor)
+  suggestionSlider.addEventListener('mouseleave', handleSliderColor)
+
+  generateListOptions(languagesOptionsList, languageLabels)
+  generateListOptions(settingsOptionsList, optionLabels)
+
+  window.addEventListener('unload',
+    () => { messageHandler.postMessage({ type: 'sidebar', isOpen: false }) })
+}
+
 // handles all messages received from background script
 function api (message) {
   switch (message.type) {
-    case 'addWord':
-    case 'removeWord':
+    case 'addedWord':
+    case 'removedWord':
       populateUserDictionaryList(message.content)
       showListItems(wordsList)
       break
@@ -27,9 +68,11 @@ function api (message) {
       populateUserDictionaryList(message.content)
       hideListItems(wordsList)
       break
+    case 'gotLanguages':
+      populateListOptions(languagesOptionsList, message.content)
+      break
     case 'gotCustomSettings':
-      populateCustomSettingsList(message.content)
-      hideListItems(optionsList)
+      populateListOptions(settingsOptionsList, message.content)
       break
     case 'gotCustomColor':
       setColorValue(message.content.color)
@@ -38,15 +81,41 @@ function api (message) {
       setMaxSuggestionsLimit(message.content.maxSuggestions)
       break
     default:
-      console.warn('MultiDict: popup did not recognize message type', message.type)
+      console.warn('Multidict: popup did not recognize message type', message.type)
   }
+}
+
+// generate checkboxes inside a given list based on labels and set value and checked to false
+function generateListOptions (list, labels) {
+  const label = document.createElement('label')
+  const input = document.createElement('input')
+  const fragment = new DocumentFragment()
+
+  input.type = 'checkbox'
+
+  let child
+
+  for (const [key, value] of Object.entries(labels)) {
+    input.id = key
+    input.name = key
+    input.value = false
+    input.checked = false
+    label.textContent = value
+    label.setAttribute('for', key)
+    label.appendChild(input)
+    fragment.appendChild(htmlToNodes(listLinkItem)[0])
+    child = fragment.lastChild
+    child.appendChild(label.cloneNode(true))
+  }
+  list.appendChild(fragment)
+
+  hideListItems(list)
 }
 
 const setMaxSuggestionsLimit = limit => {
   suggestionSlider.value = limit
   if (limit === 10 || limit === '10') {
     limit += '+'
-    console.log('limit', limit)
   }
   suggestionOutput.textContent = limit
 }
@@ -56,31 +125,19 @@ const setColorValue = color => {
   colorPicker.setAttribute('value', color)
 }
 
-function populateCustomSettingsList (options) {
-  const label = document.createElement('label')
-  const input = document.createElement('input')
-  const fragment = new DocumentFragment()
-
-  input.type = 'checkbox'
-
-  let child
-
-  // options are an array of strings formatted like so: ['key-value, key-value, key-value']
-  for (const [key, value] of Object.entries(options)) {
-    input.id = key
-    input.name = key
-    input.value = value
-    input.checked = value
-    label.textContent = optionLabels[key]
-    label.setAttribute('for', key)
-    label.appendChild(input)
-    fragment.appendChild(htmlToNodes(listLinkItem)[0])
-    child = fragment.lastChild
-    child.appendChild(label)
+// populate the check box values of a given list using an array of options
+function populateListOptions (list, options) {
+  // options are an array of strings like so: ['de-de', 'en-gb'] or ['disableNativeSpellcheck']
+  for (const option of options) {
+    const node = document.querySelector(`#${option}`)
+    if (node) {
+      node.value = true
+      node.checked = true
+    }
   }
-  optionsList.appendChild(fragment)
 }
 
+// populate personal dictionary list with custom words
 function populateUserDictionaryList (customWords) {
   while (wordsList.firstChild) { wordsList.removeChild(wordsList.firstChild) }
   const fragment = new DocumentFragment()
@@ -129,29 +186,49 @@ function handleWords (event) {
   } else if (!visible) {
     showListItems(wordsList)
   } else if (event.target.matches('.words li')) {
-    messageHandler.postMessage({ type: 'remove', word: event.target.textContent })
+    messageHandler.postMessage({ type: 'removeCustomWord', word: event.target.textContent })
     wordsList.removeChild(event.target)
   }
 }
 
 // checkbox related input event listener (displaying and updating persistent options)
 function handleOptions (event) {
-  const visible = optionsList.hasAttribute('visible')
-  if (visible && event.target.parentNode === settings) {
-    hideListItems(optionsList)
-  } else if (!visible) {
-    showListItems(optionsList)
-  } else if (event.target.matches('.options input')) {
+  console.log(event.target)
+  const parent = event.target.parentNode
+  const list = parent.querySelector('.options')
+  const visible = list && list.hasAttribute('visible')
+  if (list && visible && (parent === languages || parent === settings)) {
+    hideListItems(list)
+  } else if (list && !visible) {
+    showListItems(list)
+  } else if (event.target.matches('#languages .options input')) {
+    notify('Language Changed', `Please restart your browser to add/remove ${parent.textContent} spelling highlights`)
     event.target.value = event.originalTarget.checked
-    messageHandler.postMessage({ type: 'saveSettings', settings: getSettingsFromPopup() })
+    messageHandler.postMessage({ type: 'saveLanguages', languages: getSettingsFromList(languagesOptionsList) })
+  } else if (event.target.matches('#settings .options input')) {
+    event.target.value = event.originalTarget.checked
+    messageHandler.postMessage({ type: 'saveSettings', settings: getSettingsFromList(settingsOptionsList) })
   }
 }
 
+// create a notification to display to the user
+function notify (title, message) {
+  browser.notifications.create('language-change-notification', {
+    type: 'basic',
+    iconUrl: browser.runtime.getURL('media/icons/icon-64.png'),
+    title,
+    message
+  })
+}
+
 // generate settings array from checked options
-function getSettingsFromPopup () {
+function getSettingsFromList (list) {
   const settingsArray = []
-  optionsList.querySelectorAll('input').forEach((setting) => {
-    settingsArray.push(`${setting.id}-${setting.value}`)
+  list.querySelectorAll('input').forEach((setting) => {
+    console.log('setting', setting)
+    if (setting.value === 'true') {
+      settingsArray.push(setting.id)
+    }
   })
   return settingsArray
 }
@@ -186,25 +263,4 @@ function htmlToNodes (htmlString) {
   return temp.content.childNodes
 }
 
-function main () {
-  // listen to incoming messages from background script
-  messageHandler.onMessage.addListener(api)
-  messageHandler.postMessage({ type: 'getCustomWords' })
-  messageHandler.postMessage({ type: 'getSettings' })
-  messageHandler.postMessage({ type: 'getColor' })
-  messageHandler.postMessage({ type: 'getMaxSuggestions' })
-  messageHandler.postMessage({ type: 'sidebar', isOpen: true })
-
-  dictionary.addEventListener('click', handleWords)
-  settings.addEventListener('click', handleOptions)
-  colorPicker.addEventListener('change', handleColorChange)
-  colorPicker.addEventListener('input', handleColorPreview)
-  suggestionSlider.addEventListener('input', handleSliderChange)
-  suggestionSlider.addEventListener('mouseenter', handleSliderColor)
-  suggestionSlider.addEventListener('mouseleave', handleSliderColor)
-
-  window.addEventListener('unload',
-    () => { messageHandler.postMessage({ type: 'sidebar', isOpen: false }) })
-}
-
-main()
+init()

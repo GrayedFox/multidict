@@ -1,4 +1,4 @@
-const nspell = require('./deps/nspell/index')
+const nspell = require('nspell')
 const { cleanText, getRelativeBounds } = require('./text-methods')
 
 // A Spelling contains raw text, cleaned text, misspelt Words, and suggestions according to a
@@ -79,7 +79,7 @@ class User {
     this.prefs = prefs // shorthand language strings ['au', 'de', 'gb']
     this.langs = languages // language strings ['en-au', 'de-de', 'en-gb']
     this.ownWords = ownWords // word strings ['kablam', 'shizzle']
-    this.spellers = this._createSpellers() // nspell instances by pref (language) { pref: nspell }
+    this.spellers = this._createSpellers() // nspell instances by language pref { pref: nspell }
   }
 
   // get the user's preferred (or default) language when spell checking content
@@ -109,7 +109,7 @@ class User {
   // should only be called once during class instantiation
   _createSpellers () {
     if (this.prefs.length !== this.dicts.length) {
-      console.warn('MultiDict: Language prefs and user dictionary length not equal. Aborting.')
+      console.warn('Multidict: Language prefs and user dictionary length not equal. Aborting.')
       return
     }
 

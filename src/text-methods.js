@@ -2,7 +2,7 @@
 // returns an empty string if content undefined
 function cleanText (content, filter = true) {
   if (!content) {
-    console.warn(`MultiDict: cannot clean falsy or undefined content: "${content}"`)
+    console.warn(`Multidict: cannot clean falsy or undefined content: "${content}"`)
     return ''
   }
 
@@ -64,7 +64,7 @@ function getCurrentWordBounds (node) {
     return getWordBoundsFromCaret(node, content, selection.start)
   }
 
-  console.warn('MultiDict: get selected word boundaries failed to find any workable text.')
+  console.warn('Multidict: get selected word boundaries failed to find any workable text.')
 }
 
 // gets the relative index of a Word by matching the Word boundaries against the chunk of text being
@@ -92,7 +92,7 @@ function getMatchingMarkIndex (content, word) {
         }
       }
     } else {
-      console.warn('MultiDict: could not find matching mark index inside given content!')
+      console.warn('Multidict: could not find matching mark index inside given content!')
       break
     }
   }
@@ -111,7 +111,7 @@ function getMisspeltWordIndex (misspeltWord, spelling, duplicateWordIndex = 0) {
 // get the relative boundaries of a word given a specific start index within content
 function getRelativeBounds (word, content, startIndex) {
   if (!word) {
-    console.warn(`MultiDict: cannot get relative boundaries of ${word}`)
+    console.warn(`Multidict: cannot get relative boundaries of ${word}`)
     return
   }
   const start = content.indexOf(word, startIndex)
@@ -136,7 +136,7 @@ function getTextContent (node) {
 // gets the current word and it's boundaries based on cursor position/selection
 function getWordBoundsFromCaret (node, text, startIndex) {
   if (!(startIndex >= 0)) {
-    console.warn('MultiDict: cannot get current word boundaries if start index negative')
+    console.warn('Multidict: cannot get current word boundaries if start index negative')
     return ''
   }
 
@@ -208,7 +208,7 @@ function _isWordBoundary (char) {
   }
 
   if (char.length !== 1) {
-    console.warn(`MultiDict: word boundary can only operate on single characters! Not: "${char}"`)
+    console.warn(`Multidict: word boundary can only operate on single characters! Not: "${char}"`)
     return
   }
 
