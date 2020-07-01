@@ -1,6 +1,42 @@
 const nspell = require('nspell')
 const { cleanText, getRelativeBounds } = require('./text-methods')
 
+// A CustomWordList is a dummy class that helps to iterate over and perform operations on a custom
+// words list. The wordlist should be an object with the following structure:
+// { kablam: ['de-de', 'en-au', 'en-gb'], ... }
+class CustomWordList {
+  constructor (wordList) {
+    this._wordList = this._generateWordList(wordList)
+  }
+
+  add (word, languages) {
+    this._wordList[word] = languages
+  }
+
+  remove (word) {
+    delete this._wordList[word]
+  }
+
+  get words () {
+    return Object.keys(this._wordList)
+  }
+
+  get wordList () {
+    return this._wordList
+  }
+
+  // convert original style wordList (array of strings) to object of arrays
+  // ensures backwards compatibility after breaking changes (so users don't lose custom words)
+  _generateWordList (wordList) {
+    if (typeof wordList === 'object' && !Array.isArray(wordList)) return wordList
+    if (Array.isArray(wordList)) {
+      const wordListObect = {}
+      wordList.forEach(word => { wordListObect[word] = [] })
+      return wordListObect
+    }
+  }
+}
+
 // A Spelling contains raw text, cleaned text, misspelt Words, and suggestions according to a
 // specific language (i.e. a single nspell/speller instance)
 class Spelling {
@@ -8,13 +44,13 @@ class Spelling {
     this.content = content // raw text string 'Hello c137! 1234 C137? email@fu.com'
     this.speller = speller // an nspell instance
     this._cleanedText = cleanText(content) // array of cleaned text ['Hello', 'c137', 'C137']
-    this.misspeltStrings = this._checkSpelling() // array of misspelt strings ['word', 'word']
+    this.misspeltStrings = this._generateStrings() // array of misspelt strings ['word', 'word']
     this.misspeltWords = this._generateWords() // array of misspelt Words [{Word}, {Word}]
     this.suggestions = this._generateSuggestions() // suggestion object (see generator)
   }
 
   // returns array of misspelt strings only
-  _checkSpelling () {
+  _generateStrings () {
     return this._cleanedText.filter(word => !this.speller.correct(word))
   }
 
@@ -75,59 +111,89 @@ class SuggestionTracker {
 // A User has user dictionaries, preferences, spelling instances, and custom words
 class User {
   constructor (dictionaries, prefs, languages, ownWords) {
-    this.dicts = dictionaries // dictionary objects [{ language: 'en-au', dic: '', aff: '' }]
-    this.prefs = prefs // shorthand language strings ['au', 'de', 'gb']
-    this.langs = languages // language strings ['en-au', 'de-de', 'en-gb']
-    this.ownWords = ownWords // word strings ['kablam', 'shizzle']
-    this.spellers = this._createSpellers() // nspell instances by language pref { pref: nspell }
+    this._dicts = dictionaries // dictionary objects [{ language: 'en-au', dic: '', aff: '' }]
+    this._prefs = prefs // shorthand language strings ['au', 'de', 'gb']
+    this._langs = languages // language strings ['en-au', 'de-de', 'en-gb']
+    this._ownWords = JSON.parse(JSON.stringify(ownWords)) // clone of custom word list: { kablam: ['de-de', 'po-po'], ... }
+    this._spellers = this._createSpellers() // nspell instances by language { language: nspell }
+  }
+
+  get dicts () {
+    return this._dicts
+  }
+
+  get prefs () {
+    return this._prefs
+  }
+
+  get langs () {
+    return this._langs
+  }
+
+  get spellers () {
+    return this._spellers
   }
 
   // get the user's preferred (or default) language when spell checking content
   getPreferredLanguage (contentLanguage) {
-    for (const pref of this.prefs) {
-      if (this.langs.includes(`${contentLanguage}-${pref}`)) {
-        return pref
+    for (const pref of this._prefs) {
+      if (this._langs.includes(`${contentLanguage}-${pref}`)) {
+        return `${contentLanguage}-${pref}`
       }
     }
     // default to first preferred language if no match found
-    return this.prefs[0]
+    return `${this._langs[0]}`
   }
 
-  // add word to user.ownWords and update existing spell checker instances
+  // private method for working around this bug: https://github.com/wooorm/nspell/issues/25
+  _fixWord (word, speller) {
+    speller.remove(word)
+    speller.add(word)
+  }
+
+  // add word to user._ownWords and update existing spell checker instances
   addWord (word) {
-    this.ownWords.push(word)
-    Object.keys(this.spellers).forEach((language) => { this.spellers[language].add(word) })
+    const misspeltLangs = []
+    this._langs.forEach(language => {
+      const speller = this._spellers[language]
+      if (!speller.correct(word)) {
+        speller.add(word)
+        misspeltLangs.push(language)
+        if (!speller.correct(word)) this._fixWord(word, speller)
+      }
+    })
+    if (misspeltLangs.length > 0) { this._ownWords[word] = misspeltLangs }
   }
 
-  // remove word from user.ownWords and update existing spell checker instances
+  // remove word from user._ownWords and update existing spell checker instances
   removeWord (word) {
-    this.ownWords.remove(word)
-    Object.keys(this.spellers).forEach((language) => { this.spellers[language].remove(word) })
+    // users can add custom words that are already spelt correctly in all languages, which would
+    // result in them being here undefined
+    if (!this._ownWords[word]) return
+    this._ownWords[word].forEach(language => {
+      if (this._spellers[language]) this._spellers[language].remove(word)
+    })
+    delete this._ownWords[word]
   }
 
-  // create spell checkers in order of languages specified by user
-  // should only be called once during class instantiation
+  // create spell checkers (nspell instaces) should only ever be called during class instantiation
   _createSpellers () {
-    if (this.prefs.length !== this.dicts.length) {
+    if (this._prefs.length !== this._dicts.length) {
       console.warn('Multidict: Language prefs and user dictionary length not equal. Aborting.')
       return
     }
 
-    this.spellers = {}
+    this._spellers = {}
 
-    for (let i = 0; i < this.dicts.length; i++) {
-      this.spellers[this.prefs[i]] = nspell(this.dicts[i])
+    for (let i = 0; i < this._dicts.length; i++) {
+      this._spellers[this._langs[i]] = nspell(this._dicts[i])
     }
 
-    const spellingLangs = Object.keys(this.spellers)
-
-    if (this.ownWords.length > 0) {
-      Object.values(this.ownWords).forEach((word) => {
-        spellingLangs.forEach((language) => this.spellers[language].add(word))
-      })
+    if (Object.keys(this._ownWords).length > 0) {
+      Object.keys(this._ownWords).forEach((word) => { this.addWord(word) })
     }
 
-    return this.spellers
+    return this._spellers
   }
 }
 
@@ -152,6 +218,7 @@ class Word {
 }
 
 module.exports = {
+  CustomWordList,
   Spelling,
   SuggestionTracker,
   User,

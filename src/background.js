@@ -1,14 +1,15 @@
-const { User, Spelling } = require('./classes')
+const { CustomWordList, User, Spelling } = require('./classes')
 const { createMenuItems, getDefaultLanguages, loadDictionariesAndPrefs, prepareLanguages } = require('./helpers')
 const { cleanWord } = require('./text-methods')
 
 const DEBUG = false
+const LANGUAGES = ['de-de', 'en-au', 'en-en', 'en-gb', 'es-es', 'fr-fr', 'pl-pl', 'ro-ro', 'ru-ru']
 
 // default values for when background script first loads in case no values yet exist in storage
 const maxSuggestions = { maxSuggestions: 6 }
 const customHighlightColor = { color: '#FF0000' }
 let customSettings = ['disableNativeSpellcheck']
-let customWords = ['Multidict']
+let customWords = new CustomWordList({ Multidict: [...LANGUAGES] })
 
 let customLanguages, sidebarOpen, sidebarPort, user
 
@@ -32,7 +33,7 @@ async function init () {
   }
 
   const dictionariesAndPrefs = await loadDictionariesAndPrefs(customLanguages)
-  user = new User(dictionariesAndPrefs.dicts, dictionariesAndPrefs.prefs, customLanguages, [...customWords])
+  user = new User(dictionariesAndPrefs.dicts, dictionariesAndPrefs.prefs, customLanguages, customWords.wordList)
 
   createMenuItems()
 }
@@ -45,17 +46,17 @@ function api (message, sender) {
     case 'addCustomWord':
       addCustomWord(cleanWord(message.word)).then(() => {
         respond(sender, { type: 'recheck' }, 'refresh')
-        if (sidebarPort) sidebarPort.postMessage({ type: 'addedWord', content: customWords })
+        if (sidebarPort) sidebarPort.postMessage({ type: 'addedWord', content: customWords.words })
       })
       break
     case 'removeCustomWord':
       removeCustomWord(cleanWord(message.word)).then(() => {
         respond(sender, { type: 'recheck' }, 'refresh')
-        if (sidebarPort) sidebarPort.postMessage({ type: 'removedWord', content: customWords })
+        if (sidebarPort) sidebarPort.postMessage({ type: 'removedWord', content: customWords.words })
       })
       break
     case 'getCustomWords':
-      respond(sender, customWords, 'gotCustomWords')
+      respond(sender, customWords.words, 'gotCustomWords')
       break
     case 'getLanguages':
       getLanguages()
@@ -114,9 +115,12 @@ function respond (sender, content, type) {
   if (sender.tab) {
     browser.tabs.sendMessage(sender.tab.id, { type, content })
   } else if (type === 'refresh') {
-    browser.tabs.query({}).then(tabs => {
-      tabs.forEach(tab => { browser.tabs.sendMessage(tab.id, { type, content }) })
-    })
+    browser.tabs.query({}).then(tabs => tabs.forEach(tab => {
+      // don't attempt to send messages to settings pages
+      if (!tab.url.match(/^about:/)) {
+        browser.tabs.sendMessage(tab.id, { type, content }).catch(errorHandler)
+      }
+    }))
   } else if (sender.name === 'popup') {
     sender.postMessage({ type, content })
   } else {
@@ -164,32 +168,34 @@ function popupListener () {
 
 // saves a word in browser storage and calls user.addWord
 async function addCustomWord (word) {
-  if (!word || customWords.includes(word)) {
+  if (!word || customWords.words.includes(word)) {
     return
   }
 
-  const error = await browser.storage.sync.set({ personal: [...customWords, word] })
+  customWords.add(word, customLanguages)
+  const error = await browser.storage.sync.set({ personal: customWords.wordList })
 
   if (error) {
     console.warn(`Multidict: Adding to personal dictionary failed with error: ${error}`)
+    customWords.remove(word)
   } else {
-    customWords.push(word)
     user.addWord(word)
   }
 }
 
 // removes a word from browser storage and calls user.removeWord
 async function removeCustomWord (word) {
-  if (!word || !customWords.includes(word)) {
+  if (!word || !customWords.words.includes(word)) {
     return
   }
 
-  const error = await browser.storage.sync.set({ personal: [...customWords].remove(word) })
+  customWords.remove(word)
+  const error = await browser.storage.sync.set({ personal: customWords.wordList })
 
   if (error) {
     console.warn(`Multidict: Removing from personal dictionary failed with error: ${error}`)
+    customWords.add(word, customLanguages)
   } else {
-    customWords.remove(word)
     user.removeWord(word)
   }
 }
@@ -198,8 +204,8 @@ async function removeCustomWord (word) {
 async function getCustomWords () {
   const storedWords = await browser.storage.sync.get('personal')
 
-  if (Array.isArray(storedWords.personal)) {
-    customWords = storedWords.personal
+  if (typeof storedWords.personal === 'object' || Array.isArray(storedWords.personal)) {
+    customWords = new CustomWordList(storedWords.personal)
   }
 }
 
@@ -292,10 +298,23 @@ async function getCurrentTab () {
   return tabs[0]
 }
 
+// handling of the erroring
+function errorHandler (error) {
+  console.error(error)
+}
+
 init()
 
-// Goal: enable multiple laguages to be used when spell checking by detecting content language
+// Vision: enable multiple laguages to be used when spell checking by detecting content language
 //
-// Note: do not use asnyc functions for any listener, as per the MDN docs, use normal functions
-// and Promises for delaying logic/responses (async listeners consume all messages and prevent
-// other listeners of the same event gettingt them).
+// Architectural/Design Decisions
+// - do not use asnyc functions for any listener, as per the MDN docs, use normal functions
+//   and Promises for delaying logic/responses (async listeners consume all messages and prevent
+//   other listeners of the same event gettingt them).
+//
+// - the CustomWordList and User classes should remain seperate. The reason is a User can change
+//   their list of languages for spell checking at any time, and we don't actually need to know the
+//   language a custom word is misspelt in as it is saved to browser storage (although we store it
+//   just in case). At runtime however, the User is instantiatied and at this time we will check the
+//   currently used langauges and only add custom words to dictionaries that are missing this word.
+//   This architecture also fixes https://github.com/GrayedFox/multidict/issues/39

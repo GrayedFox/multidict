@@ -96,37 +96,12 @@ function getAllChildren (nodeList, acc = []) {
   return acc
 }
 
-// generate a css selector of a given node
-function getCssSelector (node) {
-  const path = []
-  let parent
-  while (parent = node.parentNode) { // eslint-disable-line no-cond-assign
-    path.unshift(`${node.tagName}:nth-child(${[].indexOf.call(parent.children, node) + 1})`)
-    node = parent
-  }
-  return `${path.join(' > ')}`.toLowerCase()
-}
-
 // returns an array of languages based on getAcceptLanguages and getUILanguage to use as defaults
 async function getDefaultLanguages () {
   const acceptedLanguages = await browser.i18n.getAcceptLanguages()
   const uiLanguage = await browser.i18n.getUILanguage()
 
   return [...acceptedLanguages, uiLanguage]
-}
-
-// gets the values of each property of a given style sheet and returns a key value pair object
-function getStyleValues (properties, stylesheet) {
-  return Object.fromEntries(properties.map(property => {
-    return [property, stylesheet.getPropertyValue(property)]
-  }))
-}
-
-// sets the style properties of a given node
-function setStyleValues (node, styles) {
-  for (const [style, value] of Object.entries(styles)) {
-    node.style[style] = value
-  }
 }
 
 // return a boolean value that is true if the node is a supported editable node
@@ -155,24 +130,7 @@ function loadDictionariesAndPrefs (languages) {
   })
 }
 
-/**
- * offsetBy - return targetNode's position offset by offsetNode
- *
- * @param  {node} childNode - The node whos position we want to calculate
- * @param  {node} parentNode - The node to offset the parentNode's position by
- * @returns {object} - An object containing the top and left offset coordinates
- */
-function offsetBy (targetNode, offsetNode) {
-  const targetRect = targetNode.getBoundingClientRect()
-  const offsetRect = offsetNode.getBoundingClientRect()
-
-  return {
-    top: targetRect.top - offsetRect.top,
-    left: targetRect.left - offsetRect.left
-  }
-}
-
-// prepares a language array from the browser accepted and UI languages
+// prepares a language array from the browser accepted and UI languages: ['de-de', 'en-au', 'en-gb']
 function prepareLanguages (languages) {
   return languages.reduce((acc, language, index) => {
     // if we come across a language code without a locale, use the language code as the locale
@@ -223,14 +181,10 @@ module.exports = {
   createMenuItems,
   debounce,
   getAllChildren,
-  getCssSelector,
   getDefaultLanguages,
-  getStyleValues,
   hasChildNodes,
   isSupported,
   loadDictionariesAndPrefs,
   prepareLanguages,
-  offsetBy,
-  setAllAttribute,
-  setStyleValues
+  setAllAttribute
 }

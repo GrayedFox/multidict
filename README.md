@@ -53,7 +53,6 @@ Multidict ships with these nifty features:
 - British English (en-gb)
 - French (fr-fr)
 - German (de-de)
-- Italian (it-it)
 - Polish (pl-pl)
 - Romanian (ro-ro)
 - Russian (ru-ru)

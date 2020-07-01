@@ -1,13 +1,12 @@
 // cleans text and strips out unwanted symbols/patterns before we use it
 // returns an empty string if content undefined
-function cleanText (content, filter = true) {
+function cleanText (content, filterChars = true) {
   if (!content) {
     console.warn(`Multidict: cannot clean falsy or undefined content: "${content}"`)
     return ''
   }
 
-  // ToDo: first split string by spaces in order to properly ignore urls
-  const rxUrls = /^(http|https|ftp|www)/
+  const rxUrls = /(http:\/\/|https:\/\/|ftp:\/\/|www.)/
   const rxSeparators = /[.,:;!?¿_<>{}()[\]"`´^$°§½¼³%&¬+=*~#|/\\]/
   const rxSingleQuotes = /^'+|'+$/g
 
@@ -21,28 +20,23 @@ function cleanText (content, filter = true) {
       // remove any number of single quotes that do not form part of a word i.e. 'y'all' > y'all
       string = string.replace(rxSingleQuotes, '')
       // we never want empty strings, so skip them
-      if (string.length < 1) {
-        return acc
-      }
-      // for when we're just cleaning the text of punctuation (i.e. not filtering out emails, etc)
-      if (!filter) {
-        return acc.concat([string])
-      }
-      // filter out emails, numbers, and strings less than 2 characters in length
-      if (isNaN(string) && string.length > 1) {
-        return acc.concat([string])
-      }
+      if (string.length < 1) { return acc }
+      // filter out single characters
+      if (string.length === 1 && filterChars) { return acc }
+      // filter out numbers
+      if (isNaN(string)) { return acc.concat([string]) }
       return acc
     }, [])
 }
 
-// for when we are cleaning text and only interested in the first result
+// cleanWord is a wrapper around cleanText that doesn't filter out characters and returns only the
+// first result of the cleaned content
 function cleanWord (content) {
   return cleanText(content, false)[0]
 }
 
-// gets the exact mark that we will use when inserting a word carousel (showing suggestions) based
-// on a known, specific index
+// gets the exact mark that we will use when inserting a word suggestions based on the mark's index
+// relative to how many times the misspelt word appears inside the textarea
 function getCurrentMark (word, index, highlighter) {
   const highlights = highlighter.$highlighter.shadowRoot.querySelector('#highlights')
   return [...highlights.children].reduce((acc, child) => {
@@ -103,7 +97,7 @@ function getMatchingMarkIndex (content, word) {
   return markIndex
 }
 
-// gets the index of the misspelt word used to generate the Carousel
+// gets the index of the misspelt word used to generate the suggestions
 // if the misspelt word occurs more than once the reduced array will contain multiple entries
 // requiring the position of the misspelt word dupe (duplicateWordIndex) to be known before hand
 function getMisspeltWordIndex (misspeltWord, spelling, duplicateWordIndex = 0) {
