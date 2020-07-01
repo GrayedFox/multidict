@@ -5,12 +5,12 @@ const optionLabels = {
 }
 
 const languageLabels = {
-  'en-us': 'American English',
+  'en-en': 'American English',
   'en-au': 'Australian English',
   'en-gb': 'British English',
   'fr-fr': 'French',
   'de-de': 'German',
-  'it-it': 'Italian',
+  // 'it-it': 'Italian',
   'pl-pl': 'Polish',
   'ro-ro': 'Romanian',
   'ru-ru': 'Russian',

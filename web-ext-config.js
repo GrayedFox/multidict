@@ -20,7 +20,7 @@ module.exports = {
     'src/**',
     'test_page/',
     'test_page/**',
-    'build.sh',
+    'tasks/**',
     '_config.yml'
   ]
 }
