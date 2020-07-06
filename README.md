@@ -30,6 +30,8 @@ Multidict ships with these nifty features:
   personality/mood/unicorn mojo
 - personal dictionary shared across all languages: if shizzle is a word for you in English, one
   assumes you probably annoy your friends with it in German too (my nizzle)
+- drag and drop languages inside the language bar to set your primary/default language and spell
+  check language order
 - easily view and manage all custom words: you can view any word added to your personal dictionary
   in the Multidict sidebar any time you please
 - proximity based suggestions! suggestions are ordered based on how "close" they are to the misspelt
@@ -42,7 +44,7 @@ Multidict ships with these nifty features:
   are writing in and apply spell checking based on your preferred language list
 - synced storage means your preferences and personal dictionary persist across all of your devices
 - word suggestions will match the font and style of whatever text area you are editing, because
-  having 7 different fonts and sizes on any given website is already criminal enough
+  having 7 different fonts and sizes on any given website is criminal enough
 
 ![Multidict in action!](media/demo/demo-multidict.gif?raw=true "Multidict")
 
@@ -62,7 +64,7 @@ Multidict ships with these nifty features:
 
 You don't need to configure anything if you don't want to: Multidict will detect whatever languages
 and dictionaries you have already added via the add-ons store and spell check content based on those
-languages, so long as you have [added those languages as a preferred display language](https://support.mozilla.org/en-US/kb/choose-display-languages-multilingual-web-pages).
+languages, so long as you have [added those languages as a preferred display language][14].
 
 If it doesn't find all the languages you currently use you can easily manage which languages are
 used via the [Multidict settings panel](#enabling-multiple-language-spell-checking).
@@ -152,10 +154,10 @@ the language it will default to spell checking in your primary preferred languag
 
 Let's take a look at a slightly complex example and go through it step by step:
 
-1. You add the Australian English (en-au), American English (en-us), and standard German (de-de)
-   languages to your Firefox preferred languages list via Firefox preferences pane in that order
+1. You enable the Australian English (en-au), American English (en-us), and German (de-de) languages
+   in your preferred languages list via the Multidict settings panel in that order
 
-2. You write the sentence 'Ich leibe mein Leben' inside a textarea.
+2. You write the sentence 'Ich leibe mein Leben' inside a textarea
 
 - multidict will detect the language as German (de) and attempt to match it like so: de-au
 - no match is found, so the next language in your preferred language list is checked: de-us
@@ -164,7 +166,7 @@ Let's take a look at a slightly complex example and go through it step by step:
   Multidict will use the German dictionary to spell check and offer suggestions for `leibe`
   (which should be spelt `liebe`)
 
-3. You write the text "Such beautiful colours! Colorful days are great!" as the body of the email
+3. You write the text "Such beautiful colours! Colorful days are great!" inside a text area
 
 - Multidict will detect the language as English (en) and attempt to match it like so: en-au
 - a match with a preferred language is found which matches the subject text field language
@@ -189,11 +191,11 @@ Currently just one, watch this space.
 
 The suggestions list for any given word is hidden from the user. While this might seem like an odd
 choice for a spellchecker plugin, there are good reasons for it: one is that cycling each suggestion
-is actually faster than opening a list, scanning it for the right word, and then selecting that word
-with your mouse. The other is because each suggestion is ordered based on it's proximity to the
-misspelt word. That means that by cycling **UP** through the suggestions, the user will naturally
-cycle through words that are more likely to be what the user intended with as few as one or two
-key presses.
+is faster than opening a list, scanning it for the right word, and then selecting that word with
+your mouse. The other is because each suggestion is ordered based on it's proximity to the misspelt
+word. That means that by cycling **UP** through the suggestions, the user will naturally cycle
+through words that are more likely to be what the user intended with as few as one or two key
+presses.
 
 To illustrate let's take a step-by-step look at what happens when a user makes a common misspelling
 and inputs "releived":
@@ -285,3 +287,4 @@ Thank you for using this software. Please feel free to leave a bug report or fee
  [11]: https://3dtransforms.desandro.com/
  [12]: mailto:che.fisher+multidict@gmail.com
  [13]: https://github.com/GrayedFox/multidict/issues
+ [14]: https://support.mozilla.org/en-US/kb/choose-display-languages-multilingual-web-pages

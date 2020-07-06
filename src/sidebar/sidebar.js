@@ -1,7 +1,7 @@
 const messageHandler = browser.runtime.connect({ name: 'popup' })
 
 const optionLabels = {
-  disableNativeSpellcheck: 'Disable duplicate spell checking'
+  disableNativeSpellcheck: 'Disable native spell checking'
 }
 
 const languageLabels = {
@@ -10,7 +10,6 @@ const languageLabels = {
   'en-gb': 'British English',
   'fr-fr': 'French',
   'de-de': 'German',
-  // 'it-it': 'Italian',
   'pl-pl': 'Polish',
   'ro-ro': 'Romanian',
   'ru-ru': 'Russian',
@@ -27,8 +26,8 @@ const colorPicker = document.querySelector('#colorPicker input')
 const suggestionSlider = document.querySelector('#suggestions input')
 const suggestionOutput = document.querySelector('#suggestions output')
 
-const listLinkItem = '<li><a href="#"></a></li>'
 let highlightColor = null
+let dragSourceNode = null
 
 function init () {
   // listen to incoming messages from background script
@@ -90,6 +89,7 @@ function generateListOptions (list, labels) {
   const label = document.createElement('label')
   const input = document.createElement('input')
   const fragment = new DocumentFragment()
+  const listLinkItem = '<li class="draggable" draggable="true"><a href="#"></a></li>'
 
   input.type = 'checkbox'
 
@@ -105,6 +105,7 @@ function generateListOptions (list, labels) {
     label.appendChild(input)
     fragment.appendChild(htmlToNodes(listLinkItem)[0])
     child = fragment.lastChild
+    if (list === languagesOptionsList) addDragAndDropEvents(child)
     child.appendChild(label.cloneNode(true))
   }
   list.appendChild(fragment)
@@ -127,18 +128,24 @@ const setColorValue = color => {
 
 // populate the check box values of a given list using an array of options
 function populateListOptions (list, options) {
-  // options are an array of strings like so: ['de-de', 'en-gb'] or ['disableNativeSpellcheck']
+  // options are an array of ordered strings like so: ['de-de', 'en-gb'] or ['disableNativeSpellcheck']
+  let i = 0
   for (const option of options) {
     const node = document.querySelector(`#${option}`)
     if (node) {
       node.value = true
       node.checked = true
     }
+    if (node && list === languagesOptionsList) {
+      list.insertBefore(node.parentNode.parentNode, list.childNodes[i])
+      i++
+    }
   }
 }
 
 // populate personal dictionary list with custom words
 function populateUserDictionaryList (customWords) {
+  const listLinkItem = '<li><a href="#"></a></li>'
   while (wordsList.firstChild) { wordsList.removeChild(wordsList.firstChild) }
   const fragment = new DocumentFragment()
   let child
@@ -208,6 +215,76 @@ function handleOptions (event) {
     event.target.value = event.originalTarget.checked
     messageHandler.postMessage({ type: 'saveSettings', settings: getSettingsFromList(settingsOptionsList) })
   }
+}
+
+function dragStart (e) {
+  if (!isDraggable(e.target)) return
+  e.target.style.opacity = '0.4'
+  dragSourceNode = e.target
+  e.dataTransfer.effectAllowed = 'move'
+  e.dataTransfer.setData('text/html', e.target.innerHTML)
+};
+
+function dragEnter (e) {
+  if (!isDraggable(e.target)) return
+  e.target.classList.add('over')
+}
+
+function dragLeave (e) {
+  if (!isDraggable(e.target)) return
+  e.stopPropagation()
+  e.target.style.border = ''
+  e.target.classList.remove('over')
+}
+
+function dragOver (e) {
+  if (!isDraggable(e.target)) return
+  const bounding = e.target.getBoundingClientRect()
+  const offset = bounding.y + (bounding.height / 2)
+  e.preventDefault()
+  e.dataTransfer.dropEffect = 'move'
+  if (e.clientY - offset > 0) {
+    e.target.style['border-bottom'] = 'solid 0.3em tomato'
+    e.target.style['border-top'] = ''
+  } else {
+    e.target.style['border-top'] = 'solid 0.3em tomato'
+    e.target.style['border-bottom'] = ''
+  }
+  // return false
+}
+
+function dragDrop (e) {
+  if (!isDraggable(e.target)) return
+  if (dragSourceNode !== e.target) {
+    if (e.target.style['border-bottom'] !== '') {
+      e.target.style['border-bottom'] = ''
+      e.target.parentNode.insertBefore(dragSourceNode, e.target.nextSibling)
+    } else {
+      e.target.style['border-top'] = ''
+      e.target.parentNode.insertBefore(dragSourceNode, e.target)
+    }
+    messageHandler.postMessage({ type: 'saveLanguages', languages: getSettingsFromList(languagesOptionsList) })
+  }
+}
+
+function dragEnd (e) {
+  if (!isDraggable(e.target)) return
+  e.target.classList.remove('over')
+  e.target.style.opacity = ''
+  e.target.style.border = ''
+}
+
+function isDraggable (node) {
+  return node && node.classList && node.classList.contains('draggable')
+}
+
+function addDragAndDropEvents (node) {
+  node.addEventListener('dragstart', dragStart, false)
+  node.addEventListener('dragenter', dragEnter, false)
+  node.addEventListener('dragover', dragOver, false)
+  node.addEventListener('dragleave', dragLeave, false)
+  node.addEventListener('drop', dragDrop, false)
+  node.addEventListener('dragend', dragEnd, false)
 }
 
 // create a notification to display to the user

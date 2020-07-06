@@ -64,7 +64,6 @@ function api (message, sender) {
       break
     case 'saveLanguages':
       saveLanguages(message.languages)
-        .then(() => respond(sender, { type: 'recheck' }, 'refresh'))
       break
     case 'getMaxSuggestions':
       getMaxSuggestions()
