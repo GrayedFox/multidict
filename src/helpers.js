@@ -110,24 +110,16 @@ function isSupported (node) {
 }
 
 // load local dictionary files from supported languages based on user prefs
-function loadDictionariesAndPrefs (languages) {
+function loadDictionaries (languages) {
   // ToDo: check if this negatively impacts memory imprint (may need to fetch dict/aff files)
   const dicts = []
-  let prefs = []
   return asyncForEach(languages, async (language) => {
     const dic = await readTextFile(browser.runtime.getURL(`./dictionaries/${language}.dic`))
     const aff = await readTextFile(browser.runtime.getURL(`./dictionaries/${language}.aff`))
     if (!dic.error && !aff.error) {
-      prefs.push(language)
       dicts.push({ language, dic, aff })
     }
-  }).then(() => {
-    // trim first three characters of supported langauges i.e. en-gb > gb
-    prefs = prefs.reduce((acc, lang) => acc.concat([lang.slice(3, 5)]), [])
-    return { dicts, prefs }
-  }).catch((err) => {
-    console.error(err)
-  })
+  }).then(() => dicts)
 }
 
 // prepares a language array from the browser accepted and UI languages: ['de-de', 'en-au', 'en-gb']
@@ -168,12 +160,20 @@ function readTextFile (path) {
   })
 }
 
-// takes a single node, nodeList, or array of nodes and sets attribute to value on all
-function setAllAttribute (nodeList, attribute, value = true) {
-  if (!Array.isArray(nodeList)) {
-    nodeList = Array.from(nodeList)
-  }
-  nodeList.forEach((node) => node.setAttribute(attribute, value))
+/**
+ * setNodeListAttributess - takes a node, array of nodes, or nodeList and object of attribute values
+ * to set on the given nodes (operates on them in place)
+ *
+ * @param  {(node|node[]|nodeList)} nodeList - the list or array of nodes to operate on
+ * @param  {object} attributes - object of attribute key value pairs
+ * @returns {undefined}
+ */
+
+function setNodeListAttributes (nodeList, attributes) {
+  if (!Array.isArray(nodeList)) nodeList = Array.from(nodeList)
+
+  nodeList.forEach(node =>
+    Object.entries(attributes).forEach(([key, value]) => node.setAttribute(key, value)))
 }
 
 module.exports = {
@@ -184,7 +184,7 @@ module.exports = {
   getDefaultLanguages,
   hasChildNodes,
   isSupported,
-  loadDictionariesAndPrefs,
+  loadDictionaries,
   prepareLanguages,
-  setAllAttribute
+  setNodeListAttributes
 }

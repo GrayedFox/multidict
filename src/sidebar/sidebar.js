@@ -263,6 +263,7 @@ function dragDrop (e) {
       e.target.style['border-top'] = ''
       e.target.parentNode.insertBefore(dragSourceNode, e.target)
     }
+    notify('Language Moved', `${dragSourceNode.textContent} priority updated`)
     messageHandler.postMessage({ type: 'saveLanguages', languages: getSettingsFromList(languagesOptionsList) })
   }
 }

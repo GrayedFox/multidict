@@ -1,5 +1,5 @@
 const { CustomWordList, User, Spelling } = require('./classes')
-const { createMenuItems, getDefaultLanguages, loadDictionariesAndPrefs, prepareLanguages } = require('./helpers')
+const { createMenuItems, getDefaultLanguages, loadDictionaries, prepareLanguages } = require('./helpers')
 const { cleanWord } = require('./text-methods')
 
 const DEBUG = false
@@ -32,8 +32,8 @@ async function init () {
     saveLanguages(customLanguages)
   }
 
-  const dictionariesAndPrefs = await loadDictionariesAndPrefs(customLanguages)
-  user = new User(dictionariesAndPrefs.dicts, dictionariesAndPrefs.prefs, customLanguages, customWords.wordList)
+  const dictionaries = await loadDictionaries(customLanguages)
+  user = new User(dictionaries, customLanguages, customWords.wordList)
 
   createMenuItems()
 }
@@ -64,6 +64,7 @@ function api (message, sender) {
       break
     case 'saveLanguages':
       saveLanguages(message.languages)
+        .then(() => respond(sender, { type: 'recheck' }, 'refresh'))
       break
     case 'getMaxSuggestions':
       getMaxSuggestions()
@@ -224,6 +225,7 @@ async function saveLanguages (languages) {
     console.warn(`Multidict: Saving languages failed with error: ${error}`)
   } else {
     customLanguages = languages
+    user.setPreferredLanguageOrder(customLanguages)
   }
 }
 

@@ -1,4 +1,4 @@
-const { blinkMark, debounce, getAllChildren, isSupported, setAllAttribute } = require('./helpers')
+const { blinkMark, debounce, getAllChildren, isSupported, setNodeListAttributes } = require('./helpers')
 const {
   getCurrentMark, getCurrentWordBounds, getMatchingMarkIndex, getSelectionBounds, getTextContent,
   getMisspeltWordIndex, replaceInText, storeSelection
@@ -149,6 +149,7 @@ function handleHighlight (words = currentSpelling.misspeltStrings) {
 
 // handle cycling through suggestions
 function handleSuggestions (event, direction) {
+  if (!highlighter) return // small chance this function is called before highlighter instantiated
   const word = new Word(...getCurrentWordBounds(currentTextarea))
   const currentMarkIndex = getMatchingMarkIndex(getTextContent(currentTextarea), word)
   const mark = getCurrentMark(word.text, currentMarkIndex, highlighter)
@@ -243,11 +244,9 @@ function handleKeyup (event) {
 function handleSettings (nodeList) {
   // set spellcheck=false on all text fields to prevent double spell checking
   if (settings.includes('disableNativeSpellcheck') && nodeList.length > 0) {
-    setAllAttribute(nodeList, 'spellcheck', false)
-    setAllAttribute(nodeList, dataGenString, true)
+    setNodeListAttributes(nodeList, { spellcheck: false, [dataGenString]: true })
   } else {
-    setAllAttribute(nodeList, 'spellcheck', null)
-    setAllAttribute(nodeList, dataGenString, false)
+    setNodeListAttributes(nodeList, { spellcheck: null, [dataGenString]: false })
   }
 }
 
@@ -299,13 +298,11 @@ function handleClick (event) {
 // watch for dom content changes and do necessary work
 function handleDOMChanges (mutationList, observer) {
   // watch for additional textareas added to DOM and apply user settings
-  if (settings.disableNativeSpellcheck) {
+  if (settings && settings.includes('disableNativeSpellcheck')) {
     mutationList.forEach((mutation) => {
-      if (!mutation.target.hasAttribute(dataGenString)) {
-        const textareas = getAllChildren(mutation.addedNodes)
-          .filter(node => node.nodeName === 'TEXTAREA' && !node.hasAttribute(dataGenString))
-        handleSettings(textareas)
-      }
+      const textareas = getAllChildren(mutation.addedNodes)
+        .filter(node => node.nodeName === 'TEXTAREA' && !node.hasAttribute(dataGenString))
+      handleSettings(textareas)
     })
   }
 }
