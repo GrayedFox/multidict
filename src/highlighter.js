@@ -116,7 +116,7 @@ class Highlighter {
    *
    * @param  {string} word - The sequence of characters we are testing appears as a whole word
    * @param  {string} content - Text content to be tested with regex
-   * @param  {number=0} start - Optional index to begin searching content from
+   * @param  {number} [start=0] - Optional index to begin searching content from
    * @returns {boolean} - True if a word appears as a whole word (as of start)
    */
 

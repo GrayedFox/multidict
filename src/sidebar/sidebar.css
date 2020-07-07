@@ -32,6 +32,18 @@ a:hover {
   color: var(--link-hover-color);
 }
 
+.coffee {
+  font-size: 2.3em;
+  position: absolute;
+  left: 90%;
+  top: -0.25em;
+}
+
+#menu .arrow {
+  font-size: medium;
+  float: right;
+}
+
 #menu {
   list-style-type: none;
   -webkit-font-smoothing: antialiased;
@@ -49,11 +61,6 @@ a:hover {
 
 #menu li:hover {
   background-color: var(--bg-hover-color);
-}
-
-#menu .arrow {
-  font-size: small;
-  float: right;
 }
 
 #colorPicker input {
