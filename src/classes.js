@@ -110,9 +110,8 @@ class SuggestionTracker {
 
 // A User has user dictionaries, preferences, spelling instances, and custom words
 class User {
-  constructor (dictionaries, prefs, languages, ownWords) {
+  constructor (dictionaries, languages, ownWords) {
     this._dicts = dictionaries // dictionary objects [{ language: 'en-au', dic: '', aff: '' }]
-    this._prefs = prefs // shorthand language strings ['au', 'de', 'gb']
     this._langs = languages // language strings ['en-au', 'de-de', 'en-gb']
     this._ownWords = JSON.parse(JSON.stringify(ownWords)) // clone of custom word list: { kablam: ['de-de', 'po-po'], ... }
     this._spellers = this._createSpellers() // nspell instances by language { language: nspell }
@@ -120,10 +119,6 @@ class User {
 
   get dicts () {
     return this._dicts
-  }
-
-  get prefs () {
-    return this._prefs
   }
 
   get langs () {
@@ -136,13 +131,26 @@ class User {
 
   // get the user's preferred (or default) language when spell checking content
   getPreferredLanguage (contentLanguage) {
-    for (const pref of this._prefs) {
-      if (this._langs.includes(`${contentLanguage}-${pref}`)) {
-        return `${contentLanguage}-${pref}`
+    for (const language of this._langs) {
+      const locale = language.substr(3)
+      if (this._langs.includes(`${contentLanguage}-${locale}`)) {
+        return `${contentLanguage}-${locale}`
       }
     }
     // default to first preferred language if no match found
     return `${this._langs[0]}`
+  }
+
+  // sets the preferred language order of a user based on languages used during instantiation
+  setPreferredLanguageOrder (languages) {
+    const newLangs = []
+    for (let i = 0; i < languages.length; i++) {
+      if (this._langs.includes(languages[i])) {
+        console.log('setting', languages[i])
+        newLangs.push(languages[i])
+      }
+    }
+    this._langs = newLangs
   }
 
   // private method for working around this bug: https://github.com/wooorm/nspell/issues/25
@@ -178,8 +186,8 @@ class User {
 
   // create spell checkers (nspell instaces) should only ever be called during class instantiation
   _createSpellers () {
-    if (this._prefs.length !== this._dicts.length) {
-      console.warn('Multidict: Language prefs and user dictionary length not equal. Aborting.')
+    if (this._langs.length !== this._dicts.length) {
+      console.warn('Multidict: Languages and user dictionary length not equal. Aborting.')
       return
     }
 

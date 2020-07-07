@@ -255,7 +255,7 @@ send an email to [che.fisher+mutidict@gmail.com][12]
 
 ## Credits
 
-- Dictionaries by [Hunspell][0] and available for download [here][1]
+- Dictionaries collected by [Titus Wormer][0] and available for download [here][1]
 - Icons by [SmashIcons][2], taken from [Flaticon.com][3]
 - Spellchecking powered by [NSpell][4], made by Titus Wormer, the brains behind the [retext][5] NLP
 - The [HighlightWithinTextarea][7] jQuery plugin by Will Boyd served as the base of a much earlier
@@ -273,8 +273,8 @@ send an email to [che.fisher+mutidict@gmail.com][12]
 Thank you for using this software. Please feel free to leave a bug report or feedback via the GitHub
 [issue tracker][13] or send me an email if you prefer (contact details above) :)
 
- [0]: https://hunspell.github.io/
- [1]: https://src.chromium.org/viewvc/chrome/trunk/deps/third_party/hunspell_dictionaries/
+ [0]: https://github.com/wooorm
+ [1]: https://github.com/wooorm/dictionaries
  [2]: https://www.flaticon.com/authors/smashicons
  [3]: https://www.flaticon.com/
  [4]: https://github.com/wooorm/nspell

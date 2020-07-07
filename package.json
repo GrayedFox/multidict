@@ -1,6 +1,6 @@
 {
   "name": "multidict",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Spell check in multiple languages with this Firefox addon",
   "main": "src/background.js",
   "scripts": {

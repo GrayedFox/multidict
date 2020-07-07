@@ -68,9 +68,9 @@ class Highlighter {
       'border-top-style', 'border-right-style', 'border-bottom-style', 'border-left-style',
       'font-size', 'font-family', 'font-weight', 'line-height', 'letter-spacing', 'text-align',
       'padding-top', 'padding-right', 'padding-bottom', 'padding-left', 'box-sizing',
-      'max-height', 'min-height', 'width', 'height'
+      'max-height', 'min-height'
     ]
-    const geometricStyles = []
+    const geometricStyles = ['width', 'height']
     const offsetStyles = this._offset(this.$textarea, this.$highlighter)
 
     // only offset top and left values for non static textareas - otherwise highlight layout breaks
@@ -90,9 +90,10 @@ class Highlighter {
   }
 
   /**
-   * _offset - returns the absolute position and inner size of an element (i.e. clientWidth)
+   * _offset - returns the absolute position and inner size of an element
    *
-   * @param  {node} element - The element whos absolute position we want to calculate
+   * @param  {node} targetNode - The element whos absolute position we want to calculate
+   * @param  {node} offsetNode - The element whos position we offset by the targetNode
    * @returns {object} - An object containing the size and coordinates measured in pixels
    */
   _offset (targetNode, offsetNode) {
@@ -101,7 +102,9 @@ class Highlighter {
 
     return {
       top: `${targetRect.top - offsetRect.top}px`,
-      left: `${targetRect.left - offsetRect.left}px`
+      left: `${targetRect.left - offsetRect.left}px`,
+      width: `${targetNode.clientWidth}px`,
+      height: `${targetNode.clientHeight}px`
     }
   }
 
