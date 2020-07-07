@@ -1,8 +1,12 @@
-const { blinkMark, debounce, getAllChildren, isSupported, setNodeListAttributes } = require('./helpers')
 const {
-  getCurrentMark, getCurrentWordBounds, getMatchingMarkIndex, getSelectionBounds, getTextContent,
-  getMisspeltWordIndex, replaceInText, storeSelection
+  blinkNode, debounce, getAllChildren, isSupported, setNodeListAttributes
+} = require('./helpers')
+
+const {
+  getCurrentMark, getCurrentSelectionBounds, getMatchingWordIndex, getSelectionBounds,
+  getTextContent, replaceInText, storeSelection
 } = require('./text-methods')
+
 const { SuggestionTracker, Word } = require('./classes')
 const { Highlighter } = require('./highlighter')
 
@@ -150,8 +154,8 @@ function handleHighlight (words = currentSpelling.misspeltStrings) {
 // handle cycling through suggestions
 function handleSuggestions (event, direction) {
   if (!highlighter) return // small chance this function is called before highlighter instantiated
-  const word = new Word(...getCurrentWordBounds(currentTextarea))
-  const currentMarkIndex = getMatchingMarkIndex(getTextContent(currentTextarea), word)
+  const word = new Word(...getCurrentSelectionBounds(currentTextarea))
+  const currentMarkIndex = getMatchingWordIndex(getTextContent(currentTextarea), word)
   const mark = getCurrentMark(word.text, currentMarkIndex, highlighter)
   const suggestions = currentSpelling.suggestions[word.text]
   const misspeltWord = currentSpelling.misspeltWords[currentMarkIndex]
@@ -164,6 +168,9 @@ function handleSuggestions (event, direction) {
     topSuggestions = maxSuggestions !== 0 && maxSuggestions !== 10
       ? suggestions.suggestedWords.slice(0, maxSuggestions)
       : suggestions.suggestedWords
+
+    // ensures that suggestion with closest proximity to misspelt word is at second index
+    topSuggestions.unshift(topSuggestions.pop())
   }
 
   // if we are cycling suggestions but shift and alt are no longer pressed destroy tracker
@@ -179,20 +186,18 @@ function handleSuggestions (event, direction) {
         // keep reference of original text, word, and mark index
         originalText = getTextContent(currentTextarea)
         originalWord = word
-        originalMarkIndex = getMisspeltWordIndex(word, currentSpelling, currentMarkIndex)
+        originalMarkIndex = currentMarkIndex
         // remove misspelt word from misspeltStrings array
         currentSpelling.misspeltStrings.splice(originalMarkIndex, 1)
-        // ensures that suggestion with closest proximity to misspelt word is at second index
-        topSuggestions.unshift(topSuggestions.pop())
         suggestionTracker = new SuggestionTracker(topSuggestions)
       }
       // if we have no suggestions but the current word is misspelt, blink current mark
       if ((misspeltWord && mark) && (maxSuggestions === 0 || !topSuggestions)) {
-        blinkMark(mark, 4, 600)
+        blinkNode(mark, 4, 600)
       }
       // cycle through suggestionTracker up or down and replace the word with the suggestion
       if (suggestionTracker) {
-        suggestionTracker.rotate(direction)
+        suggestionTracker.cycle(direction)
         chooseSuggestion(currentTextarea, suggestionTracker.currentSuggestion, word)
       }
     } else {
@@ -200,6 +205,7 @@ function handleSuggestions (event, direction) {
       if (suggestionTracker) {
         suggestionTracker = null
         const restoreSelection = storeSelection(getSelectionBounds(currentTextarea))
+        // add misspelt word back to misspeltStrings array in the correct position
         currentSpelling.misspeltStrings.splice(originalMarkIndex, 0, originalWord.text)
         currentTextarea.value = originalText
         restoreSelection(currentTextarea)
@@ -254,7 +260,7 @@ function handleSettings (nodeList) {
 function handleWord (message) {
   let word = message.content.word
   // if word undefined generate word from current selection/cursor position
-  word = word || getCurrentWordBounds(document.activeElement)[0]
+  word = word || getCurrentSelectionBounds(document.activeElement)[0]
   browser.runtime.sendMessage({ type: message.type, word: word })
 }
 
@@ -281,7 +287,7 @@ function updateCurrentTextarea (node) {
   if (currentTextarea) currentTextarea.removeAttribute('data-multidict-selected-word')
   updateDetectedLanguage(getTextContent(node))
   currentTextarea = node
-  const word = new Word(...getCurrentWordBounds(node))
+  const word = new Word(...getCurrentSelectionBounds(node))
   node.setAttribute('data-multidict-selected-word', [...word])
 }
 
@@ -314,7 +320,7 @@ init()
 // 2. Single Highlighter instance (requires Spelling) per page per focused textarea
 // 3. Highlighter instance has own listeners to keep it in sync with textarea node
 // 4. Content script drives the suggestions as needed; SuggestionTracker does not have own listeners
-//    but has a rotate method for cycling through and tracking shown suggestion
+//    but has a cycle method for cycling through and tracking shown suggestion
 // 5. Content script keeps track of where the caret/cursor position is inside of focused textarea,
 //    which is used when placing suggestions or adding/removing a word
 //

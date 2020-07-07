@@ -123,7 +123,7 @@ const setMaxSuggestionsLimit = limit => {
 
 const setColorValue = color => {
   highlightColor = color
-  colorPicker.setAttribute('value', color)
+  colorPicker.setAttribute('value', highlightColor)
 }
 
 // populate the check box values of a given list using an array of options
@@ -176,7 +176,7 @@ function handleSliderChange (event) {
 // handle the colorPicker submission/dismissal event
 function handleColorChange (event) {
   const newColor = event.target.value
-  highlightColor = newColor
+  setColorValue(newColor)
   messageHandler.postMessage({ type: 'saveColor', color: newColor })
 }
 
@@ -244,10 +244,10 @@ function dragOver (e) {
   e.preventDefault()
   e.dataTransfer.dropEffect = 'move'
   if (e.clientY - offset > 0) {
-    e.target.style['border-bottom'] = 'solid 0.3em tomato'
+    e.target.style['border-bottom'] = `solid 0.3em ${highlightColor}`
     e.target.style['border-top'] = ''
   } else {
-    e.target.style['border-top'] = 'solid 0.3em tomato'
+    e.target.style['border-top'] = `solid 0.3em ${highlightColor}`
     e.target.style['border-bottom'] = ''
   }
   // return false

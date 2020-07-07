@@ -205,7 +205,7 @@ async function getCustomWords () {
   const storedWords = await browser.storage.sync.get('personal')
 
   if (typeof storedWords.personal === 'object' || Array.isArray(storedWords.personal)) {
-    customWords = new CustomWordList(storedWords.personal)
+    customWords = new CustomWordList(storedWords.personal, customLanguages[0].substr(0, 2))
   }
 }
 
