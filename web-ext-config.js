@@ -20,6 +20,7 @@ module.exports = {
     'src/**',
     'test_page/',
     'test_page/**',
+    'tasks/',
     'tasks/**',
     '_config.yml'
   ]

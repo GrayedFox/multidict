@@ -1,32 +1,86 @@
 const nspell = require('nspell')
 const { cleanText, getRelativeBounds } = require('./text-methods')
 
-// A CustomWordList is a dummy class that helps to iterate over and perform operations on a custom
-// words list. The wordlist should be an object with the following structure:
-// { kablam: ['de-de', 'en-au', 'en-gb'], ... }
+/** Class representing a list of custom words. A CustomWordList is a dummy class that helps to
+ * iterate over and perform operations on the user's custom words which are loaded from browser
+ * storage.
+ */
 class CustomWordList {
-  constructor (wordList) {
+  /**
+   * Create a CustomWordList. Words are sorted alphabetically using the provided locale on creation
+   *
+   * @param  {WordList|string[]} wordList - an array of custom words or object of words and languages
+   * @param  {string} locale - the locale (i.e. 'en' or 'de') used to sort the custom words
+   */
+  constructor (wordList, locale) {
     this._wordList = this._generateWordList(wordList)
+    this.sort(locale)
   }
 
+  /**
+   * Adds a word to the CustomWordList. Note that adding a word does not call sort().
+   *
+   * @param  {string} word - word to add
+   * @param  {string[]} languages - the languages the word the word is misspelt in
+   */
   add (word, languages) {
     this._wordList[word] = languages
+    this._words.push(word)
   }
 
+  /**
+   * Removes a word from the CustomWordList
+   *
+   * @param  {string} word - word to be remove
+   */
   remove (word) {
     delete this._wordList[word]
+    this._words.remove(word)
   }
 
+  /**
+   * Get all custom words
+   *
+   * @returns {string[]} The custom words only (no languages)
+   */
   get words () {
-    return Object.keys(this._wordList)
+    return this._words
   }
 
+  /**
+   * Get an unsorted wordList object that includes each word and the languages it is misspelt in
+   *
+   * @returns {WordList} Object of words and languages
+   */
   get wordList () {
     return this._wordList
   }
 
-  // convert original style wordList (array of strings) to object of arrays
-  // ensures backwards compatibility after breaking changes (so users don't lose custom words)
+  /**
+   * Sort all custom words alphabetically based on a specific locale
+   *
+   * @param  {string} locale - a two character length language string (i.e. 'de' or 'es')
+   */
+  sort (locale) {
+    this._words = Object.keys(this._wordList).sort((a, b) => a.localeCompare(b, locale))
+  }
+
+  /**
+   * A WordList object has misspelt words and the languages they are misspelt in.
+   *
+   * @typedef {Object} WordList
+   * @see CustomWordList
+   * @property {string[]} misspeltWord - array of languages the word is misspelt in
+   */
+
+  /**
+   * Convert original style wordList (array of strings) into object of arrays. Ensures backwards
+   * compatibility after breaking changes (so users don't lose custom words)
+   *
+   * @private
+   * @param  {WordList|string[]} wordList - object or array of strings
+   * @returns {WordList} A WordList
+   */
   _generateWordList (wordList) {
     if (typeof wordList === 'object' && !Array.isArray(wordList)) return wordList
     if (Array.isArray(wordList)) {
@@ -37,24 +91,43 @@ class CustomWordList {
   }
 }
 
-// A Spelling contains raw text, cleaned text, misspelt Words, and suggestions according to a
-// specific language (i.e. a single nspell/speller instance)
+/**
+ * Class representing the spell checked content which contains the raw text, cleaned text, misspelt
+ * Words, and spelling suggestions according to a specific language (i.e. a single NSpell instance).
+ * The methods, while documented, are private and should not be called outside class instantiation.
+ */
 class Spelling {
+  /**
+   * Create a Spelling class
+   *
+   * @param  {NSpell} speller - an nspell instance
+   * @param  {string} content - the content to be spell checked
+   */
   constructor (speller, content) {
-    this.content = content // raw text string 'Hello c137! 1234 C137? email@fu.com'
-    this.speller = speller // an nspell instance
-    this._cleanedText = cleanText(content) // array of cleaned text ['Hello', 'c137', 'C137']
-    this.misspeltStrings = this._generateStrings() // array of misspelt strings ['word', 'word']
-    this.misspeltWords = this._generateWords() // array of misspelt Words [{Word}, {Word}]
-    this.suggestions = this._generateSuggestions() // suggestion object (see generator)
+    this.content = content
+    this.speller = speller
+    this._cleanedText = cleanText(content)
+    this.misspeltStrings = this._generateStrings()
+    this.misspeltWords = this._generateWords()
+    this.suggestions = this._generateSuggestions()
   }
 
-  // returns array of misspelt strings only
+  /**
+   * Generates misspelt strings. Should only be called during class instantiation.
+   *
+   * @returns {string[]} An array of misspelt strings
+   */
   _generateStrings () {
     return this._cleanedText.filter(word => !this.speller.correct(word))
   }
 
-  // constructs array of misspelt Words by checking the spelling of each bit of cleaned text
+  /**
+   * Generates array of misspelt Words by checking the spelling of each bit of cleaned text.
+   * Should only be called during class instantiation.
+   *
+   * @see Word
+   * @returns {Word[]} An array of misspelt Words
+   */
   _generateWords () {
     let index = 0
     return this.misspeltStrings.map(word => {
@@ -63,8 +136,22 @@ class Spelling {
     })
   }
 
-  // generates a suggestions object: { misspeltWord: { suggestions: ['word1', 'word2'], count: 1 }}
-  // should only be called on class instantiation (count is amount of times a misspelt word appears)
+  /**
+   * A Suggestions object contains multiple misspelt words as nested objects with the following
+   * properties.
+   *
+   * @typedef {Object} Suggestions
+   * @property {Object} misspeltWord - a sequence of tokens representing the misspelt word
+   * @property {string[]} misspeltWord.suggestions - an array of string suggestions
+   * @property {number} misspeltWord.count - the amount of times this exact sequence of tokens
+   * appears inside the text content
+   */
+
+  /**
+   * Generates a Suggestions object. Should only be called during class instantiation.
+   *
+   * @returns {Suggestions} A Suggestions object
+   */
   _generateSuggestions () {
     this.suggestions = {}
     for (let i = 0; i < this.misspeltWords.length; i++) {
@@ -83,21 +170,36 @@ class Spelling {
   }
 }
 
-// A SuggestionTracker is used to keep track of which suggestion is currently being shown to the
-// user. It requires a suggestions object (from a Spelling) and will update suggestionsIndex
-// variable based on the direction a user is 'scrolling' through any suggestions
+/**
+ * Class representing a list of suggestions for a misspelt word. It will keep track of which
+ * suggestion is currently being shown to the user.
+ */
 class SuggestionTracker {
+  /**
+   * Create a SuggestionTracker
+   *
+   * @param  {string[]} suggestions - array of suggestion strings
+   */
   constructor (suggestions) {
     this.suggestions = suggestions
     this._suggestionIndex = 0
   }
 
+  /**
+   * Get the currently shown/inlined suggestion
+   *
+   * @returns {string} The currently shown/inlined suggestion
+   */
   get currentSuggestion () {
     return this.suggestions[this._suggestionIndex]
   }
 
-  // rotate the suggestions up or down
-  rotate (direction) {
+  /**
+   * Cycle through suggestions in a given direction
+   *
+   * @param  {string} direction - either 'up' or 'down'
+   */
+  cycle (direction) {
     direction === 'up' ? this._suggestionIndex++ : this._suggestionIndex--
     if (this._suggestionIndex === this.suggestions.length) {
       this._suggestionIndex = 0
@@ -108,28 +210,67 @@ class SuggestionTracker {
   }
 }
 
-// A User has user dictionaries, preferences, spelling instances, and custom words
+/**
+ * Class representing a user. A User has dictionaries, spelling instances, and custom/own words.
+ */
 class User {
+  /**
+   * A Dictionary object has a language, dic, and aff properties.
+   *
+   * @typedef {Object} Dictionary
+   * @see User
+   * @see {@link https://github.com/wooorm/nspell#nspellaff-dic|NSpell Dictionary Object}
+   * @property {Object} dictionary - an object containing a language, dic, and aff buffer/string
+   * @property {string} dictionary.language - a language code i.e. 'en-au'
+   * @property {string} dictionary.dic - a complete string representation of a dic file
+   * @property {string} dictionary.aff - a complete string representation of an aff file
+   */
+
+  /**
+   * Create a User
+   *
+   * @param  {Dictionary[]} dictionaries - array of Dictionary objects
+   * @param  {string[]} languages - array of five digit language codes
+   * @param  {string[]} ownWords - array of misspelt words
+   */
   constructor (dictionaries, languages, ownWords) {
     this._dicts = dictionaries // dictionary objects [{ language: 'en-au', dic: '', aff: '' }]
     this._langs = languages // language strings ['en-au', 'de-de', 'en-gb']
-    this._ownWords = JSON.parse(JSON.stringify(ownWords)) // clone of custom word list: { kablam: ['de-de', 'po-po'], ... }
+    this._ownWords = ownWords // cloned CustomWordList
     this._spellers = this._createSpellers() // nspell instances by language { language: nspell }
   }
 
+  /**
+   * Gets the user's dictionaries
+   * @returns {Dictionary[]} - users dictionary
+   */
   get dicts () {
     return this._dicts
   }
 
+  /**
+   * Gets the user's languages. These are ordered by language preference.
+   * @returns {string[]} - array of language codes
+   */
   get langs () {
     return this._langs
   }
 
+  /**
+   * Gets the user's spelling (nspell) instances
+   * @see {@link https://github.com/wooorm/nspell#table-of-contents|NSpell}
+   * @returns {type}  description
+   */
   get spellers () {
     return this._spellers
   }
 
-  // get the user's preferred (or default) language when spell checking content
+  /**
+   * Gets the user's preferred (or default) language when spell checking content
+   * @see {@link https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/i18n/LanguageCode|Language Code}
+   * @param  {string} contentLanguage - two character length locale i.e. 'de' or 'en'
+   * @returns {string} - a five character length language code i.e. 'en-au' or 'de-de'
+   */
   getPreferredLanguage (contentLanguage) {
     for (const language of this._langs) {
       const locale = language.substr(3)
@@ -141,12 +282,14 @@ class User {
     return `${this._langs[0]}`
   }
 
-  // sets the preferred language order of a user based on languages used during instantiation
+  /**
+   * Sets the preferred language order of a user based on a sorted array of languages
+   * @param  {string[]} languages - array of language codes i.e. ['de-de', 'en-au']
+   */
   setPreferredLanguageOrder (languages) {
     const newLangs = []
     for (let i = 0; i < languages.length; i++) {
       if (this._langs.includes(languages[i])) {
-        console.log('setting', languages[i])
         newLangs.push(languages[i])
       }
     }
@@ -159,7 +302,11 @@ class User {
     speller.add(word)
   }
 
-  // add word to user._ownWords and update existing spell checker instances
+  /**
+   * Adds a word to user's custom/own words and updates existing spellchecker instances
+   *
+   * @param  {string} word - word string to be added
+   */
   addWord (word) {
     const misspeltLangs = []
     this._langs.forEach(language => {
@@ -173,7 +320,11 @@ class User {
     if (misspeltLangs.length > 0) { this._ownWords[word] = misspeltLangs }
   }
 
-  // remove word from user._ownWords and update existing spell checker instances
+  /**
+   * Removes a word from user's custom/own words and updates existing spellchecker instances
+   *
+   * @param  {string} word - word string to be removed
+   */
   removeWord (word) {
     // users can add custom words that are already spelt correctly in all languages, which would
     // result in them being here undefined
@@ -184,7 +335,7 @@ class User {
     delete this._ownWords[word]
   }
 
-  // create spell checkers (nspell instaces) should only ever be called during class instantiation
+  // create spellcheckers (nspell instaces) should only ever be called during class instantiation
   _createSpellers () {
     if (this._langs.length !== this._dicts.length) {
       console.warn('Multidict: Languages and user dictionary length not equal. Aborting.')
@@ -205,8 +356,17 @@ class User {
   }
 }
 
-// A Word is an iterable class that contains some text, its length, and word boundaries
+/** A Word is an iterable class that contains some text, its length, and relative word boundaries.
+ *  Iterating over a Word will yield the word itself followed by the start and then end values.
+ */
 class Word {
+  /**
+   * Create a Word
+   *
+   * @param  {string} word - the string we will be using to create the Word
+   * @param  {number} start - the beginning of the word relative to the content it was created from
+   * @param  {number} end - the end of the word relative to the content it was created from
+   */
   constructor (word, start, end) {
     this.text = word
     this.start = Number.parseInt(start)
@@ -214,7 +374,11 @@ class Word {
     this.length = word.length
   }
 
-  // the word is valid if the length of the word is greater than 0
+  /**
+   * Check if the word is valid
+   *
+   * @returns {boolean} True if the length of the word is greater than 0
+   */
   isValid () {
     return this.length > 0
   }

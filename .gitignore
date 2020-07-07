@@ -4,3 +4,5 @@
 /dist/*.js
 /dist/sidebar/sidebar.*
 /dist/sourcecode.zip
+/docs/devdocs/**
+!/docs/devdocs/.gitkeep

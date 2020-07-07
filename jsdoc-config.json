@@ -1,0 +1,11 @@
+{
+  "source": {
+    "include": ["src/"]
+  },
+  "opts": {
+    "template": "./node_modules/minami",
+    "destination": "./docs/devdocs/",
+    "recurse": true,
+    "readme": "./README.md"
+  }
+}
