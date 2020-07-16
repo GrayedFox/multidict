@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Global - Documentation</title>
+    <title>SuggestionTracker - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Global</h1>
+    <h1 class="page-title">SuggestionTracker</h1>
     
 
     
@@ -42,8 +42,11 @@
 <header>
     
         <h2>
-        
+        SuggestionTracker
         </h2>
+        
+            <div class="class-description">Class representing a list of suggestions for a misspelt word. It will keep track of which
+suggestion is currently being shown to the user.</div>
         
     
 </header>
@@ -52,8 +55,24 @@
     <div class="container-overview">
     
         
+<div class="section-method">
 
-        
+    
+    <h2>Constructor</h2>
+    
+
+    <h4 class="name" id="SuggestionTracker"><span class="type-signature"></span>new SuggestionTracker<span class="signature">(suggestions)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Create a SuggestionTracker
+</div>
+
+
+
 
 
 <dl class="details">
@@ -83,6 +102,11 @@
     
 
     
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line183">line 183</a>
+    </li></ul></dd>
+    
 
     
 
@@ -92,7 +116,80 @@
 </dl>
 
 
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
         
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>suggestions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Array.&lt;string></code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                array of suggestion strings
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
     
     </div>
 
@@ -107,180 +204,20 @@
     
 
     
-
-    
-
-    
-        <h3 class="subsection-title">Type Definitions</h3>
+        <h3 class="subsection-title">Members</h3>
 
         
-                
+            
 <div class="section-members">
-<h4 class="name" id="Dictionary">Dictionary</h4>
+<h4 class="name" id="currentSuggestion"><span class="type-signature"></span>currentSuggestion<span class="type-signature"></span></h4>
 
 
 
 
 <div class="description">
-    A Dictionary object has a language, dic, and aff properties.
+    Get the currently shown/inlined suggestion
 </div>
 
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>dictionary</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>Object</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">an object containing a language, dic, and aff buffer/string</td>
-        </tr>
-
-        
-        <tr>
-                <h6>Properties</h6>
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>language</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">a language code i.e. 'en-au'</td>
-        </tr>
-
-        
-
-    
-
-        <tr>
-            
-                <td class="name"><code>dic</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">a complete string representation of a dic file</td>
-        </tr>
-
-        
-
-    
-
-        <tr>
-            
-                <td class="name"><code>aff</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">a complete string representation of an aff file</td>
-        </tr>
-
-        
-
-    
-    </tbody>
-</table>
-
-        </tr>
-        
-
-    
-    </tbody>
-</table>
 
 
 
@@ -314,21 +251,12 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line217">line 217</a>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line193">line 193</a>
     </li></ul></dd>
     
 
     
 
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="User.html">User</a></li>
-        
-            <li><a href="https://github.com/wooorm/nspell#nspellaff-dic">NSpell Dictionary Object</a></li>
-        </ul>
-    </dd>
     
 
     
@@ -336,190 +264,24 @@
 
 
 
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><code>Object</code></span>
-
-
-        </li>
-    </ul>
-
 
 
 
 
 </div>
 
+        
             
-                
 <div class="section-members">
-<h4 class="name" id="Dictionary">Dictionary</h4>
+<h4 class="name" id="currentSuggestion"><span class="type-signature"></span>currentSuggestion<span class="type-signature"></span></h4>
 
 
 
 
 <div class="description">
-    A Dictionary object has a language, dic, and aff properties.
+    Get the currently shown/inlined suggestion
 </div>
 
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>dictionary</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>Object</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">an object containing a language, dic, and aff buffer/string</td>
-        </tr>
-
-        
-        <tr>
-                <h6>Properties</h6>
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>language</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">a language code i.e. 'en-au'</td>
-        </tr>
-
-        
-
-    
-
-        <tr>
-            
-                <td class="name"><code>dic</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">a complete string representation of a dic file</td>
-        </tr>
-
-        
-
-    
-
-        <tr>
-            
-                <td class="name"><code>aff</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">a complete string representation of an aff file</td>
-        </tr>
-
-        
-
-    
-    </tbody>
-</table>
-
-        </tr>
-        
-
-    
-    </tbody>
-</table>
 
 
 
@@ -553,21 +315,12 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line217">line 217</a>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line193">line 193</a>
     </li></ul></dd>
     
 
     
 
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="User.html">User</a></li>
-        
-            <li><a href="https://github.com/wooorm/nspell#nspellaff-dic">NSpell Dictionary Object</a></li>
-        </ul>
-    </dd>
     
 
     
@@ -575,44 +328,90 @@
 
 
 
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><code>Object</code></span>
-
-
-        </li>
-    </ul>
-
 
 
 
 
 </div>
 
-            
-                
-<div class="section-members">
-<h4 class="name" id="Suggestions">Suggestions</h4>
+        
+    
 
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="cycle"><span class="type-signature"></span>cycle<span class="signature">(direction)</span><span class="type-signature"></span></h4>
+
+    
 
 
 
 <div class="description">
-    A Suggestions object contains multiple misspelt words as nested objects with the following
-properties.
+    Cycle through suggestions in a given direction
 </div>
 
 
 
 
 
-    <h5 class="subsection-title">Properties:</h5>
+<dl class="details">
 
     
 
-<table class="props">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line202">line 202</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
     <thead>
     <tr>
         
@@ -634,13 +433,13 @@ properties.
 
         <tr>
             
-                <td class="name"><code>misspeltWord</code></td>
+                <td class="name"><code>direction</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><code>Object</code></span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -650,14 +449,273 @@ properties.
 
             
 
-            <td class="description last">a sequence of tokens representing the misspelt word</td>
+            <td class="description last">
+                either 'up' or 'down'
+                
+            </td>
         </tr>
 
-        
-        <tr>
-                <h6>Properties</h6>
+    
+    </tbody>
+</table>
 
-<table class="props">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="cycle"><span class="type-signature"></span>cycle<span class="signature">(direction)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Cycle through suggestions in a given direction
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line202">line 202</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>direction</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                either 'up' or 'down'
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+        SuggestionTracker
+        </h2>
+        
+            <div class="class-description">Class representing a list of suggestions for a misspelt word. It will keep track of which
+suggestion is currently being shown to the user.</div>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+<div class="section-method">
+
+    
+    <h2>Constructor</h2>
+    
+
+    <h4 class="name" id="SuggestionTracker"><span class="type-signature"></span>new SuggestionTracker<span class="signature">(suggestions)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Create a SuggestionTracker
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line183">line 183</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
     <thead>
     <tr>
         
@@ -695,43 +753,11 @@ properties.
 
             
 
-            <td class="description last">an array of string suggestions</td>
-        </tr>
-
-        
-
-    
-
-        <tr>
-            
-                <td class="name"><code>count</code></td>
-            
-
-            <td class="type">
-            
+            <td class="description last">
+                array of suggestion strings
                 
-<span class="param-type"><code>number</code></span>
-
-
-            
             </td>
-
-            
-
-            
-
-            <td class="description last">the amount of times this exact sequence of tokens
-appears inside the text content</td>
         </tr>
-
-        
-
-    
-    </tbody>
-</table>
-
-        </tr>
-        
 
     
     </tbody>
@@ -740,209 +766,47 @@ appears inside the text content</td>
 
 
 
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line139">line 139</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
 
 
 
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><code>Object</code></span>
 
 
-        </li>
-    </ul>
+
+
 
 
 
 
 
 </div>
+    
+    </div>
 
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
             
-                
 <div class="section-members">
-<h4 class="name" id="Suggestions">Suggestions</h4>
+<h4 class="name" id="currentSuggestion"><span class="type-signature"></span>currentSuggestion<span class="type-signature"></span></h4>
 
 
 
 
 <div class="description">
-    A Suggestions object contains multiple misspelt words as nested objects with the following
-properties.
+    Get the currently shown/inlined suggestion
 </div>
 
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>misspeltWord</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>Object</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">a sequence of tokens representing the misspelt word</td>
-        </tr>
-
-        
-        <tr>
-                <h6>Properties</h6>
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>suggestions</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>Array.&lt;string></code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">an array of string suggestions</td>
-        </tr>
-
-        
-
-    
-
-        <tr>
-            
-                <td class="name"><code>count</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>number</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">the amount of times this exact sequence of tokens
-appears inside the text content</td>
-        </tr>
-
-        
-
-    
-    </tbody>
-</table>
-
-        </tr>
-        
-
-    
-    </tbody>
-</table>
 
 
 
@@ -976,7 +840,7 @@ appears inside the text content</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line139">line 139</a>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line193">line 193</a>
     </li></ul></dd>
     
 
@@ -989,88 +853,24 @@ appears inside the text content</td>
 
 
 
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><code>Object</code></span>
-
-
-        </li>
-    </ul>
-
 
 
 
 
 </div>
 
+        
             
-                
 <div class="section-members">
-<h4 class="name" id="WordList">WordList</h4>
+<h4 class="name" id="currentSuggestion"><span class="type-signature"></span>currentSuggestion<span class="type-signature"></span></h4>
 
 
 
 
 <div class="description">
-    A WordList object has misspelt words and the languages they are misspelt in.
+    Get the currently shown/inlined suggestion
 </div>
 
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>misspeltWord</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>Array.&lt;string></code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">array of languages the word is misspelt in</td>
-        </tr>
-
-        
-
-    
-    </tbody>
-</table>
 
 
 
@@ -1104,19 +904,12 @@ appears inside the text content</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line68">line 68</a>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line193">line 193</a>
     </li></ul></dd>
     
 
     
 
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="CustomWordList.html">CustomWordList</a></li>
-        </ul>
-    </dd>
     
 
     
@@ -1124,88 +917,34 @@ appears inside the text content</td>
 
 
 
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><code>Object</code></span>
-
-
-        </li>
-    </ul>
-
 
 
 
 
 </div>
 
-            
-                
-<div class="section-members">
-<h4 class="name" id="WordList">WordList</h4>
+        
+    
 
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="cycle"><span class="type-signature"></span>cycle<span class="signature">(direction)</span><span class="type-signature"></span></h4>
+
+    
 
 
 
 <div class="description">
-    A WordList object has misspelt words and the languages they are misspelt in.
+    Cycle through suggestions in a given direction
 </div>
 
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>misspeltWord</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>Array.&lt;string></code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">array of languages the word is misspelt in</td>
-        </tr>
-
-        
-
-    
-    </tbody>
-</table>
 
 
 
@@ -1239,19 +978,12 @@ appears inside the text content</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line68">line 68</a>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line202">line 202</a>
     </li></ul></dd>
     
 
     
 
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="CustomWordList.html">CustomWordList</a></li>
-        </ul>
-    </dd>
     
 
     
@@ -1259,23 +991,217 @@ appears inside the text content</td>
 
 
 
-    <h5>Type:</h5>
-    <ul>
-        <li>
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
             
-<span class="param-type"><code>Object</code></span>
+                <td class="name"><code>direction</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
 
 
-        </li>
-    </ul>
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                either 'up' or 'down'
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 
 
 </div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="cycle"><span class="type-signature"></span>cycle<span class="signature">(direction)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Cycle through suggestions in a given direction
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line202">line 202</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>direction</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
 
             
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                either 'up' or 'down'
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+    
+
     
 
     
@@ -1291,7 +1217,7 @@ appears inside the text content</td>
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Thu Jul 16 2020 15:12:57 GMT+0000 (Coordinated Universal Time) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Thu Jul 16 2020 15:16:03 GMT+0000 (Coordinated Universal Time) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>

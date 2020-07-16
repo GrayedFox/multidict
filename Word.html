@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Home - Documentation</title>
+    <title>Word - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,53 +29,917 @@
 
 <div id="main">
     
+    <h1 class="page-title">Word</h1>
+    
 
     
 
 
 
+
+<section>
+
+<header>
+    
+        <h2>
+        Word
+        </h2>
+        
+            <div class="class-description">A Word is an iterable class that contains some text, its length, and relative word boundaries.
+ Iterating over a Word will yield the word itself followed by the start and then end values.</div>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+<div class="section-method">
+
+    
+    <h2>Constructor</h2>
+    
+
+    <h4 class="name" id="Word"><span class="type-signature"></span>new Word<span class="signature">(word, start, end)</span><span class="type-signature"></span></h4>
+
     
 
 
 
+<div class="description">
+    Create a Word
+</div>
 
 
 
 
 
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line370">line 370</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>word</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                the string we will be using to create the Word
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>start</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                the beginning of the word relative to the content it was created from
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>end</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                the end of the word relative to the content it was created from
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="isValid"><span class="type-signature"></span>isValid<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
 
     
 
 
-    <section class="readme">
-        <article><p>Welcome to Multidict, your friendly neighbourhood open source language detecting spellchecker. You
-can download me directly from the Firefox add-ons store <a href="https://addons.mozilla.org/en-US/firefox/addon/multidict/?src=search">here</a>.</p>
-<h2>Developer Docs</h2>
-<p>The developer docs are built using JSDOC. The user docs are located <a href="https://grayedfox.github.io/multidict/">here</a>.</p>
-<h2>Installing</h2>
-<ol>
-<li>Clone the repository using your preferred cloning mechanism (ssh or https)</li>
-<li>Run <code>npm install</code> from the project base directory</li>
-</ol>
-<h2>Building</h2>
-<p><code>npm run build</code></p>
-<p>This will bundle all required files into the <code>/dist</code> directory.</p>
-<h2>Serving</h2>
-<p><code>npm run serve</code></p>
-<p>This will at first build all the files and then open a Firefox browser with some specific pages that
-can be used for testing.</p>
-<h2>Publishing</h2>
-<p><code>npm run publish</code></p>
-<p>This will build files using web-ext build and package all source files into dist/sourcecode.zip</p>
-<p>Make sure to bump version numbers inside package.json and manifest.json so that previous release zip
-file is not overwritten.</p>
-<h2>Dependencies</h2>
-<p>The app depends on <a href="https://github.com/wooorm/nspell">nspell</a>, a JavaScript implementation of Hunspell, to provide spell checking.</p>
-<p>The app depends on dictionaries downloaded from <a href="https://github.com/wooorm/dictionaries/">wooorm dictionaries</a> which are themselves a
-compilation of different dictionaries from different sources. They each have their own license.</p></article>
-    </section>
+
+<div class="description">
+    Check if the word is valid
+</div>
 
 
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line382">line 382</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>boolean</code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    True if the length of the word is greater than 0
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="isValid"><span class="type-signature"></span>isValid<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Check if the word is valid
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line382">line 382</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>boolean</code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    True if the length of the word is greater than 0
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+        Word
+        </h2>
+        
+            <div class="class-description">A Word is an iterable class that contains some text, its length, and relative word boundaries.
+ Iterating over a Word will yield the word itself followed by the start and then end values.</div>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+<div class="section-method">
+
+    
+    <h2>Constructor</h2>
+    
+
+    <h4 class="name" id="Word"><span class="type-signature"></span>new Word<span class="signature">(word, start, end)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Create a Word
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line370">line 370</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>word</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                the string we will be using to create the Word
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>start</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                the beginning of the word relative to the content it was created from
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>end</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                the end of the word relative to the content it was created from
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="isValid"><span class="type-signature"></span>isValid<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Check if the word is valid
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line382">line 382</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>boolean</code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    True if the length of the word is greater than 0
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="isValid"><span class="type-signature"></span>isValid<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Check if the word is valid
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line382">line 382</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>boolean</code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    True if the length of the word is greater than 0
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 
@@ -85,7 +949,7 @@ compilation of different dictionaries from different sources. They each have the
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Thu Jul 16 2020 15:12:57 GMT+0000 (Coordinated Universal Time) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Thu Jul 16 2020 15:16:03 GMT+0000 (Coordinated Universal Time) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>

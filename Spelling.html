@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Word - Documentation</title>
+    <title>Spelling - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Word</h1>
+    <h1 class="page-title">Spelling</h1>
     
 
     
@@ -42,11 +42,12 @@
 <header>
     
         <h2>
-        Word
+        Spelling
         </h2>
         
-            <div class="class-description">A Word is an iterable class that contains some text, its length, and relative word boundaries.
- Iterating over a Word will yield the word itself followed by the start and then end values.</div>
+            <div class="class-description">Class representing the spell checked content which contains the raw text, cleaned text, misspelt
+Words, and spelling suggestions according to a specific language (i.e. a single NSpell instance).
+The methods, while documented, are private and should not be called outside class instantiation.</div>
         
     
 </header>
@@ -61,14 +62,14 @@
     <h2>Constructor</h2>
     
 
-    <h4 class="name" id="Word"><span class="type-signature"></span>new Word<span class="signature">(word, start, end)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Spelling"><span class="type-signature"></span>new Spelling<span class="signature">(speller, content)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Create a Word
+    Create a Spelling class
 </div>
 
 
@@ -104,7 +105,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line370">line 370</a>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line106">line 106</a>
     </li></ul></dd>
     
 
@@ -148,7 +149,33 @@
 
         <tr>
             
-                <td class="name"><code>word</code></td>
+                <td class="name"><code>speller</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>NSpell</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                an nspell instance
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>content</code></td>
             
 
             <td class="type">
@@ -165,59 +192,7 @@
             
 
             <td class="description last">
-                the string we will be using to create the Word
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>start</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>number</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                the beginning of the word relative to the content it was created from
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>end</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>number</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                the end of the word relative to the content it was created from
+                the content to be spell checked
                 
             </td>
         </tr>
@@ -266,14 +241,14 @@
 
     
 
-    <h4 class="name" id="isValid"><span class="type-signature"></span>isValid<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    <h4 class="name" id="_generateStrings"><span class="type-signature"></span>_generateStrings<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;string>}</span></h4>
 
     
 
 
 
 <div class="description">
-    Check if the word is valid
+    Generates misspelt strings. Should only be called during class instantiation.
 </div>
 
 
@@ -309,7 +284,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line382">line 382</a>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line120">line 120</a>
     </li></ul></dd>
     
 
@@ -351,7 +326,7 @@
     </dt>
     <dd>
         
-<span class="param-type"><code>boolean</code></span>
+<span class="param-type"><code>Array.&lt;string></code></span>
 
 
     </dd>
@@ -359,7 +334,7 @@
 
 
 <div class="param-desc">
-    True if the length of the word is greater than 0
+    An array of misspelt strings
 </div>
 
     
@@ -374,14 +349,14 @@
 
     
 
-    <h4 class="name" id="isValid"><span class="type-signature"></span>isValid<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    <h4 class="name" id="_generateStrings"><span class="type-signature"></span>_generateStrings<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;string>}</span></h4>
 
     
 
 
 
 <div class="description">
-    Check if the word is valid
+    Generates misspelt strings. Should only be called during class instantiation.
 </div>
 
 
@@ -417,7 +392,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line382">line 382</a>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line120">line 120</a>
     </li></ul></dd>
     
 
@@ -459,7 +434,7 @@
     </dt>
     <dd>
         
-<span class="param-type"><code>boolean</code></span>
+<span class="param-type"><code>Array.&lt;string></code></span>
 
 
     </dd>
@@ -467,7 +442,455 @@
 
 
 <div class="param-desc">
-    True if the length of the word is greater than 0
+    An array of misspelt strings
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="_generateSuggestions"><span class="type-signature"></span>_generateSuggestions<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="global.html#Suggestions">Suggestions</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Generates a Suggestions object. Should only be called during class instantiation.
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line155">line 155</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code><a href="global.html#Suggestions">Suggestions</a></code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    A Suggestions object
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="_generateSuggestions"><span class="type-signature"></span>_generateSuggestions<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="global.html#Suggestions">Suggestions</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Generates a Suggestions object. Should only be called during class instantiation.
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line155">line 155</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code><a href="global.html#Suggestions">Suggestions</a></code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    A Suggestions object
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="_generateWords"><span class="type-signature"></span>_generateWords<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;<a href="Word.html">Word</a>>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Generates array of misspelt Words by checking the spelling of each bit of cleaned text.
+Should only be called during class instantiation.
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line131">line 131</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="Word.html">Word</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>Array.&lt;<a href="Word.html">Word</a>></code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    An array of misspelt Words
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="_generateWords"><span class="type-signature"></span>_generateWords<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;<a href="Word.html">Word</a>>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Generates array of misspelt Words by checking the spelling of each bit of cleaned text.
+Should only be called during class instantiation.
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line131">line 131</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="Word.html">Word</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>Array.&lt;<a href="Word.html">Word</a>></code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    An array of misspelt Words
 </div>
 
     
@@ -497,11 +920,12 @@
 <header>
     
         <h2>
-        Word
+        Spelling
         </h2>
         
-            <div class="class-description">A Word is an iterable class that contains some text, its length, and relative word boundaries.
- Iterating over a Word will yield the word itself followed by the start and then end values.</div>
+            <div class="class-description">Class representing the spell checked content which contains the raw text, cleaned text, misspelt
+Words, and spelling suggestions according to a specific language (i.e. a single NSpell instance).
+The methods, while documented, are private and should not be called outside class instantiation.</div>
         
     
 </header>
@@ -516,14 +940,14 @@
     <h2>Constructor</h2>
     
 
-    <h4 class="name" id="Word"><span class="type-signature"></span>new Word<span class="signature">(word, start, end)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Spelling"><span class="type-signature"></span>new Spelling<span class="signature">(speller, content)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Create a Word
+    Create a Spelling class
 </div>
 
 
@@ -559,7 +983,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line370">line 370</a>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line106">line 106</a>
     </li></ul></dd>
     
 
@@ -603,7 +1027,33 @@
 
         <tr>
             
-                <td class="name"><code>word</code></td>
+                <td class="name"><code>speller</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>NSpell</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                an nspell instance
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>content</code></td>
             
 
             <td class="type">
@@ -620,59 +1070,7 @@
             
 
             <td class="description last">
-                the string we will be using to create the Word
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>start</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>number</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                the beginning of the word relative to the content it was created from
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>end</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>number</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                the end of the word relative to the content it was created from
+                the content to be spell checked
                 
             </td>
         </tr>
@@ -721,14 +1119,14 @@
 
     
 
-    <h4 class="name" id="isValid"><span class="type-signature"></span>isValid<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    <h4 class="name" id="_generateStrings"><span class="type-signature"></span>_generateStrings<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;string>}</span></h4>
 
     
 
 
 
 <div class="description">
-    Check if the word is valid
+    Generates misspelt strings. Should only be called during class instantiation.
 </div>
 
 
@@ -764,7 +1162,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line382">line 382</a>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line120">line 120</a>
     </li></ul></dd>
     
 
@@ -806,7 +1204,7 @@
     </dt>
     <dd>
         
-<span class="param-type"><code>boolean</code></span>
+<span class="param-type"><code>Array.&lt;string></code></span>
 
 
     </dd>
@@ -814,7 +1212,7 @@
 
 
 <div class="param-desc">
-    True if the length of the word is greater than 0
+    An array of misspelt strings
 </div>
 
     
@@ -829,14 +1227,14 @@
 
     
 
-    <h4 class="name" id="isValid"><span class="type-signature"></span>isValid<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    <h4 class="name" id="_generateStrings"><span class="type-signature"></span>_generateStrings<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;string>}</span></h4>
 
     
 
 
 
 <div class="description">
-    Check if the word is valid
+    Generates misspelt strings. Should only be called during class instantiation.
 </div>
 
 
@@ -872,7 +1270,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line382">line 382</a>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line120">line 120</a>
     </li></ul></dd>
     
 
@@ -914,7 +1312,7 @@
     </dt>
     <dd>
         
-<span class="param-type"><code>boolean</code></span>
+<span class="param-type"><code>Array.&lt;string></code></span>
 
 
     </dd>
@@ -922,7 +1320,455 @@
 
 
 <div class="param-desc">
-    True if the length of the word is greater than 0
+    An array of misspelt strings
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="_generateSuggestions"><span class="type-signature"></span>_generateSuggestions<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="global.html#Suggestions">Suggestions</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Generates a Suggestions object. Should only be called during class instantiation.
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line155">line 155</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code><a href="global.html#Suggestions">Suggestions</a></code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    A Suggestions object
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="_generateSuggestions"><span class="type-signature"></span>_generateSuggestions<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="global.html#Suggestions">Suggestions</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Generates a Suggestions object. Should only be called during class instantiation.
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line155">line 155</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code><a href="global.html#Suggestions">Suggestions</a></code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    A Suggestions object
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="_generateWords"><span class="type-signature"></span>_generateWords<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;<a href="Word.html">Word</a>>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Generates array of misspelt Words by checking the spelling of each bit of cleaned text.
+Should only be called during class instantiation.
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line131">line 131</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="Word.html">Word</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>Array.&lt;<a href="Word.html">Word</a>></code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    An array of misspelt Words
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="_generateWords"><span class="type-signature"></span>_generateWords<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;<a href="Word.html">Word</a>>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Generates array of misspelt Words by checking the spelling of each bit of cleaned text.
+Should only be called during class instantiation.
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line131">line 131</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="Word.html">Word</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>Array.&lt;<a href="Word.html">Word</a>></code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    An array of misspelt Words
 </div>
 
     
@@ -949,7 +1795,7 @@
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Thu Jul 16 2020 15:12:57 GMT+0000 (Coordinated Universal Time) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Thu Jul 16 2020 15:16:03 GMT+0000 (Coordinated Universal Time) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
