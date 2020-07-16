@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>User - Documentation</title>
+    <title>Word - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">User</h1>
+    <h1 class="page-title">Word</h1>
     
 
     
@@ -42,10 +42,11 @@
 <header>
     
         <h2>
-        User
+        Word
         </h2>
         
-            <div class="class-description">Class representing a user. A User has dictionaries, spelling instances, and custom/own words.</div>
+            <div class="class-description">A Word is an iterable class that contains some text, its length, and relative word boundaries.
+ Iterating over a Word will yield the word itself followed by the start and then end values.</div>
         
     
 </header>
@@ -60,14 +61,14 @@
     <h2>Constructor</h2>
     
 
-    <h4 class="name" id="User"><span class="type-signature"></span>new User<span class="signature">(dictionaries, languages, ownWords)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Word"><span class="type-signature"></span>new Word<span class="signature">(word, start, end)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Create a User
+    Create a Word
 </div>
 
 
@@ -103,7 +104,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line236">line 236</a>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line370">line 370</a>
     </li></ul></dd>
     
 
@@ -147,13 +148,13 @@
 
         <tr>
             
-                <td class="name"><code>dictionaries</code></td>
+                <td class="name"><code>word</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><code>Array.&lt;<a href="global.html#Dictionary">Dictionary</a>></code></span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -164,7 +165,7 @@
             
 
             <td class="description last">
-                array of Dictionary objects
+                the string we will be using to create the Word
                 
             </td>
         </tr>
@@ -173,13 +174,13 @@
 
         <tr>
             
-                <td class="name"><code>languages</code></td>
+                <td class="name"><code>start</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><code>Array.&lt;string></code></span>
+<span class="param-type"><code>number</code></span>
 
 
             
@@ -190,7 +191,7 @@
             
 
             <td class="description last">
-                array of five digit language codes
+                the beginning of the word relative to the content it was created from
                 
             </td>
         </tr>
@@ -199,13 +200,13 @@
 
         <tr>
             
-                <td class="name"><code>ownWords</code></td>
+                <td class="name"><code>end</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><code>Array.&lt;string></code></span>
+<span class="param-type"><code>number</code></span>
 
 
             
@@ -216,7 +217,7 @@
             
 
             <td class="description last">
-                array of misspelt words
+                the end of the word relative to the content it was created from
                 
             </td>
         </tr>
@@ -255,209 +256,6 @@
     
 
     
-        <h3 class="subsection-title">Members</h3>
-
-        
-            
-<div class="section-members">
-<h4 class="name" id="dicts"><span class="type-signature"></span>dicts<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    Gets the user's dictionaries
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line247">line 247</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-</div>
-
-        
-            
-<div class="section-members">
-<h4 class="name" id="langs"><span class="type-signature"></span>langs<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    Gets the user's languages. These are ordered by language preference.
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line255">line 255</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-</div>
-
-        
-            
-<div class="section-members">
-<h4 class="name" id="spellers"><span class="type-signature"></span>spellers<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    Gets the user's spelling (nspell) instances
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line264">line 264</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="https://github.com/wooorm/nspell#table-of-contents">NSpell</a></li>
-        </ul>
-    </dd>
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-</div>
-
-        
-    
 
     
         <h3 class="subsection-title">Methods</h3>
@@ -468,14 +266,14 @@
 
     
 
-    <h4 class="name" id="addWord"><span class="type-signature"></span>addWord<span class="signature">(word)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="isValid"><span class="type-signature"></span>isValid<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
 
     
 
 
 
 <div class="description">
-    Adds a word to user's custom/own words and updates existing spellchecker instances
+    Check if the word is valid
 </div>
 
 
@@ -511,7 +309,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line310">line 310</a>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line382">line 382</a>
     </li></ul></dd>
     
 
@@ -528,200 +326,6 @@
 
 
 
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>word</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                word string to be added
-                
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</div>
-        
-            
-<div class="section-method">
-
-    
-
-    <h4 class="name" id="getPreferredLanguage"><span class="type-signature"></span>getPreferredLanguage<span class="signature">(contentLanguage)</span><span class="type-signature"> &rarr; {string}</span></h4>
-
-    
-
-
-
-<div class="description">
-    Gets the user's preferred (or default) language when spell checking content
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line274">line 274</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/i18n/LanguageCode">Language Code</a></li>
-        </ul>
-    </dd>
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>contentLanguage</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                two character length locale i.e. 'de' or 'en'
-                
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -747,7 +351,7 @@
     </dt>
     <dd>
         
-<span class="param-type"><code>string</code></span>
+<span class="param-type"><code>boolean</code></span>
 
 
     </dd>
@@ -755,281 +359,11 @@
 
 
 <div class="param-desc">
-    - a five character length language code i.e. 'en-au' or 'de-de'
+    True if the length of the word is greater than 0
 </div>
 
     
 </div>
-
-
-
-</div>
-        
-            
-<div class="section-method">
-
-    
-
-    <h4 class="name" id="removeWord"><span class="type-signature"></span>removeWord<span class="signature">(word)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    Removes a word from user's custom/own words and updates existing spellchecker instances
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line328">line 328</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>word</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                word string to be removed
-                
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</div>
-        
-            
-<div class="section-method">
-
-    
-
-    <h4 class="name" id="setPreferredLanguageOrder"><span class="type-signature"></span>setPreferredLanguageOrder<span class="signature">(languages)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    Sets the preferred language order of a user based on a sorted array of languages
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line289">line 289</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>languages</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>Array.&lt;string></code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                array of language codes i.e. ['de-de', 'en-au']
-                
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1052,7 +386,7 @@
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Thu Jul 16 2020 16:01:00 GMT+0000 (Coordinated Universal Time) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Thu Jul 16 2020 16:07:07 GMT+0000 (Coordinated Universal Time) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>

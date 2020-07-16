@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>SuggestionTracker - Documentation</title>
+    <title>CustomWordList - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">SuggestionTracker</h1>
+    <h1 class="page-title">CustomWordList</h1>
     
 
     
@@ -42,11 +42,12 @@
 <header>
     
         <h2>
-        SuggestionTracker
+        CustomWordList
         </h2>
         
-            <div class="class-description">Class representing a list of suggestions for a misspelt word. It will keep track of which
-suggestion is currently being shown to the user.</div>
+            <div class="class-description">Class representing a list of custom words. A CustomWordList is a dummy class that helps to
+iterate over and perform operations on the user's custom words which are loaded from browser
+storage.</div>
         
     
 </header>
@@ -61,14 +62,14 @@ suggestion is currently being shown to the user.</div>
     <h2>Constructor</h2>
     
 
-    <h4 class="name" id="SuggestionTracker"><span class="type-signature"></span>new SuggestionTracker<span class="signature">(suggestions)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="CustomWordList"><span class="type-signature"></span>new CustomWordList<span class="signature">(wordList, locale)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Create a SuggestionTracker
+    Create a CustomWordList. Words are sorted alphabetically using the provided locale on creation
 </div>
 
 
@@ -104,7 +105,7 @@ suggestion is currently being shown to the user.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line183">line 183</a>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line15">line 15</a>
     </li></ul></dd>
     
 
@@ -148,12 +149,15 @@ suggestion is currently being shown to the user.</div>
 
         <tr>
             
-                <td class="name"><code>suggestions</code></td>
+                <td class="name"><code>wordList</code></td>
             
 
             <td class="type">
             
                 
+<span class="param-type"><code><a href="global.html#WordList">WordList</a></code></span>
+|
+
 <span class="param-type"><code>Array.&lt;string></code></span>
 
 
@@ -165,7 +169,33 @@ suggestion is currently being shown to the user.</div>
             
 
             <td class="description last">
-                array of suggestion strings
+                an array of custom words or object of words and languages
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>locale</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                the locale (i.e. 'en' or 'de') used to sort the custom words
                 
             </td>
         </tr>
@@ -209,13 +239,13 @@ suggestion is currently being shown to the user.</div>
         
             
 <div class="section-members">
-<h4 class="name" id="currentSuggestion"><span class="type-signature"></span>currentSuggestion<span class="type-signature"></span></h4>
+<h4 class="name" id="wordList"><span class="type-signature"></span>wordList<span class="type-signature"></span></h4>
 
 
 
 
 <div class="description">
-    Get the currently shown/inlined suggestion
+    Get an unsorted wordList object that includes each word and the languages it is misspelt in
 </div>
 
 
@@ -251,7 +281,71 @@ suggestion is currently being shown to the user.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line193">line 193</a>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line55">line 55</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+</div>
+
+        
+            
+<div class="section-members">
+<h4 class="name" id="words"><span class="type-signature"></span>words<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    Get all custom words
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line46">line 46</a>
     </li></ul></dd>
     
 
@@ -282,14 +376,14 @@ suggestion is currently being shown to the user.</div>
 
     
 
-    <h4 class="name" id="cycle"><span class="type-signature"></span>cycle<span class="signature">(direction)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="add"><span class="type-signature"></span>add<span class="signature">(word, languages)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Cycle through suggestions in a given direction
+    Adds a word to the CustomWordList. Note that adding a word does not call sort().
 </div>
 
 
@@ -325,7 +419,7 @@ suggestion is currently being shown to the user.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line202">line 202</a>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line26">line 26</a>
     </li></ul></dd>
     
 
@@ -369,7 +463,7 @@ suggestion is currently being shown to the user.</div>
 
         <tr>
             
-                <td class="name"><code>direction</code></td>
+                <td class="name"><code>word</code></td>
             
 
             <td class="type">
@@ -386,7 +480,303 @@ suggestion is currently being shown to the user.</div>
             
 
             <td class="description last">
-                either 'up' or 'down'
+                word to add
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>languages</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Array.&lt;string></code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                the languages the word the word is misspelt in
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="remove"><span class="type-signature"></span>remove<span class="signature">(word)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Removes a word from the CustomWordList
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line36">line 36</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>word</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                word to be remove
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="sort"><span class="type-signature"></span>sort<span class="signature">(locale)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Sort all custom words alphabetically based on a specific locale
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line64">line 64</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>locale</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                a two character length language string (i.e. 'de' or 'es')
                 
             </td>
         </tr>
@@ -429,7 +819,7 @@ suggestion is currently being shown to the user.</div>
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Thu Jul 16 2020 16:01:00 GMT+0000 (Coordinated Universal Time) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Thu Jul 16 2020 16:07:07 GMT+0000 (Coordinated Universal Time) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
