@@ -1,9 +1,10 @@
-Welcome to Multidict, your friendly neighbourhood open source language detecting spellchecker. You
-can download me directly from the Firefox add-ons store [here][3].
+Welcome to Multidict, your friendly neighbourhood open source language detecting spellchecker.
 
-## Developer Docs
+Looking for the [user docs][2]?
 
-The developer docs are built using JSDOC. The user docs are located [here][2].
+## Downloading
+
+You can download me directly from the Firefox add-ons store [here][3].
 
 ## Installing
 
