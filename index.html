@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Multidict by GrayedFox</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Multidict</h1>
+      <h2 class="project-tagline">Because spell checking should be smart, not difficult.</h2>
+      <a href="https://github.com/GrayedFox/multidict" class="btn">View on GitHub</a>
+      <a href="https://github.com/GrayedFox/multidict/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/GrayedFox/multidict/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="multidict" class="anchor" href="#multidict" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>multidict</h1>
+<p>is an open source multilingual language detecting spellchecker.</p>
+<p>Supported languages are based on the dictionaries used for spell checking in Chrome, Firefox,
+LibreOffice, OpenOffice, and many more apps that rely on the Hunspell spell checker.</p>
+<h2>
+<a id="table-of-contents" class="anchor" href="#table-of-contents" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Table of Contents</h2>
+<ul>
+<li><a href="#feature-list">Feature List</a></li>
+<li><a href="#supported-languages">Supported Languages</a></li>
+<li>
+<a href="#usage">Usage</a>
+<ul>
+<li><a href="#keyboard-shortcuts">Keyboard Shortcuts</a></li>
+<li><a href="#enabling-multiple-language-spell-checking">Enabling Multiple Language Spellchecking</a></li>
+<li><a href="#i-want-a-different-lightsaber">I Want A Different Lightsaber (Highlight Colour)!</a></li>
+<li><a href="#disabling-the-built-in-spellchecker">Disabling The Built In Spellchecker</a></li>
+<li><a href="#limiting-word-suggestions">Limiting Word Suggestions</a></li>
+<li><a href="#spell-checking-language-preference">Spell Checking Language Preference</a></li>
+</ul>
+</li>
+<li>
+<a href="#frequently-asked-questions">FAQ</a>
+<ul>
+<li><a href="#where-are-the-suggestions">Where Are The Suggestions?</a></li>
+</ul>
+</li>
+<li><a href="#privacy-policy">Privacy Policy</a></li>
+<li><a href="#contact-details">Contact Details</a></li>
+<li><a href="#credits">Credits</a></li>
+</ul>
+<h2>
+<a id="feature-list" class="anchor" href="#feature-list" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Feature List</h2>
+<p>Multidict ships with these nifty features:</p>
+<ul>
+<li>choose your own lightsaber! Highlights will appear in whatever colour you think most fits your
+personality/mood/unicorn mojo</li>
+<li>personal dictionary shared across all languages: if shizzle is a word for you in English, one
+assumes you probably annoy your friends with it in German too (my nizzle)</li>
+<li>drag and drop languages inside the language bar to set your primary/default language and spell
+check language order</li>
+<li>easily view and manage all custom words: you can view any word added to your personal dictionary
+in the Multidict sidebar any time you please</li>
+<li>proximity based suggestions! suggestions are ordered based on how "close" they are to the misspelt
+word</li>
+<li>get inline spelling suggestions and navigate through them with alt+shift up or alt+shift down</li>
+<li>cancel choosing a spelling suggestion by navigating away with alt+shift left or alt+shift right</li>
+<li>easily add or remove a word from your personal dictionary using the sidebar, a context menu, or
+by pressing alt+shift+a (for add) or alt+shift+d (for delete)</li>
+<li>never have to switch between languages again! All text areas will detect whatever language you
+are writing in and apply spell checking based on your preferred language list</li>
+<li>synced storage means your preferences and personal dictionary persist across all of your devices</li>
+<li>word suggestions will match the font and style of whatever text area you are editing, because
+having 7 different fonts and sizes on any given website is criminal enough</li>
+</ul>
+<p><img src="media/demo/demo-multidict.gif?raw=true" alt="Multidict in action!" title="Multidict"></p>
+<h2>
+<a id="supported-languages" class="anchor" href="#supported-languages" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Supported Languages</h2>
+<ul>
+<li>American English (en-us)</li>
+<li>Australian English (en-au)</li>
+<li>British English (en-gb)</li>
+<li>French (fr-fr)</li>
+<li>German (de-de)</li>
+<li>Polish (pl-pl)</li>
+<li>Romanian (ro-ro)</li>
+<li>Russian (ru-ru)</li>
+<li>Spanish (es-es)</li>
+</ul>
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
+<p>You don't need to configure anything if you don't want to: Multidict will detect whatever languages
+and dictionaries you have already added via the add-ons store and spell check content based on those
+languages, so long as you have <a href="https://support.mozilla.org/en-US/kb/choose-display-languages-multilingual-web-pages">added those languages as a preferred display language</a>.</p>
+<p>If it doesn't find all the languages you currently use you can easily manage which languages are
+used via the <a href="#enabling-multiple-language-spell-checking">Multidict settings panel</a>.</p>
+<p>If you're like me and prefer to use your keyboard over your mouse, check out the shortcuts section
+below.</p>
+<h3>
+<a id="keyboard-shortcuts" class="anchor" href="#keyboard-shortcuts" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Keyboard Shortcuts</h3>
+<p>All of the keyboard shortcuts require alt and shift to be pressed. This is to prevent accidental
+word insertions or dictionary edits. Some of these keyboard shortcuts are configurable, others may
+become so in the future (let's see!). Defaults:</p>
+<ul>
+<li>ALT+SHIFT+A: add a word to your personal dictionary</li>
+<li>ALT+SHIFT+D: delete a word from your personal dictionary</li>
+<li>ALT+SHIFT+UP: cycle up through word suggestions</li>
+<li>ALT+SHIFT+DOWN: cycle down through word suggestions</li>
+<li>ALT+SHIFT+LEFT: cancel cycling through words without choosing a word suggestion</li>
+<li>ALT+SHIFT+RIGHT: same behaviour as left, this will cancel suggestions without choosing one</li>
+</ul>
+<blockquote>
+<p>Note: you can, if you so choose, change the shortcuts for adding and removing words from your
+personal dictionary from the main settings of the add-on:</p>
+</blockquote>
+<ol>
+<li>Click the Firefox burger menu button</li>
+<li>Click <code>Add-ons</code> and then select <code>Extensions</code> (if the extensions view is not already open)</li>
+<li>To the right of Manage your Extensions is a cogwheel/settings icon. Click is and choose
+<code>Manage Extension Shortcuts</code>
+</li>
+<li>You should now see Multidict and any other add-on shortcut options listed</li>
+<li>Click inside the text box that lists the current short cut combination to start recording the
+shortcut combination you would like to use.</li>
+</ol>
+<h3>
+<a id="enabling-multiple-language-spell-checking" class="anchor" href="#enabling-multiple-language-spell-checking" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Enabling Multiple Language Spell Checking</h3>
+<p>To enable spell checking for multiple languages:</p>
+<ol>
+<li>Click the Multidict icon located at the top right of the browser window nearby all those other
+pesky extensions</li>
+<li>Click the <code>Languages</code> menu</li>
+<li>Check any languages you desire spell checking in</li>
+</ol>
+<blockquote>
+<p>Note that you will need to restart your browser to add/remove support for languages.</p>
+</blockquote>
+<h3>
+<a id="i-want-a-different-lightsaber" class="anchor" href="#i-want-a-different-lightsaber" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>I Want A Different Lightsaber!</h3>
+<p>To change the highlights used for marking misspelt words:</p>
+<ol>
+<li>Click the Multidict icon located at the top right of the browser window nearby all those other
+pesky extensions</li>
+<li>Click the <code>Choose highlight colour</code> button</li>
+<li>Choose your colour.</li>
+</ol>
+<p>Note: you will also get a preview of what the highlight colour looks like in any text area that
+already has misspelt words.</p>
+<h3>
+<a id="disabling-the-built-in-spellchecker" class="anchor" href="#disabling-the-built-in-spellchecker" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Disabling The Built In Spellchecker</h3>
+<p>The spell checking from this extension is only applied to text areas so at the moment Gmail and
+other rich text editors will still use the built in spell checking that comes bundled with the
+browser. In order not to get overlaps between Mulidict and Firefox for text areas, you can opt into
+disabling the built in spell checking for text areas in the Multidict settings panel:</p>
+<ol>
+<li>Click the Multidict icon located at the top right of the browser window nearby all those other
+pesky extensions</li>
+<li>Click the <code>Options</code> menu</li>
+<li>Make sure <code>Disable duplicate spell checking</code> is checked</li>
+</ol>
+<p>You don't need to restart your browser but you will need to refresh any already open pages to
+disable the browsers built in spellchecking for text areas.</p>
+<h3>
+<a id="limiting-word-suggestions" class="anchor" href="#limiting-word-suggestions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Limiting Word Suggestions</h3>
+<p>The default maximum number of suggestions shown for any one word is 6. You can change this value in
+the Options sub-menu in the Multidict settings panel:</p>
+<ol>
+<li>Click the Multidict icon located at the top right of the browser window nearby all those other
+pesky extensions</li>
+<li>Click the <code>Options</code> menu</li>
+<li>Use the slider and drag it between 0 or 10+ (unlimited) suggestions.</li>
+</ol>
+<blockquote>
+<p>Note that setting the suggestions limit to 0 will disable suggestions entirely.</p>
+</blockquote>
+<h3>
+<a id="spell-checking-language-preference" class="anchor" href="#spell-checking-language-preference" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Spell Checking Language Preference</h3>
+<p>The extension will detect which language is being used inside text areas on the page and try to
+match that to one of your preferred languages. If it can't find a match or cannot reliably detect
+the language it will default to spell checking in your primary preferred language.</p>
+<p>Let's take a look at a slightly complex example and go through it step by step:</p>
+<ol>
+<li>
+<p>You enable the Australian English (en-au), American English (en-us), and German (de-de) languages
+in your preferred languages list via the Multidict settings panel in that order</p>
+</li>
+<li>
+<p>You write the sentence 'Ich leibe mein Leben' inside a textarea</p>
+</li>
+</ol>
+<ul>
+<li>multidict will detect the language as German (de) and attempt to match it like so: de-au</li>
+<li>no match is found, so the next language in your preferred language list is checked: de-us</li>
+<li>no match is found, so the next language in your preferred language list is checked: de-de</li>
+<li>a match with a preferred language is found which matches the detected content language, so
+Multidict will use the German dictionary to spell check and offer suggestions for <code>leibe</code>
+(which should be spelt <code>liebe</code>)</li>
+</ul>
+<ol start="3">
+<li>You write the text "Such beautiful colours! Colorful days are great!" inside a text area</li>
+</ol>
+<ul>
+<li>Multidict will detect the language as English (en) and attempt to match it like so: en-au</li>
+<li>a match with a preferred language is found which matches the subject text field language</li>
+<li>because Australian English has a higher preference than American English according to your
+preferences, Multidict will use Australian English to spell check, and offer suggestions for
+<code>Colorful</code> (which is misspelt in Australian English and missing a "u")</li>
+</ul>
+<p>This way you can use multiple dictionaries on the same page/tab without changing any preferences or
+using any hotkeys. It is especially useful if you are used to rapidly switching between contexts and
+languages in a work setting or if you are simply doing your best to learn a new language, as I am.</p>
+<blockquote>
+<p>Note: your first specified language is also your default language and is used when no matches
+can be found. Thus if you are editing content in French and (for whatever reason) French is not in
+your supported languages list, in the above example, spell checking would be done against Australian
+English.</p>
+</blockquote>
+<h2>
+<a id="frequently-asked-questions" class="anchor" href="#frequently-asked-questions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Frequently Asked Questions</h2>
+<p>Currently just one, watch this space.</p>
+<h3>
+<a id="where-are-the-suggestions" class="anchor" href="#where-are-the-suggestions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Where Are The Suggestions?</h3>
+<p>The suggestions list for any given word is hidden from the user. While this might seem like an odd
+choice for a spellchecker plugin, there are good reasons for it: one is that cycling each suggestion
+is faster than opening a list, scanning it for the right word, and then selecting that word with
+your mouse. The other is because each suggestion is ordered based on it's proximity to the misspelt
+word. That means that by cycling <strong>UP</strong> through the suggestions, the user will naturally cycle
+through words that are more likely to be what the user intended with as few as one or two key
+presses.</p>
+<p>To illustrate let's take a step-by-step look at what happens when a user makes a common misspelling
+and inputs "releived":</p>
+<ol>
+<li>
+<p>The user sees the word "releived" highlighted</p>
+</li>
+<li>
+<p>Multidict creates a list with the following words, in ascending order from bottom to top:</p>
+<ul>
+<li>relived  (3rd and final suggestion, user sees this if pressing alt+shift+up 3 times)</li>
+<li>relieved (2nd suggestion, user sees this if pressing alt+shift+up 2 times)</li>
+<li>received (1st suggestion, user will immediately see this upon pressing alt+shift+up 1 times)</li>
+</ul>
+</li>
+</ol>
+<p>Multidict doesn't always get things right: sometimes the suggestion you want will not be in 1st
+place, but it will rarely, if ever, be at the last place (and especially when there is a longer list
+of suggestions).</p>
+<h2>
+<a id="privacy-policy" class="anchor" href="#privacy-policy" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Privacy Policy</h2>
+<p><em>No information is</em> <em><strong>ever</strong></em> <em>collected by this add-on or sent to any 3rd party.</em></p>
+<p>This extension doesn't track, spy, collect, or record information about you or your browser or your
+"session" in any way, shape, or form. Everything you write - from the language you write in to the
+words and phrases you employ - is between you and whoever else you are writing to (and quite
+possibly the website/service/product you are using).</p>
+<p>This extension uses the native Firefox <a href="https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/i18n/detectLanguage">detect language</a> feature which is a JavaScript wrapper
+around the Compact Language Detector software <a href="https://github.com/CLD2Owners/cld2">CLD2</a> and I cannot say for sure that when calling
+this method, Firefox isn't collecting data about the usage of this part of their extension API.</p>
+<p>I can say that there doesn't seem to be any requests being made inside the Network tab of the
+developer tools when calling this function and that Mozilla has a very to-the-point, down-to-earth
+<a href="https://www.mozilla.org/en-US/privacy/faq/">privacy policy</a> which details their philosophy and approach to data collection which clearly
+states that <em>"Mozilla doesn’t sell data about you, and we don’t buy data about you."</em></p>
+<p>Firefox is open source software which makes them a damn sight more trustworthy and accountable than
+most other companies (and certainly most other browsers) out in the wild. If you have the skills and
+time you could also poke around their code base yourself just to make absolutely sure they are only
+collecting information about your browsing habits in the way the say they do - in fact they
+<em>"...make our documentation public so that anyone can verify what we say is true, tell us if we need
+to improve, and have confidence that we aren’t hiding anything."</em></p>
+<p>It should be noted that while this extension doesn't collect any data, it <strong>doesn't prevent websites
+like Facebook, or malicious actors, from collecting, selling, and storing such information.</strong></p>
+<p>There's a good chance that what you write is being tracked in some way by the website or service you
+are using and there may be legitimate use cases for this. If privacy is a top concern of yours then
+don't use products from companies you don't trust: if you wouldn't trust some random stranger with
+your address, real time location, email address, age, date of birth, and other "information that
+said stranger finds useful" (and especially if they said "oh no I promise it's only for me, and my
+friends, and the friends of my friends") it makes absolutely no sense to give your information to a
+company run by shady people you've never met that profit off of using and sharing your data with
+their friends and the friends of their friends so they can target you in some way.</p>
+<h2>
+<a id="contact-details" class="anchor" href="#contact-details" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Contact Details</h2>
+<p>For bug reports and feature requests use the GitHub issue tracker, to enquire about something else
+send an email to <a href="mailto:che.fisher+multidict@gmail.com">che.fisher+mutidict@gmail.com</a></p>
+<h2>
+<a id="credits" class="anchor" href="#credits" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Credits</h2>
+<ul>
+<li>Dictionaries collected by <a href="https://github.com/wooorm">Titus Wormer</a> and available for download <a href="https://github.com/wooorm/dictionaries">here</a>
+</li>
+<li>Icons by <a href="https://www.flaticon.com/authors/smashicons">SmashIcons</a>, taken from <a href="https://www.flaticon.com/">Flaticon.com</a>
+</li>
+<li>Spellchecking powered by <a href="https://github.com/wooorm/nspell">NSpell</a>, made by Titus Wormer, the brains behind the <a href="https://github.com/retextjs/retext">retext</a> NLP</li>
+<li>The <a href="https://github.com/lonekorean/highlight-within-textarea">HighlightWithinTextarea</a> jQuery plugin by Will Boyd served as the base of a much earlier
+version of the highlighter.js file. It has since been completely re-written from scratch, but
+credit where credit is due: cheers Mr. Boyd!</li>
+<li>Async forEach helper function taken from Antonio V's <a href="https://github.com/toniov/p-iteration">p-iteration</a> module</li>
+<li>Language detection thanks to Dick Sites and the kick-ass <a href="https://github.com/CLD2Owners/cld2">CLD2</a> (Compact Language Detector 2)
+software</li>
+<li>Word suggestions carousel (not in current version) made possible by the good graces of David
+DeSandro, who wrote an excellent tutorial called <a href="https://3dtransforms.desandro.com/">Introduction to CSS 3D transforms</a>. Give it
+a read, it's awesome.</li>
+<li>Mozilla and all her contributors</li>
+<li>All of you, duh!</li>
+</ul>
+<p>Thank you for using this software. Please feel free to leave a bug report or feedback via the GitHub
+<a href="https://github.com/GrayedFox/multidict/issues">issue tracker</a> or send me an email if you prefer (contact details above) :)</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/GrayedFox/multidict">Multidict</a> is maintained by <a href="https://github.com/GrayedFox">GrayedFox</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
