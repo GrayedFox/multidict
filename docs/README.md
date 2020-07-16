@@ -5,6 +5,8 @@ is an open source multilingual language detecting spellchecker.
 Supported languages are based on the dictionaries used for spell checking in Chrome, Firefox,
 LibreOffice, OpenOffice, and many more apps that rely on the Hunspell spell checker.
 
+Looking for the [developer docs](./devdocs/index.html)?
+
 ## Table of Contents
 
 - [Feature List](#feature-list)
