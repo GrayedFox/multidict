@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Word - Documentation</title>
+    <title>highlighter.js - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,917 +29,282 @@
 
 <div id="main">
     
-    <h1 class="page-title">Word</h1>
-    
-
-    
-
-
-
-
-<section>
-
-<header>
-    
-        <h2>
-        Word
-        </h2>
-        
-            <div class="class-description">A Word is an iterable class that contains some text, its length, and relative word boundaries.
- Iterating over a Word will yield the word itself followed by the start and then end values.</div>
-        
-    
-</header>
-
-<article>
-    <div class="container-overview">
-    
-        
-<div class="section-method">
-
-    
-    <h2>Constructor</h2>
-    
-
-    <h4 class="name" id="Word"><span class="type-signature"></span>new Word<span class="signature">(word, start, end)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    Create a Word
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line370">line 370</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>word</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                the string we will be using to create the Word
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>start</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>number</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                the beginning of the word relative to the content it was created from
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>end</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>number</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                the end of the word relative to the content it was created from
-                
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</div>
-    
-    </div>
-
-    
-
-    
-
-    
-
-     
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-<div class="section-method">
-
-    
-
-    <h4 class="name" id="isValid"><span class="type-signature"></span>isValid<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
-
-    
-
-
-
-<div class="description">
-    Check if the word is valid
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line382">line 382</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="section-returns">
-<h5>Returns:</h5>
-
-        
-
-<dl class="param-type">
-    <dt>
-        Type:
-    </dt>
-    <dd>
-        
-<span class="param-type"><code>boolean</code></span>
-
-
-    </dd>
-</dl>
-
-
-<div class="param-desc">
-    True if the length of the word is greater than 0
-</div>
-
-    
-</div>
-
-
-
-</div>
-        
-            
-<div class="section-method">
-
-    
-
-    <h4 class="name" id="isValid"><span class="type-signature"></span>isValid<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
-
-    
-
-
-
-<div class="description">
-    Check if the word is valid
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line382">line 382</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="section-returns">
-<h5>Returns:</h5>
-
-        
-
-<dl class="param-type">
-    <dt>
-        Type:
-    </dt>
-    <dd>
-        
-<span class="param-type"><code>boolean</code></span>
-
-
-    </dd>
-</dl>
-
-
-<div class="param-desc">
-    True if the length of the word is greater than 0
-</div>
-
-    
-</div>
-
-
-
-</div>
-        
-    
-
-    
-
-    
-</article>
-
-</section>
-
-
-
-
-
-
-
-<section>
-
-<header>
-    
-        <h2>
-        Word
-        </h2>
-        
-            <div class="class-description">A Word is an iterable class that contains some text, its length, and relative word boundaries.
- Iterating over a Word will yield the word itself followed by the start and then end values.</div>
-        
-    
-</header>
-
-<article>
-    <div class="container-overview">
-    
-        
-<div class="section-method">
-
-    
-    <h2>Constructor</h2>
-    
-
-    <h4 class="name" id="Word"><span class="type-signature"></span>new Word<span class="signature">(word, start, end)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    Create a Word
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line370">line 370</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>word</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                the string we will be using to create the Word
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>start</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>number</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                the beginning of the word relative to the content it was created from
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>end</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>number</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                the end of the word relative to the content it was created from
-                
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</div>
-    
-    </div>
-
-    
-
-    
-
-    
-
-     
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-<div class="section-method">
-
-    
-
-    <h4 class="name" id="isValid"><span class="type-signature"></span>isValid<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
-
-    
-
-
-
-<div class="description">
-    Check if the word is valid
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line382">line 382</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="section-returns">
-<h5>Returns:</h5>
-
-        
-
-<dl class="param-type">
-    <dt>
-        Type:
-    </dt>
-    <dd>
-        
-<span class="param-type"><code>boolean</code></span>
-
-
-    </dd>
-</dl>
-
-
-<div class="param-desc">
-    True if the length of the word is greater than 0
-</div>
-
-    
-</div>
-
-
-
-</div>
-        
-            
-<div class="section-method">
-
-    
-
-    <h4 class="name" id="isValid"><span class="type-signature"></span>isValid<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
-
-    
-
-
-
-<div class="description">
-    Check if the word is valid
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line382">line 382</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="section-returns">
-<h5>Returns:</h5>
-
-        
-
-<dl class="param-type">
-    <dt>
-        Type:
-    </dt>
-    <dd>
-        
-<span class="param-type"><code>boolean</code></span>
-
-
-    </dd>
-</dl>
-
-
-<div class="param-desc">
-    True if the length of the word is greater than 0
-</div>
-
-    
-</div>
-
-
-
-</div>
-        
-    
-
-    
-
-    
-</article>
-
-</section>
+    <h1 class="page-title">highlighter.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * The Highlighter module inserts itself into the dom behind a textarea. It expects the array of
+ * tokens to be ordered and to match the order that text appears inside the textarea. Updating the
+ * tokens or color works as expected: the highlighter will not be created anew, but will update it's
+ * innerHTML content or CSS styles to ensure each token is properly marked for highlighting.
+**/
+
+class Highlighter {
+  /**
+  * @constructor
+  * @param {array} tokens - The tokens (character sequences) to highlight
+  * @param {string} color - The RGBA, hexcode, or named CSS color string used to highlight tokens
+  * @param {node} textarea - The textarea the highlighter will be attached to
+  * @returns {node} Highlighter
+  **/
+  constructor (textarea, tokens, color, position) {
+    this.$textarea = textarea
+    this._text = textarea.value
+    this._textareaStyles = window.getComputedStyle(textarea)
+    this._tokens = tokens
+    this._color = color
+    this._handleInput = this._handleInput.bind(this)
+    this._handleScroll = this._handleScroll.bind(this)
+    this._handleStyles = this._handleStyles.bind(this)
+    this.render = this.render.bind(this)
+    this.rebuild = this.rebuild.bind(this)
+    this.destroy = this.destroy.bind(this)
+    this.$highlights = null
+    this.$highlighter = null
+
+    this._buildHighlighter()
+  }
+
+  get color () {
+    return this._color
+  }
+
+  set color (color) {
+    this._color = color
+    this._setHighlightColor()
+  }
+
+  get tokens () {
+    return this._tokens
+  }
+
+  set tokens (tokens) {
+    this._tokens = tokens
+    this.render()
+  }
+
+  // text is copied from textarea to highlighter instance during render
+  _handleInput (event) {
+    this.render()
+  }
+
+  // handle keeping highlight scroll in sync wiht textarea
+  _handleScroll (event) {
+    if (this.$textarea.scrollTop) {
+      this.$highlighter.shadowRoot.querySelector('div').scrollTop = this.$textarea.scrollTop
+    }
+  }
+
+  // copy desired styles from textarea and reflect them to highlights node
+  _handleStyles () {
+    const reflectedStyles = [
+      'border-top-width', 'border-right-width', 'border-bottom-width', 'border-left-width',
+      'border-top-style', 'border-right-style', 'border-bottom-style', 'border-left-style',
+      'font-size', 'font-family', 'font-weight', 'line-height', 'letter-spacing', 'text-align',
+      'padding-top', 'padding-right', 'padding-bottom', 'padding-left', 'box-sizing',
+      'max-height', 'min-height'
+    ]
+    const geometricStyles = ['width', 'height']
+    const offsetStyles = this._offset(this.$textarea, this.$highlighter)
+
+    // only offset top and left values for non static textareas - otherwise highlight layout breaks
+    // (tested on Stackoverflow, Github, and Bugzilla forms/comment fields)
+    if (this._textareaStyles.getPropertyValue('position') !== 'static') {
+      geometricStyles.unshift('top', 'left')
+    }
+
+    reflectedStyles.forEach(style => {
+      const value = this._textareaStyles.getPropertyValue(style)
+      this.$highlights.style[style] = value
+    })
+
+    geometricStyles.forEach(style => {
+      this.$highlights.style[style] = offsetStyles[style]
+    })
+  }
+
+  /**
+   * _offset - returns the absolute position and inner size of an element
+   *
+   * @param  {node} targetNode - The element whos absolute position we want to calculate
+   * @param  {node} offsetNode - The element whos position we offset by the targetNode
+   * @returns {object} - An object containing the size and coordinates measured in pixels
+   */
+  _offset (targetNode, offsetNode) {
+    const targetRect = targetNode.getBoundingClientRect()
+    const offsetRect = offsetNode.getBoundingClientRect()
+
+    return {
+      top: `${targetRect.top - offsetRect.top}px`,
+      left: `${targetRect.left - offsetRect.left}px`,
+      width: `${targetNode.clientWidth}px`,
+      height: `${targetNode.clientHeight}px`
+    }
+  }
+
+  /**
+   * _isWholeWord - searches the text content for an exact match of the given word from the
+   * beginning (or elsewhere) of the string. Returns false given the following inputs:
+   * _isWholeWord('Shorts and sweets', 'sweet')     -- sweet does not appear as a whole word
+   * _isWholeWord('Shorts and sweets', 'Shorts', 1) -- search begins at h so no match
+   *
+   * @param  {string} word - The sequence of characters we are testing appears as a whole word
+   * @param  {string} content - Text content to be tested with regex
+   * @param  {number} [start=0] - Optional index to begin searching content from
+   * @returns {boolean} - True if a word appears as a whole word (as of start)
+   */
+
+  // FIXME: this is bugged, may need to use isWordBoundary
+  _isWholeWord (word, content, start = 0) {
+    let begin = start
+    let end = start + word.length
+    if (content.length > (start + word.length)) end++
+    if (start > 0) begin--
+
+    const rxWordBounds = new RegExp(`\\b${word}\\b`)
+    return rxWordBounds.test(content.slice(begin, end))
+  }
+
+  // generates mark tags for each token found within the current text content
+  _generateMarks () {
+    let text = this._text
+    let searchIndex = 0
+    let done = false
+    let i = 0
+
+    while (!done) {
+      const token = this.tokens[i]
+
+      if (!token) {
+        done = true
+        continue
+      }
+
+      // continue but don't update searchIndex if we don't find current token inside remaining text
+      if (text.indexOf(token, searchIndex) === -1) {
+        i++
+        continue
+      }
+
+      searchIndex = text.indexOf(token, searchIndex)
+      if (this._isWholeWord(token, text, searchIndex)) {
+        const markup = `&lt;mark class="color">${token}&lt;/mark>`
+        const start = searchIndex
+        const end = searchIndex + token.length
+        text = text.slice(0, start) + markup + text.slice(end)
+        searchIndex += markup.length
+        i++
+      } else {
+        searchIndex += token.length
+      }
+    }
+
+    // this keeps the highlights aligned if textarea ends with a new line
+    text = text.replace(/\n$/, '\n\n')
+
+    // TODO: may have to figure out another way to do this in case Moz rejects the extension
+    this.$highlights.innerHTML = text
+  }
+
+  // this will update the currently displayed highlight color only (the original innerHTML will
+  // still reference the color used to instantiate the class)
+  _setHighlightColor () {
+    const marks = this.$highlighter.shadowRoot.querySelectorAll('mark')
+    marks.forEach(mark => { mark.style.backgroundColor = this.color })
+  }
+
+  // return the template used for building the highlighter
+  _getInnerHtmlTemplate () {
+    return `
+    &lt;style>
+    :host(div) {
+      position: absolute;
+    }
+    #highlights {
+      background: none transparent;
+      border-color: transparent;
+      color: transparent;
+      pointer-events: none;
+      position: absolute;
+      overflow: hidden;
+      white-space: pre-wrap;
+      z-index: 1;
+    }
+    mark {
+      border-radius: 0.5em;
+      background-color: ${this.color}33;
+      color: transparent;
+      opacity: 35%;
+    }
+    mark.color{
+      background-color: ${this.color};
+    }
+    &lt;/style>
+
+    &lt;div id="highlights">&lt;/div>
+    `
+  }
+
+  // attach event listeners to the textarea that we are monitoring for changes and insert
+  // highlighter into DOM, using shadow dom to style and encapsulate it
+  _buildHighlighter () {
+    this.$highlighter = document.createElement('div')
+    this.$highlighter.attachShadow({ mode: 'open' })
+    this.$highlighter.setAttribute('class', 'data-multidict-highlights')
+    this.$highlighter.shadowRoot.innerHTML = this._getInnerHtmlTemplate()
+    this.$highlights = this.$highlighter.shadowRoot.querySelector('#highlights')
+    this.$textarea.setAttribute('data-multidict-current', true)
+    this.$textarea.addEventListener('input', this._handleInput)
+    this.$textarea.addEventListener('scroll', this._handleScroll)
+    this.$textarea.insertAdjacentElement('beforebegin', this.$highlighter)
+
+    this._observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutationRecord) => {
+        this._handleStyles()
+      })
+    })
+
+    // observe all style changes of textarea
+    this._observer.observe(this.$textarea, { attributes: true, attributeFilter: ['style'] })
+
+    this.render()
+  }
+
+  destroy () {
+    this._observer.disconnect()
+    this.$textarea.removeAttribute('data-multidict-current')
+    this.$textarea.removeEventListener('input', this._handleInput)
+    this.$textarea.removeEventListener('scroll', this._handleScroll)
+    this.$highlighter.remove()
+  }
+
+  // rebuild the innerHTML content of the highlighter (for when color is out of sync)
+  rebuild () {
+    this.$highlighter.shadowRoot.innerHTML = this._getInnerHtmlTemplate()
+    this.$highlights = this.$highlighter.shadowRoot.querySelector('#highlights')
+    this.render()
+  }
+
+  // renders the highlighter in full (generates marks, sets highlight color)
+  render () {
+    this._text = this.$textarea.value
+    this._handleStyles()
+    this._generateMarks()
+    this._handleScroll()
+  }
+}
+
+module.exports = { Highlighter }
+</code></pre>
+        </article>
+    </section>
 
 
 
@@ -949,7 +314,7 @@
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Thu Jul 16 2020 14:02:30 GMT+0000 (Coordinated Universal Time) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Thu Jul 16 2020 14:21:47 GMT+0000 (Coordinated Universal Time) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
