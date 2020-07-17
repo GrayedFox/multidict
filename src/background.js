@@ -1,5 +1,5 @@
 const { CustomWordList, User, Spelling } = require('./classes')
-const { createMenuItems, getDefaultLanguages, loadDictionaries, prepareLanguages } = require('./helpers')
+const { createMenuItems, getDefaultLanguages, loadDictionaries, notify, prepareLanguages } = require('./helpers')
 const { cleanWord } = require('./text-methods')
 
 const DEBUG = false
@@ -46,13 +46,11 @@ function api (message, sender) {
     case 'addCustomWord':
       addCustomWord(cleanWord(message.word)).then(() => {
         respond(sender, { type: 'recheck' }, 'refresh')
-        if (sidebarPort) sidebarPort.postMessage({ type: 'addedWord', content: customWords.words })
       })
       break
     case 'removeCustomWord':
       removeCustomWord(cleanWord(message.word)).then(() => {
         respond(sender, { type: 'recheck' }, 'refresh')
-        if (sidebarPort) sidebarPort.postMessage({ type: 'removedWord', content: customWords.words })
       })
       break
     case 'getCustomWords':
@@ -180,6 +178,8 @@ async function addCustomWord (word) {
     customWords.remove(word)
   } else {
     user.addWord(word)
+    if (sidebarPort) sidebarPort.postMessage({ type: 'addedWord', content: word })
+    notify('Word Added', `Added word "${word}" to custom words`)
   }
 }
 
@@ -197,6 +197,8 @@ async function removeCustomWord (word) {
     customWords.add(word, customLanguages)
   } else {
     user.removeWord(word)
+    if (sidebarPort) sidebarPort.postMessage({ type: 'removedWord', content: word })
+    notify('Word Removed', `Removed word "${word}" from custom words`)
   }
 }
 

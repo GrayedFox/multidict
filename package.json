@@ -4,7 +4,7 @@
   "description": "Spell check in multiple languages with this Firefox addon",
   "main": "src/background.js",
   "scripts": {
-    "build": "bash build.sh",
+    "build": "bash tasks/build.sh",
     "docs": "node_modules/jsdoc/jsdoc.js -c jsdoc-config.json --pedantic",
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",

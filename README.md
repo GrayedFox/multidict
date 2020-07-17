@@ -33,6 +33,12 @@ This will build files using web-ext build and package all source files into dist
 Make sure to bump version numbers inside package.json and manifest.json so that previous release zip
 file is not overwritten.
 
+## Updating dictionaries
+
+`npm run update-dicts`
+
+This will download all the latest available dictionaries from [wooorm dictionaries][1].
+
 ## Dependencies
 
 The app depends on [nspell][0], a JavaScript implementation of Hunspell, to provide spell checking.

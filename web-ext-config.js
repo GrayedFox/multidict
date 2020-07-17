@@ -9,6 +9,9 @@ module.exports = {
       'about:debugging',
       'about:preferences',
       'file:///home/grayedfox/github/multidict/test_page/test-page.html',
+      'https://grayedfox.github.io/multidict/',
+      'https://grayedfox.github.io/multidict/devdocs/index.html',
+      'https://addons.mozilla.org/en-US/firefox/addon/multidict/?src=search',
       'https://stackoverflow.com/questions/62222185/highlight-specific-occurrence-of-word-in-text/62223803#62223803',
       'https://github.com/GrayedFox/multidict/pull/31',
       'https://bugzilla.mozilla.org/show_bug.cgi?id=1644692'
