@@ -5,8 +5,8 @@
   "homepage_url": "https://github.com/GrayedFox/multi-dict",
   "version": "1.0.4",
   "icons": {
-    "48": "media/icons/icon-64.png",
-    "96": "media/icons/icon-128.png"
+    "48": "media/icons/icon-48.png",
+    "96": "media/icons/icon-96.png"
   },
 
   "background": {

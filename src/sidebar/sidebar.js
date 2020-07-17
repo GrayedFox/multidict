@@ -1,7 +1,7 @@
 const messageHandler = browser.runtime.connect({ name: 'popup' })
 
 const optionLabels = {
-  disableNativeSpellcheck: 'Disable native spell checking'
+  disableNativeSpellcheck: 'Disable native spellcheck'
 }
 
 const languageLabels = {
@@ -86,14 +86,19 @@ function api (message) {
 
 // generate checkboxes inside a given list based on labels and set value and checked to false
 function generateListOptions (list, labels) {
+  const fragment = new DocumentFragment()
   const label = document.createElement('label')
   const input = document.createElement('input')
-  const fragment = new DocumentFragment()
-  const listLinkItem = '<li class="draggable" draggable="true"><a href="#"></a></li>'
-
-  input.type = 'checkbox'
+  const listLinkItem = document.createElement('li')
+  const link = document.createElement('a')
 
   let child
+
+  link.setAttribute('href', '#')
+  listLinkItem.classList.add('draggable')
+  listLinkItem.setAttribute('draggable', true)
+  listLinkItem.appendChild(link)
+  input.type = 'checkbox'
 
   for (const [key, value] of Object.entries(labels)) {
     input.id = key
@@ -103,7 +108,7 @@ function generateListOptions (list, labels) {
     label.textContent = value
     label.setAttribute('for', key)
     label.appendChild(input)
-    fragment.appendChild(htmlToNodes(listLinkItem)[0])
+    fragment.appendChild(listLinkItem.cloneNode(true))
     child = fragment.lastChild
     if (list === languagesOptionsList) addDragAndDropEvents(child)
     child.appendChild(label.cloneNode(true))
@@ -145,12 +150,19 @@ function populateListOptions (list, options) {
 
 // populate personal dictionary list with custom words
 function populateUserDictionaryList (customWords) {
-  const listLinkItem = '<li><a href="#"></a></li>'
-  while (wordsList.firstChild) { wordsList.removeChild(wordsList.firstChild) }
   const fragment = new DocumentFragment()
+  const listLinkItem = document.createElement('li')
+  const link = document.createElement('a')
+
   let child
+
+  link.setAttribute('href', '#')
+  listLinkItem.appendChild(link)
+
+  while (wordsList.firstChild) { wordsList.removeChild(wordsList.firstChild) }
+
   customWords.forEach(word => {
-    fragment.append(htmlToNodes(listLinkItem)[0])
+    fragment.append(listLinkItem.cloneNode(true))
     child = fragment.lastChild
     child.textContent = word
   })
@@ -329,14 +341,6 @@ function hideListItems (list) {
   }
   list.removeAttribute('visible')
   list.parentNode.querySelector('.arrow').textContent = '▶'
-}
-
-// create nodes from valid HTML strings
-function htmlToNodes (htmlString) {
-  const temp = document.createElement('template')
-  htmlString = htmlString.trim()
-  temp.innerHTML = htmlString
-  return temp.content.childNodes
 }
 
 init()
