@@ -1,3 +1,5 @@
+const { notify } = require('../helpers')
+
 const messageHandler = browser.runtime.connect({ name: 'popup' })
 
 const optionLabels = {
@@ -59,13 +61,14 @@ function init () {
 function api (message) {
   switch (message.type) {
     case 'addedWord':
+      addWord(message.content)
+      break
     case 'removedWord':
-      populateUserDictionaryList(message.content)
-      showListItems(wordsList)
+      removeWord(message.content)
       break
     case 'gotCustomWords':
       populateUserDictionaryList(message.content)
-      hideListItems(wordsList)
+      // hideListItems(wordsList)
       break
     case 'gotLanguages':
       populateListOptions(languagesOptionsList, message.content)
@@ -131,6 +134,28 @@ const setColorValue = color => {
   colorPicker.setAttribute('value', highlightColor)
 }
 
+// ಠಿ_ಠ
+const addWord = word => {
+  const listLinkItem = document.createElement('li')
+  const link = document.createElement('a')
+  link.setAttribute('href', '#')
+  listLinkItem.appendChild(link)
+  listLinkItem.setAttribute('word', word)
+  listLinkItem.textContent = word
+  if (listOpen(wordsList)) listLinkItem.style.display = 'list-item'
+  wordsList.append(listLinkItem)
+}
+
+const removeWord = word => {
+  const wordNode = document.querySelector(`li[word="${word}"]`)
+  wordsList.removeChild(wordNode)
+}
+
+// (ノಠ益ಠ)ノ彡┻━┻
+const listOpen = list => {
+  return list.parentNode.querySelector('.arrow').textContent === '▼'
+}
+
 // populate the check box values of a given list using an array of options
 function populateListOptions (list, options) {
   // options are an array of ordered strings like so: ['de-de', 'en-gb'] or ['disableNativeSpellcheck']
@@ -162,6 +187,7 @@ function populateUserDictionaryList (customWords) {
   while (wordsList.firstChild) { wordsList.removeChild(wordsList.firstChild) }
 
   customWords.forEach(word => {
+    listLinkItem.setAttribute('word', word)
     fragment.append(listLinkItem.cloneNode(true))
     child = fragment.lastChild
     child.textContent = word
@@ -206,7 +232,6 @@ function handleWords (event) {
     showListItems(wordsList)
   } else if (event.target.matches('.words li')) {
     messageHandler.postMessage({ type: 'removeCustomWord', word: event.target.textContent })
-    wordsList.removeChild(event.target)
   }
 }
 
@@ -262,7 +287,6 @@ function dragOver (e) {
     e.target.style['border-top'] = `solid 0.3em ${highlightColor}`
     e.target.style['border-bottom'] = ''
   }
-  // return false
 }
 
 function dragDrop (e) {
@@ -300,16 +324,6 @@ function addDragAndDropEvents (node) {
   node.addEventListener('dragend', dragEnd, false)
 }
 
-// create a notification to display to the user
-function notify (title, message) {
-  browser.notifications.create('language-change-notification', {
-    type: 'basic',
-    iconUrl: browser.runtime.getURL('media/icons/icon-64.png'),
-    title,
-    message
-  })
-}
-
 // generate settings array from checked options
 function getSettingsFromList (list) {
   const settingsArray = []
@@ -325,7 +339,7 @@ function getSettingsFromList (list) {
 function showListItems (list) {
   let child = list.firstElementChild
   while (child) {
-    child.style.display = null
+    child.style.display = 'list-item'
     child = child.nextSibling
   }
   list.setAttribute('visible', true)

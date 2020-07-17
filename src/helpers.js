@@ -194,6 +194,22 @@ function loadDictionaries (languages) {
 }
 
 /**
+ * Creates a notification that is displayed to the user
+ *
+ * @memberof Helpers
+ * @param  {type} title - the notification title
+ * @param  {type} message - the message that will appear as the notification body
+ */
+function notify (title, message) {
+  browser.notifications.create('language-change-notification', {
+    type: 'basic',
+    iconUrl: browser.runtime.getURL('media/icons/icon-64.png'),
+    title,
+    message
+  })
+}
+
+/**
  * Prepares a language array from an array of language codes
  *
  * @memberof Helpers
@@ -267,6 +283,7 @@ module.exports = {
   getDefaultLanguages,
   isSupported,
   loadDictionaries,
+  notify,
   prepareLanguages,
   setNodeListAttributes
 }
