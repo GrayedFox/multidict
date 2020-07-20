@@ -43,6 +43,7 @@ if (!Array.prototype.remove) {
  */
 async function _asyncForEach (array, callback, thisArg) {
   const promiseArray = []
+
   for (let i = 0; i < array.length; i++) {
     if (i in array) {
       const p = Promise.resolve(array[i]).then((currentValue) => {
