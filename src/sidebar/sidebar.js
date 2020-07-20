@@ -260,7 +260,7 @@ function dragStart (e) {
   dragSourceNode = e.target
   e.dataTransfer.effectAllowed = 'move'
   e.dataTransfer.setData('text/html', e.target.innerHTML)
-};
+}
 
 function dragEnter (e) {
   if (!isDraggable(e.target)) return
