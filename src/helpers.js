@@ -3,33 +3,6 @@
  * @namespace Helpers
  */
 
-if (!Array.prototype.remove) {
-  /**
-   * Remove the first instance of an item inside an array. This extends native array prototype.
-   * Operates on the array in place.
-   *
-   * @memberof Helpers
-   * @param  {*} item - the item to be removed from the array
-   * @returns {Array|undefined} An array if removal successful, otherwise undefined
-   */
-  Array.prototype.remove = function remove (item) { // eslint-disable-line no-extend-native
-    if (!(this || Array.isArray(this))) {
-      throw new TypeError()
-    }
-
-    if (this.includes(item) || this.indexOf(item) !== -1) {
-      this.splice(this.indexOf(item), 1)
-      return this
-    }
-
-    // handles cases where item is a finite index and element at given index is defined
-    if (typeof this[item] !== 'undefined' && item >= 0 && Number.isFinite(item)) {
-      this.splice(item, 1)
-      return this
-    }
-  }
-}
-
 /**
  * Custom async forEach function taken from p-iteration
  *
@@ -41,6 +14,7 @@ if (!Array.prototype.remove) {
  * @param  {Object} [thisArg] - optional this context
  * @returns {Promise} A promise that resolves only after all other promises are done
  */
+/* istanbul ignore next */
 async function _asyncForEach (array, callback, thisArg) {
   const promiseArray = []
 
@@ -56,24 +30,27 @@ async function _asyncForEach (array, callback, thisArg) {
 }
 
 /**
- * Blink target node N times over M milliseconds by adding and removing color class
+ * Blink target node N times over half a second by adding and removing color class
  *
  * @memberof Helpers
  * @param  {Node} node - the node we will add and remove the color class from
- * @param  {number} times - the amount of times to blink the node
- * @param  {number} milliseconds - the length of time the node will be blinked over
+ * @param  {number} times - the amount of times to blink the node. Must be an integer.
  */
-function blinkNode (node, times, milliseconds) {
+function blinkNode (node, times) {
+  const interval = 500 / (times * 2)
+
+  // removing the color class first ensures we change color the correct amount of times
+  node.classList.remove('color')
+
   const tempInterval = setInterval(() => {
     node.classList.contains('color')
       ? node.classList.remove('color')
       : node.classList.add('color')
-  }, Math.round(milliseconds / times))
+  }, interval)
 
   setTimeout(() => {
     clearInterval(tempInterval)
-    node.classList.add('color')
-  }, milliseconds)
+  }, 500)
 }
 
 /**
@@ -100,13 +77,20 @@ function createMenuItems () {
 }
 
 /**
- * Sexy ES6 debounce function with spread operator
+ * A debounced function is a function that will delay the execution of the inner (callback) function
+ * by a certain amount of time each time the debounced (returned) function is called. In our case,
+ * we don't want to spellcheck text every time the user presses a key, so we debounce the spellcheck
+ * function with each keypress. This way each keypress will delay the spellcheck logic by {wait},
+ * which means we will only spellcheck text after the user has stopped typing.
  *
  * @memberof Helpers
+ * @constructor
  * @param  {Function} callback - the callback function to be executed after wait expires
  * @param  {number} wait - the amount of time, in milliseconds, to debounce the function
+ * @returns {Function} - the function to be executed after wait
  */
 function debounce (callback, wait) {
+  if (typeof callback !== 'function') throw new TypeError('First argument to debounce must be of type function')
   let timeout
   return (...args) => {
     clearTimeout(timeout)
@@ -129,22 +113,21 @@ function _hasChildNodes (node) {
 }
 
 /**
- * Takes a node or nodeList and recursively flattens the node and all children into an array
+ * Takes a node or nodeList and recursively flattens the node(s) and all children into an array
  *
  * @memberof Helpers
  * @param  {Node|Node[]|NodeList} nodeList - the nodeList, node, or array of nodes to operate on
  * @param  {Array} [accumulator=[]] - array used to accumulate all child nodes (defaults to empty)
- * @returns {Array} Flattened array of node and all child nodes
+ * @returns {Array} Flattened array of node(s) and all child nodes
  */
-function getAllChildren (nodeList, accumulator = []) {
-  if (!Array.isArray(nodeList)) {
-    nodeList = Array.from(nodeList)
-  }
+function flattenAllChildren (nodeList, accumulator = []) {
+  if (typeof nodeList.nodeType === 'number') nodeList = [nodeList]
+  if (!Array.isArray(nodeList)) nodeList = Array.from(nodeList)
 
   nodeList.forEach((node) => {
     accumulator.push(node)
     if (_hasChildNodes(node)) {
-      getAllChildren(node.childNodes, accumulator)
+      flattenAllChildren(node.childNodes, accumulator)
     }
   })
   return accumulator
@@ -159,9 +142,9 @@ function getAllChildren (nodeList, accumulator = []) {
  */
 async function getDefaultLanguages () {
   const acceptedLanguages = await browser.i18n.getAcceptLanguages()
-  const uiLanguage = await browser.i18n.getUILanguage()
+  const uiLanguage = browser.i18n.getUILanguage()
 
-  return [...acceptedLanguages, uiLanguage]
+  return [uiLanguage].concat(acceptedLanguages)
 }
 
 /**
@@ -180,8 +163,9 @@ function isSupported (node) {
  *
  * @memberof Helpers
  * @param  {array} languages - array of all lowercase 5 digit language codes: ['de-de', 'en-au']
- * @returns {array} Array of dictionary objects: [{ 'de-de', dic, aff }, { 'en-au', dic, aff }]
+ * @returns {Promise} Promise resolves array of dictionary objects: [{ 'de-de', dic, aff }, { 'en-au', dic, aff }]
  */
+/* istanbul ignore next */
 function loadDictionaries (languages) {
   // ToDo: check if this negatively impacts memory imprint (may need to fetch dict/aff files)
   const dicts = []
@@ -202,7 +186,7 @@ function loadDictionaries (languages) {
  * @param  {type} message - the message that will appear as the notification body
  */
 function notify (title, message) {
-  browser.notifications.create('language-change-notification', {
+  browser.notifications.create(title, {
     type: 'basic',
     iconUrl: browser.runtime.getURL('media/icons/icon-64.png'),
     title,
@@ -214,8 +198,8 @@ function notify (title, message) {
  * Prepares a language array from an array of language codes
  *
  * @memberof Helpers
- * @param  {Array} languageCodes - array of langauge codes i.e. ['de-DE', 'en-AU', 'en', 'fr']
- * @returns {Array} Array of normalised language codes i.e. ['de-de', 'en-au', 'en-en', 'fr-fr']
+ * @param  {string[]} languageCodes - array of langauge codes i.e. ['de-DE', 'en-AU', 'en', 'fr']
+ * @returns {string[]} Array of normalised language codes i.e. ['de-de', 'en-au', 'en-en', 'fr-fr']
  */
 function prepareLanguages (languageCodes) {
   return languageCodes.reduce((acc, language, index) => {
@@ -233,13 +217,14 @@ function prepareLanguages (languageCodes) {
 }
 
 /**
- * Reads a text file, the firefox extension way
+ * Reads a text file, the Firefox web-extension way. Returns a promise
  *
  * @private
  * @memberof Helpers
  * @param  {string} path - the path from which to read the text file
- * @returns {string} The entire text read from the file
+ * @returns {Promise} Promise resolves with the entire text read from the text file
  */
+/* istanbul ignore next */
 function _readTextFile (path) {
   return new Promise((resolve, reject) => {
     fetch(path, { mode: 'same-origin' })
@@ -270,6 +255,7 @@ function _readTextFile (path) {
  * @param  {object} attributes - object of attribute key value pairs
  */
 function setNodeListAttributes (nodeList, attributes) {
+  if (typeof nodeList.nodeType === 'number') nodeList = [nodeList]
   if (!Array.isArray(nodeList)) nodeList = Array.from(nodeList)
 
   nodeList.forEach(node =>
@@ -280,7 +266,7 @@ module.exports = {
   blinkNode,
   createMenuItems,
   debounce,
-  getAllChildren,
+  flattenAllChildren,
   getDefaultLanguages,
   isSupported,
   loadDictionaries,

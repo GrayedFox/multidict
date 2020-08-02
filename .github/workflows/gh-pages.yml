@@ -1,4 +1,4 @@
-name: GitHub pages
+name: Build And Deploy Docs
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - master
 
 jobs:
-  deploy:
+  docs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

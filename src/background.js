@@ -1,3 +1,5 @@
+require('./globals') // extensions/polyfill
+
 const { CustomWordList, User, Spelling } = require('./classes')
 const { createMenuItems, getDefaultLanguages, loadDictionaries, notify, prepareLanguages } = require('./helpers')
 const { cleanWord } = require('./text-methods')
@@ -39,7 +41,7 @@ async function init () {
 }
 
 // api that handles performing all actions - background functions should only ever be called by api
-// api always cleans the text before adding/removing custom words
+// api always cleans any text before adding/removing custom words
 // api will push relevant settings/changes to content scripts to trigger a recheck/rehighlight
 function api (message, sender) {
   switch (message.type) {
@@ -319,5 +321,5 @@ init()
 //   their list of languages for spell checking at any time, and we don't actually need to know the
 //   language a custom word is misspelt in as it is saved to browser storage (although we store it
 //   just in case). At runtime however, the User is instantiatied and at this time we will check the
-//   currently used langauges and only add custom words to dictionaries that are missing this word.
+//   currently used languages and only add custom words to dictionaries that are missing this word.
 //   This architecture also fixes https://github.com/GrayedFox/multidict/issues/39
