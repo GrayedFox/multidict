@@ -1,9 +1,9 @@
 const {
-  blinkNode, debounce, getAllChildren, isSupported, setNodeListAttributes
+  blinkNode, debounce, flattenAllChildren, isSupported, setNodeListAttributes
 } = require('./helpers')
 
 const {
-  getCurrentMark, getCurrentSelectionBounds, getMatchingWordIndex, getSelectionBounds,
+  getCurrentMark, getCurrentWordBounds, getMatchingMarkIndex,
   getTextContent, replaceInText, storeSelection
 } = require('./text-methods')
 
@@ -36,7 +36,7 @@ function init () {
     document.body.addEventListener('click', handleClick)
     document.body.addEventListener('click', debounce(spellcheck, 400), true)
     document.body.addEventListener('keyup', handleKeyup)
-    document.body.addEventListener('keyup', debounce(spellcheck, 700), true)
+    document.body.addEventListener('keyup', debounce(spellcheck, 800), true)
     document.body.setAttribute('data-multidict-listening', true)
   }
 
@@ -142,7 +142,7 @@ function handleHighlight (words = currentSpelling.misspeltStrings) {
 
   try {
     if (!highlighter && currentTextarea) {
-      highlighter = new Highlighter(currentTextarea, words, highlightColor, 'multidict')
+      highlighter = new Highlighter(currentTextarea, words, highlightColor)
     } else {
       highlighter.tokens = words
     }
@@ -154,9 +154,9 @@ function handleHighlight (words = currentSpelling.misspeltStrings) {
 // handle cycling through suggestions
 function handleSuggestions (event, direction) {
   if (!highlighter) return // small chance this function is called before highlighter instantiated
-  const word = new Word(...getCurrentSelectionBounds(currentTextarea))
-  const currentMarkIndex = getMatchingWordIndex(getTextContent(currentTextarea), word)
-  const mark = getCurrentMark(word.text, currentMarkIndex, highlighter)
+  const word = new Word(...getCurrentWordBounds(currentTextarea))
+  const currentMarkIndex = getMatchingMarkIndex(getTextContent(currentTextarea), word)
+  const mark = getCurrentMark(word.text, currentMarkIndex, highlighter.$highlights)
   const suggestions = currentSpelling.suggestions[word.text]
   const misspeltWord = currentSpelling.misspeltWords[currentMarkIndex]
 
@@ -168,9 +168,6 @@ function handleSuggestions (event, direction) {
     topSuggestions = maxSuggestions !== 0 && maxSuggestions !== 10
       ? suggestions.suggestedWords.slice(0, maxSuggestions)
       : suggestions.suggestedWords
-
-    // ensures that suggestion with closest proximity to misspelt word is at second index
-    topSuggestions.unshift(topSuggestions.pop())
   }
 
   // if we are cycling suggestions but shift and alt are no longer pressed destroy tracker
@@ -193,7 +190,7 @@ function handleSuggestions (event, direction) {
       }
       // if we have no suggestions but the current word is misspelt, blink current mark
       if ((misspeltWord && mark) && (maxSuggestions === 0 || !topSuggestions)) {
-        blinkNode(mark, 4, 600)
+        blinkNode(mark, 3)
       }
       // cycle through suggestionTracker up or down and replace the word with the suggestion
       if (suggestionTracker) {
@@ -204,11 +201,11 @@ function handleSuggestions (event, direction) {
       // if direction left or right, destroy tracker and restore original text and spelling
       if (suggestionTracker) {
         suggestionTracker = null
-        const restoreSelection = storeSelection(getSelectionBounds(currentTextarea))
+        const restoreSelection = storeSelection(currentTextarea)
         // add misspelt word back to misspeltStrings array in the correct position
         currentSpelling.misspeltStrings.splice(originalMarkIndex, 0, originalWord.text)
         currentTextarea.value = originalText
-        restoreSelection(currentTextarea)
+        restoreSelection()
         handleHighlight()
       }
     }
@@ -218,10 +215,10 @@ function handleSuggestions (event, direction) {
 // replace the text inside the target node with the chosen suggestion
 function chooseSuggestion (node, suggestion, word) {
   const currentText = getTextContent(node)
-  const restoreSelection = storeSelection(getSelectionBounds(node))
+  const restoreSelection = storeSelection(node)
 
   node.value = replaceInText(currentText, word, suggestion)
-  restoreSelection(node)
+  restoreSelection()
   handleHighlight()
 }
 
@@ -260,7 +257,7 @@ function handleSettings (nodeList) {
 function handleWord (message) {
   let word = message.content.word
   // if word undefined generate word from current selection/cursor position
-  word = word || getCurrentSelectionBounds(document.activeElement)[0]
+  word = word || getCurrentWordBounds(document.activeElement)[0]
   browser.runtime.sendMessage({ type: message.type, word: word })
 }
 
@@ -287,7 +284,7 @@ function updateCurrentTextarea (node) {
   if (currentTextarea) currentTextarea.removeAttribute('data-multidict-selected-word')
   updateDetectedLanguage(getTextContent(node))
   currentTextarea = node
-  const word = new Word(...getCurrentSelectionBounds(node))
+  const word = new Word(...getCurrentWordBounds(node))
   node.setAttribute('data-multidict-selected-word', [...word])
 }
 
@@ -306,7 +303,7 @@ function handleDOMChanges (mutationList, observer) {
   // watch for additional textareas added to DOM and apply user settings
   if (settings && settings.includes('disableNativeSpellcheck')) {
     mutationList.forEach((mutation) => {
-      const textareas = getAllChildren(mutation.addedNodes)
+      const textareas = flattenAllChildren(mutation.addedNodes)
         .filter(node => node.nodeName === 'TEXTAREA' && !node.hasAttribute(dataGenString))
       handleSettings(textareas)
     })

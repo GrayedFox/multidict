@@ -1,19 +1,21 @@
-/**
- * The Highlighter module inserts itself into the dom behind a textarea. It expects the array of
- * tokens to be ordered and to match the order that text appears inside the textarea. Updating the
- * tokens or color works as expected: the highlighter will not be created anew, but will update it's
- * innerHTML content or CSS styles to ensure each token is properly marked for highlighting.
-**/
+const { isWholeWord } = require('./text-methods')
 
+/**
+ * Class representing a highlighter. It inserts itself into the dom behind a textarea. It expects
+ * the array of tokens to be ordered and to match the order that text appears inside the textarea.
+ * Updating the tokens or color works as expected: the highlighter will not be created anew, but
+ * will update it's innerHTML content or CSS styles to ensure each token is properly marked for
+ * highlighting.
+**/
 class Highlighter {
   /**
-  * @constructor
-  * @param {array} tokens - The tokens (character sequences) to highlight
-  * @param {string} color - The RGBA, hexcode, or named CSS color string used to highlight tokens
+  * Create a Highligher
+  *
   * @param {node} textarea - The textarea the highlighter will be attached to
-  * @returns {node} Highlighter
+  * @param {string[]} tokens - The tokens (character sequences) to highlight
+  * @param {string} color - The 6 digit hexcode color string used for highlighting tokens
   **/
-  constructor (textarea, tokens, color, position) {
+  constructor (textarea, tokens, color) {
     this.$textarea = textarea
     this._text = textarea.value
     this._textareaStyles = window.getComputedStyle(textarea)
@@ -109,24 +111,12 @@ class Highlighter {
   }
 
   /**
-   * _isWholeWord - searches the text content for an exact match of the given word from the
-   * beginning (or elsewhere) of the string. Returns false given the following inputs:
-   * _isWholeWord('Shorts and sweets', 'sweet')     -- sweet does not appear as a whole word
-   * _isWholeWord('Shorts and sweets', 'Shorts', 1) -- search begins at h so no match
+   * _isWholeWord - private wrapper of isWholeWord
    *
-   * @param  {string} word - The sequence of characters we are testing appears as a whole word
-   * @param  {string} content - Text content to be tested with regex
-   * @param  {number} [start=0] - Optional index to begin searching content from
-   * @returns {boolean} - True if a word appears as a whole word (as of start)
+   * @see TextMethods.isWholeWord
    */
   _isWholeWord (word, content, start = 0) {
-    let begin = start
-    let end = start + word.length
-    if (content.length > (start + word.length)) end++
-    if (start > 0) begin--
-
-    const rxWordBounds = new RegExp(`\\b${word}\\b`)
-    return rxWordBounds.test(content.slice(begin, end))
+    return isWholeWord(word, content, start)
   }
 
   // appends a mark to the end of a node

@@ -12,8 +12,8 @@
  * @returns {string[]} An array of cleaned text (tokens) we consider to be spell checkable
  */
 function cleanText (content, filterChars = true) {
-  if (!content) {
-    console.warn(`Multidict: cannot clean falsy or undefined content: "${content}"`)
+  if (!content || typeof content !== 'string') {
+    console.warn(`Multidict: cannot clean falsy, undefined, or non-string content: "${content}"`)
     return []
   }
 
@@ -63,25 +63,24 @@ function cleanWord (content) {
  * @memberof TextMethods
  * @param  {string} misspeltWord - the misspelt word the mark is positioned over
  * @param  {number} index - the relative index of the misspelt word if it appears more than once
- * @param  {Highlighter} highlighter - the highlighter instance with the highlights we will search
+ * @param  {node} highlights - the node containing the highlights (child nodes) we will be searching
  * @returns {Node} The currently focused mark according to a known relative index
  */
-function getCurrentMark (misspeltWord, index, highlighter) {
-  const highlights = highlighter.$highlighter.shadowRoot.querySelector('#highlights')
+function getCurrentMark (misspeltWord, index, highlights) {
   return [...highlights.children].reduce((acc, child) => {
     return child.textContent === misspeltWord ? acc.concat([child]) : acc
   }, [])[index]
 }
 
 /**
- * Get currently selected text boundaries (if selection present) or get boundaries based on the
+ * Get current word bounds based on selection (if selection present) or get boundaries based on the
  * current caret position within a text node
  *
  * @memberof TextMethods
  * @param  {node} node - the node to operate on
  * @returns {Array} An array containing the word, start index, and end index i.e. ['boom', 0, 3]
  */
-function getCurrentSelectionBounds (node) {
+function getCurrentWordBounds (node) {
   const content = getTextContent(node)
   const selection = getSelectionBounds(node)
 
@@ -91,16 +90,12 @@ function getCurrentSelectionBounds (node) {
     return [word, ...getRelativeBounds(word, content, selection.start)]
   }
 
-  // prefer using getWordBoundsFromCaret over window selection
-  if (selection.start >= 0) {
-    return getWordBoundsFromCaret(node, content, selection.start)
-  }
-
-  console.warn('Multidict: get selected word boundaries failed to find any workable text.')
+  // use getWordBoundsFromCaret to ensure we return current word
+  return getWordBoundsFromCaret(node, content, selection.start)
 }
 
 /**
- * Get the relative index of a Word by matching the Word boundaries against the chunk of text being
+ * Get the relative index of a Mark by matching the Word boundaries against the chunk of text being
  * spellchecked. This is needed for when duplicate misspelt words appear inside of a textarea. The
  * matching mark index is based on the Word boundaries, since a Word always has start and end values
  * relative to where it appears inside of the content it was created from.
@@ -108,16 +103,16 @@ function getCurrentSelectionBounds (node) {
  * @memberof TextMethods
  * @param  {string} content - the chunk of text we will operate on
  * @param  {Word} word - the Word we are searching for
- * @returns {number} An index representing the relative position of the word inside of the content
+ * @returns {number} An index representing the exact position of a word inside content
  */
-function getMatchingWordIndex (content, word) {
+function getMatchingMarkIndex (content, word) {
   if (!word.isValid() || !content) {
     console.warn('Multidict: cannot get mark index of undefined content or invalid word')
     return -1
   }
 
   let searchIndex = 0
-  let wordIndex = 0
+  let markIndex = 0
   let found = false
 
   while (!found) {
@@ -129,17 +124,17 @@ function getMatchingWordIndex (content, word) {
         found = true
       } else {
         searchIndex += word.length
-        // don't update wordIndex unless we've matched a whole word
+        // don't update markIndex unless we've matched a whole word
         if (isWholeWord(word.text, content, start)) {
-          wordIndex++
+          markIndex++
         }
       }
     } else {
       console.warn('Multidict: could not find matching mark index inside given content!')
-      break
+      return -1
     }
   }
-  return wordIndex
+  return markIndex
 }
 
 /**
@@ -152,8 +147,8 @@ function getMatchingWordIndex (content, word) {
  * @returns {Array|undefined} An array containing the start and end bounds of a word or undefined
  * if word or content undefined
  */
-function getRelativeBounds (word, content, startIndex) {
-  if (!word || !content) {
+function getRelativeBounds (word, content, startIndex = 0) {
+  if (!word || !content || content.indexOf(word, startIndex) === -1) {
     console.warn(`Multidict: cannot get relative boundaries of ${word} in ${content}`)
     return
   }
@@ -179,7 +174,6 @@ function getSelectionBounds (node) {
 
 /**
  * Conditionally return the text content of a node (including line breaks) based on the node type.
- * For now only supports textareas.
  *
  * @memberof TextMethods
  * @param  {Node} node - the node we will operate on
@@ -188,7 +182,7 @@ function getSelectionBounds (node) {
 function getTextContent (node) {
   return node.nodeName === 'TEXTAREA'
     ? node.value
-    : node.innerText
+    : node.innerText || node.textContent
 }
 
 /**
@@ -254,13 +248,10 @@ function getWordBoundsFromCaret (node, text, startIndex) {
  * @returns {boolean} True if a word appears at least once as a whole word (as of start)
  */
 function isWholeWord (word, content, start = 0) {
-  let begin = start
-  let end = start + word.length
-  if (content.length > (start + word.length)) end++
-  if (start > 0) begin--
+  const prevChar = content.charAt(start - 1)
+  const nextChar = content.charAt(start + word.length + 1)
 
-  const rxWordBounds = new RegExp(`\\b${word}\\b`)
-  return rxWordBounds.test(content.slice(begin, end))
+  return _isWordBoundary(prevChar) && _isWordBoundary(nextChar)
 }
 
 /**
@@ -275,11 +266,6 @@ function isWholeWord (word, content, start = 0) {
 function _isWordBoundary (char) {
   if (typeof char === 'undefined' || (typeof char === 'string' && char.length === 0)) {
     return true
-  }
-
-  if (char.length !== 1) {
-    console.warn(`Multidict: word boundary can only operate on single characters! Not: "${char}"`)
-    return
   }
 
   const rxSeparators = /[\s\r\n.,:;!¿?_<>{}()[\]"`´^$°§½¼³%&¬+=*~#|/\\]/
@@ -297,6 +283,9 @@ function _isWordBoundary (char) {
  * @returns {string} The modified content that has the replacement in place of the Word
  */
 function replaceInText (content, word, replacement) {
+  if (!replacement || typeof replacement !== 'string') {
+    throw new TypeError('replacement must be of type string and have a value')
+  }
   return `${content.slice(0, word.start)}${replacement}${content.slice(word.end)}`
 }
 
@@ -304,21 +293,20 @@ function replaceInText (content, word, replacement) {
  * Used to store and then restore a previous selection/caret position.
  *
  * @memberof TextMethods
- * @param  {Object} selection - an object containing start and end values
+ * @param  {Node} node - a node that has start and end selection values
  * @returns {function(): undefined} The function that will be use to later restore the selection
  */
-function storeSelection (selection) {
-  const storedSelection = selection
+function storeSelection (node) {
+  const storedSelection = getSelectionBounds(node)
 
   /**
-   * This function should be called with the textarea we wish to restore our selection to.
+   * Call this function to restore the previous selection range stored when calling storeSelection
    *
    * @memberof TextMethods
-   * @param  {Node} textarea - a textarea node
    */
-  return function (textarea) {
-    textarea.focus()
-    textarea.setSelectionRange(storedSelection.start, storedSelection.end)
+  return function () {
+    node.focus()
+    node.setSelectionRange(storedSelection.start, storedSelection.end)
   }
 }
 
@@ -326,8 +314,8 @@ module.exports = {
   cleanText,
   cleanWord,
   getCurrentMark,
-  getCurrentSelectionBounds,
-  getMatchingWordIndex,
+  getCurrentWordBounds,
+  getMatchingMarkIndex,
   getRelativeBounds,
   getTextContent,
   getSelectionBounds,

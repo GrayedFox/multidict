@@ -83,11 +83,37 @@ class CustomWordList {
    */
   _generateWordList (wordList) {
     if (typeof wordList === 'object' && !Array.isArray(wordList)) return wordList
-    if (Array.isArray(wordList)) {
-      const wordListObect = {}
-      wordList.forEach(word => { wordListObect[word] = [] })
-      return wordListObect
-    }
+    const wordListObject = {}
+    wordList.forEach(word => { wordListObject[word] = [] })
+    return wordListObject
+  }
+}
+
+/**
+ * A Dictionary class represents a language, a dictionary of valid words in that language, and a
+ * rule set (aff file) that defines valid word forms (i.e. plurals, capitilisation, etc)
+ *
+ *  @see User
+  * @see {@link https://github.com/wooorm/nspell#nspellaff-dic|NSpell Dictionary Object}
+*/
+class Dictionary {
+  /**
+   * Create a Dictionary class from a dictionary object
+   *
+   * @param    {object} dictionary - a dictionary object
+   * @property {string} dictionary.language - a fully formed language code i.e. 'en-au' or 'de-de'
+   * @property {string} dictionary.dic - a complete string representation of a dic file
+   * @property {string} dictionary.aff - a complete string representation of an aff file
+   */
+  constructor (dictionaryObject) {
+    this.language = dictionaryObject.language
+    this.dic = dictionaryObject.dic
+    this.aff = dictionaryObject.aff
+  }
+
+  // make Dictionary iterable (all values)
+  [Symbol.iterator] () {
+    return [this.language, this.dic, this.aff].values()
   }
 }
 
@@ -142,7 +168,7 @@ class Spelling {
    *
    * @typedef {Object} Suggestions
    * @property {Object} misspeltWord - a sequence of tokens representing the misspelt word
-   * @property {string[]} misspeltWord.suggestions - an array of string suggestions
+   * @property {string[]} misspeltWord.suggestedWords - an array of string suggestions
    * @property {number} misspeltWord.count - the amount of times this exact sequence of tokens
    * appears inside the text content
    */
@@ -159,9 +185,7 @@ class Spelling {
       const suggestedWords = this.speller.suggest(word)
       if (this.suggestions[word]) {
         this.suggestions[word].count++
-      }
-
-      if (suggestedWords.length > 0) {
+      } else if (suggestedWords.length > 0) {
         this.suggestions[word] = { suggestedWords, count: 1 }
       }
     }
@@ -182,7 +206,7 @@ class SuggestionTracker {
    */
   constructor (suggestions) {
     this.suggestions = suggestions
-    this._suggestionIndex = 0
+    this._suggestionIndex = suggestions.length - 1
   }
 
   /**
@@ -215,34 +239,22 @@ class SuggestionTracker {
  */
 class User {
   /**
-   * A Dictionary object has a language, dic, and aff properties.
-   *
-   * @typedef {Object} Dictionary
-   * @see User
-   * @see {@link https://github.com/wooorm/nspell#nspellaff-dic|NSpell Dictionary Object}
-   * @property {Object} dictionary - an object containing a language, dic, and aff buffer/string
-   * @property {string} dictionary.language - a language code i.e. 'en-au'
-   * @property {string} dictionary.dic - a complete string representation of a dic file
-   * @property {string} dictionary.aff - a complete string representation of an aff file
-   */
-
-  /**
    * Create a User
    *
-   * @param  {Dictionary[]} dictionaries - array of Dictionary objects
+   * @param  {object[]} dictionaries - array of dictionary objects
    * @param  {string[]} languages - array of five digit language codes
-   * @param  {string[]} ownWords - array of misspelt words
+   * @param  {object[]} ownWords - array of user saved custom word objects
    */
   constructor (dictionaries, languages, ownWords) {
-    this._dicts = dictionaries // dictionary objects [{ language: 'en-au', dic: '', aff: '' }]
+    this._dicts = this._createDictionaries(dictionaries) // dictionary objects [{ language: 'en-au', dic: '', aff: '' }]
     this._langs = languages // language strings ['en-au', 'de-de', 'en-gb']
-    this._ownWords = ownWords // cloned CustomWordList
+    this._ownWords = ownWords // array of user saved custom words
     this._spellers = this._createSpellers() // nspell instances by language { language: nspell }
   }
 
   /**
    * Gets the user's dictionaries
-   * @returns {Dictionary[]} - users dictionary
+   * @returns {Dictionary[]} - array of user Dictionaries
    */
   get dicts () {
     return this._dicts
@@ -257,9 +269,9 @@ class User {
   }
 
   /**
-   * Gets the user's spelling (nspell) instances
+   * Gets the user's nspell (Speller) instances
    * @see {@link https://github.com/wooorm/nspell#table-of-contents|NSpell}
-   * @returns {type}  description
+   * @returns {nspell[]} An array of nspell instances (Spellers)
    */
   get spellers () {
     return this._spellers
@@ -268,12 +280,12 @@ class User {
   /**
    * Gets the user's preferred (or default) language when spell checking content
    * @see {@link https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/i18n/LanguageCode|Language Code}
-   * @param  {string} contentLanguage - two character length locale i.e. 'de' or 'en'
+   * @param  {string} contentLanguage - two character length locale i.e. 'de' or 'au'
    * @returns {string} - a five character length language code i.e. 'en-au' or 'de-de'
    */
   getPreferredLanguage (contentLanguage) {
     for (const language of this._langs) {
-      const locale = language.substr(3)
+      const locale = language.substr(0, 2)
       if (this._langs.includes(`${contentLanguage}-${locale}`)) {
         return `${contentLanguage}-${locale}`
       }
@@ -296,12 +308,6 @@ class User {
     this._langs = newLangs
   }
 
-  // private method for working around this bug: https://github.com/wooorm/nspell/issues/25
-  _fixWord (word, speller) {
-    speller.remove(word)
-    speller.add(word)
-  }
-
   /**
    * Adds a word to user's custom/own words and updates existing spellchecker instances
    *
@@ -314,7 +320,7 @@ class User {
       if (!speller.correct(word)) {
         speller.add(word)
         misspeltLangs.push(language)
-        if (!speller.correct(word)) this._fixWord(word, speller)
+        if (!speller.correct(word)) this._fixWord(word, speller, language)
       }
     })
     if (misspeltLangs.length > 0) { this._ownWords[word] = misspeltLangs }
@@ -326,20 +332,26 @@ class User {
    * @param  {string} word - word string to be removed
    */
   removeWord (word) {
-    // users can add custom words that are already spelt correctly in all languages, which would
-    // result in them being here undefined
+    // users may attempt (using shortcuts) to remove words that are not in their custom word list
+    // which would result in them being here undefined
     if (!this._ownWords[word]) return
     this._ownWords[word].forEach(language => {
-      if (this._spellers[language]) this._spellers[language].remove(word)
+      this._spellers[language].remove(word)
     })
     delete this._ownWords[word]
   }
 
-  // create spellcheckers (nspell instaces) should only ever be called during class instantiation
+  // private method for working around this bug: https://github.com/wooorm/nspell/issues/25
+  _fixWord (word, speller, language) {
+    console.warn(`Multidict: fixing word ${word} to be correct in ${language}`)
+    speller.remove(word)
+    speller.add(word)
+  }
+
+  // _createSpellers should only ever be called during class instantiation - creates nspell instances
   _createSpellers () {
     if (this._langs.length !== this._dicts.length) {
-      console.warn('Multidict: Languages and user dictionary length not equal. Aborting.')
-      return
+      throw new RangeError('Languages and user dictionary length must be equal. Aborting.')
     }
 
     this._spellers = {}
@@ -353,6 +365,15 @@ class User {
     }
 
     return this._spellers
+  }
+
+  // _createDictionaries should only ever be called during class instantiation - creates Dictionary instances
+  _createDictionaries (dictionaries) {
+    const dicts = []
+    dictionaries.forEach(dictionaryObject => {
+      dicts.push(new Dictionary(dictionaryObject))
+    })
+    return dicts
   }
 }
 
@@ -391,6 +412,7 @@ class Word {
 
 module.exports = {
   CustomWordList,
+  Dictionary,
   Spelling,
   SuggestionTracker,
   User,
