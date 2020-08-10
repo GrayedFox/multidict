@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>CustomWordList - Documentation</title>
+    <title>Dictionary - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">CustomWordList</h1>
+    <h1 class="page-title">Dictionary</h1>
     
 
     
@@ -42,12 +42,11 @@
 <header>
     
         <h2>
-        CustomWordList
+        Dictionary
         </h2>
         
-            <div class="class-description">Class representing a list of custom words. A CustomWordList is a dummy class that helps to
-iterate over and perform operations on the user's custom words which are loaded from browser
-storage.</div>
+            <div class="class-description">A Dictionary class represents a language, a dictionary of valid words in that language, and a
+rule set (aff file) that defines valid word forms (i.e. plurals, capitilisation, etc)</div>
         
     
 </header>
@@ -62,16 +61,120 @@ storage.</div>
     <h2>Constructor</h2>
     
 
-    <h4 class="name" id="CustomWordList"><span class="type-signature"></span>new CustomWordList<span class="signature">(wordList, locale)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Dictionary"><span class="type-signature"></span>new Dictionary<span class="signature">(dictionary)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Create a CustomWordList. Words are sorted alphabetically using the provided locale on creation
+    Create a Dictionary class from a dictionary object
 </div>
 
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>dictionary.language</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">a fully formed language code i.e. 'en-au' or 'de-de'</td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dictionary.dic</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">a complete string representation of a dic file</td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dictionary.aff</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">a complete string representation of an aff file</td>
+        </tr>
+
+        
+
+    
+    </tbody>
+</table>
 
 
 
@@ -105,12 +208,21 @@ storage.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line15">line 15</a>
+        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line108">line 108</a>
     </li></ul></dd>
     
 
     
 
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="User.html">User</a></li>
+        
+            <li><a href="https://github.com/wooorm/nspell#nspellaff-dic">NSpell Dictionary Object</a></li>
+        </ul>
+    </dd>
     
 
     
@@ -149,16 +261,13 @@ storage.</div>
 
         <tr>
             
-                <td class="name"><code>wordList</code></td>
+                <td class="name"><code>dictionary</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><code><a href="global.html#WordList">WordList</a></code></span>
-|
-
-<span class="param-type"><code>Array.&lt;string></code></span>
+<span class="param-type"><code>object</code></span>
 
 
             
@@ -169,33 +278,7 @@ storage.</div>
             
 
             <td class="description last">
-                an array of custom words or object of words and languages
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>locale</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                the locale (i.e. 'en' or 'de') used to sort the custom words
+                a dictionary object
                 
             </td>
         </tr>
@@ -234,574 +317,7 @@ storage.</div>
     
 
     
-        <h3 class="subsection-title">Members</h3>
 
-        
-            
-<div class="section-members">
-<h4 class="name" id="wordList"><span class="type-signature"></span>wordList<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    Get an unsorted wordList object that includes each word and the languages it is misspelt in
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line55">line 55</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-</div>
-
-        
-            
-<div class="section-members">
-<h4 class="name" id="words"><span class="type-signature"></span>words<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    Get all custom words
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line46">line 46</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-</div>
-
-        
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-<div class="section-method">
-
-    
-
-    <h4 class="name" id="add"><span class="type-signature"></span>add<span class="signature">(word, languages)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    Adds a word to the CustomWordList. Note that adding a word does not call sort().
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line26">line 26</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>word</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                word to add
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>languages</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>Array.&lt;string></code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                the languages the word the word is misspelt in
-                
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</div>
-        
-            
-<div class="section-method">
-
-    
-
-    <h4 class="name" id="remove"><span class="type-signature"></span>remove<span class="signature">(word)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    Removes a word from the CustomWordList
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line36">line 36</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>word</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                word to be remove
-                
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</div>
-        
-            
-<div class="section-method">
-
-    
-
-    <h4 class="name" id="sort"><span class="type-signature"></span>sort<span class="signature">(locale)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    Sort all custom words alphabetically based on a specific locale
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes.js.html">classes.js</a>, <a href="classes.js.html#line64">line 64</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>locale</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                a two character length language string (i.e. 'de' or 'es')
-                
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</div>
-        
     
 
     
