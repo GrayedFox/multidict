@@ -50,6 +50,10 @@ function blinkNode (node, times) {
 
   setTimeout(() => {
     clearInterval(tempInterval)
+    // we cannot reliably enter this if statement - it's a bit of defensive programming to ensure
+    // the highlight color class is always added back after blinking the node
+    /* istanbul ignore next */
+    if (!node.classList.contains('color')) node.classList.add('color')
   }, 500)
 }
 

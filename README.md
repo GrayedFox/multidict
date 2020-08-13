@@ -1,3 +1,9 @@
+[![dependencies](https://david-dm.org/grayedfox/multidict/status.svg)](https://david-dm.org/grayedfox/multidict)
+[![devDependencies](https://david-dm.org/grayedfox/multidict/dev-status.svg)](https://david-dm.org/grayedfox/multidict?type=dev)
+![Build and Deploy Docs](https://github.com/GrayedFox/multidict/workflows/Build%20and%20Deploy%20Docs/badge.svg)
+![Linting and Unit Tests](https://github.com/GrayedFox/multidict/workflows/Linting%20and%20Unit%20Tests/badge.svg)
+[![codecov](https://codecov.io/gh/GrayedFox/multidict/branch/master/graph/badge.svg)](https://codecov.io/gh/GrayedFox/multidict)
+
 Welcome to Multidict, your friendly neighbourhood open source language detecting spellchecker.
 
 Looking for the [user docs][2]?

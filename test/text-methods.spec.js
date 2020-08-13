@@ -142,18 +142,18 @@ describe('Text Methods: Word and Selection Boundaries', function () {
   })
 
   it('should assert that isWholeWord() returns true if word and content are identical', function () {
-    assert.equal(isWholeWord(word, word), true)
+    assert.equal(isWholeWord(word, word, 0), true)
   })
 
-  it('should assert that isWholeWord() returns false if word and appears as part of another word', function () {
-    assert.equal(isWholeWord('cherry', content), false)
+  it('should assert that isWholeWord() returns false if word appears as part of another word', function () {
+    assert.equal(isWholeWord('cherry', content, 8), false)
   })
 
-  it('should assert that isWholeWord() returns false if word and does not appear inside content', function () {
-    assert.equal(isWholeWord('fridgetastic', content), false)
+  it('should assert that isWholeWord() returns false if word does not appear inside content', function () {
+    assert.equal(isWholeWord('fridgetastic', content, 0), false)
   })
 
-  it('should assert that isWholeWord() returns true if word appears as a whole word but start index is greater than where word appears', function () {
+  it('should assert that isWholeWord() returns false if word appears as a whole word but start index is greater than where word appears', function () {
     assert.equal(isWholeWord('text', content, 26), false)
   })
 

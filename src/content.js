@@ -167,12 +167,13 @@ function handleSuggestions (event, direction) {
     // means don't limit the suggestions, a setting of 0 means don't show suggestions
     topSuggestions = maxSuggestions !== 0 && maxSuggestions !== 10
       ? suggestions.suggestedWords.slice(0, maxSuggestions)
-      : suggestions.suggestedWords
+      : suggestions.suggestedWords || []
   }
 
   // if we are cycling suggestions but shift and alt are no longer pressed destroy tracker
   if (suggestionTracker && !(event.shiftKey && event.altKey)) {
     suggestionTracker = null
+    currentTextarea.selectionStart = word.end
   }
 
   if (event.shiftKey && event.altKey && direction) {
@@ -189,25 +190,25 @@ function handleSuggestions (event, direction) {
         suggestionTracker = new SuggestionTracker(topSuggestions)
       }
       // if we have no suggestions but the current word is misspelt, blink current mark
-      if ((misspeltWord && mark) && (maxSuggestions === 0 || !topSuggestions)) {
+      if ((misspeltWord && mark) && (maxSuggestions === 0 || topSuggestions.length === 0)) {
         blinkNode(mark, 3)
       }
       // cycle through suggestionTracker up or down and replace the word with the suggestion
       if (suggestionTracker) {
         suggestionTracker.cycle(direction)
+        currentTextarea.selectionStart = word.start // place cursor at beginning of word
+        currentTextarea.selectionEnd = currentTextarea.selectionStart // collapse selection
         chooseSuggestion(currentTextarea, suggestionTracker.currentSuggestion, word)
       }
-    } else {
-      // if direction left or right, destroy tracker and restore original text and spelling
-      if (suggestionTracker) {
-        suggestionTracker = null
-        const restoreSelection = storeSelection(currentTextarea)
-        // add misspelt word back to misspeltStrings array in the correct position
-        currentSpelling.misspeltStrings.splice(originalMarkIndex, 0, originalWord.text)
-        currentTextarea.value = originalText
-        restoreSelection()
-        handleHighlight()
-      }
+    } else if (suggestionTracker) {
+      // if direction left or right and tracker defined, destroy it and restore original text
+      suggestionTracker = null
+      const restoreSelection = storeSelection(currentTextarea)
+      // add misspelt word back to misspeltStrings array in the correct position
+      currentSpelling.misspeltStrings.splice(originalMarkIndex, 0, originalWord.text)
+      currentTextarea.value = originalText
+      restoreSelection()
+      handleHighlight()
     }
   }
 }

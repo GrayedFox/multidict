@@ -143,9 +143,9 @@ class Highlighter {
     const fragment = new DocumentFragment()
 
     while (!done) {
-      const token = this.tokens[i]
+      const token = this._tokens[i]
       // if there are no more tokens, we are done highlighting
-      if (!token) {
+      if (i === this._tokens.length) {
         done = true
         continue
       }

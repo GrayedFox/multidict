@@ -244,12 +244,12 @@ function getWordBoundsFromCaret (node, text, startIndex) {
  * @memberof TextMethods
  * @param  {string} word - the sequence of characters we are testing appears as a whole word
  * @param  {string} content - text content to be tested with regex
- * @param  {number} [start=0] - optional index to begin searching content from
+ * @param  {number} start - mandatory index that represents exactly where word begins inside content
  * @returns {boolean} True if a word appears at least once as a whole word (as of start)
  */
-function isWholeWord (word, content, start = 0) {
+function isWholeWord (word, content, start) {
   const prevChar = content.charAt(start - 1)
-  const nextChar = content.charAt(start + word.length + 1)
+  const nextChar = content.charAt(start + word.length)
 
   return _isWordBoundary(prevChar) && _isWordBoundary(nextChar)
 }
