@@ -185,7 +185,7 @@ describe('User Class', function () {
   })
 
   it('asserts that preferred language returns correct language code upon matching a locale', function () {
-    assert.equal(enUser.getPreferredLanguage('en'), 'en-en')
+    assert.equal(enUser.getPreferredLanguage('en'), 'en-au')
   })
 
   it('asserts that setting a new preferred language order with an unavailable language does not set that language as preferred', function () {

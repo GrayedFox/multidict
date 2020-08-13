@@ -1,6 +1,6 @@
 {
   "name": "multidict",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Spell check in multiple languages with this Firefox addon",
   "main": "src/background.js",
   "scripts": {
@@ -46,7 +46,7 @@
     "nyc": "^15.1.0",
     "sinon": "^9.0.2",
     "sinon-chrome": "^3.0.1",
-    "web-ext": "^4.3.0"
+    "web-ext": "^5.0.0"
   },
   "dependencies": {
     "nspell": "^2.1.2"

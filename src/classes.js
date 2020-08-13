@@ -285,7 +285,7 @@ class User {
    */
   getPreferredLanguage (contentLanguage) {
     for (const language of this._langs) {
-      const locale = language.substr(0, 2)
+      const locale = language.substr(3, 5)
       if (this._langs.includes(`${contentLanguage}-${locale}`)) {
         return `${contentLanguage}-${locale}`
       }

@@ -86,18 +86,18 @@ describe('Helpers: Browser Methods', function () {
     dom = getDom()
   })
 
-  it('asserts that blinkNode() calls classList.remove the correct amount of times', async function () {
+  it('asserts that blinkNode() calls classList.remove at least N times', async function () {
     sinon.spy(mark.classList, 'remove')
     blinkNode(mark, 3)
     await promiseWait(500)
-    assert.strictEqual(mark.classList.remove.callCount, 3)
+    assert.isAtLeast(mark.classList.remove.callCount, 3)
   })
 
-  it('asserts that blinkNode() class classList.add the correct amount of times', async function () {
+  it('asserts that blinkNode() class classList.add at least N times', async function () {
     sinon.spy(mark.classList, 'add')
     blinkNode(mark, 4)
     await promiseWait(500)
-    assert.strictEqual(mark.classList.add.callCount, 4)
+    assert.isAtLeast(mark.classList.add.callCount, 4)
   })
 
   it('asserts that flattenAllChildren() returns array with correct ordered members when passed a node', function () {
