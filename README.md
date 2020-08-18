@@ -48,7 +48,7 @@ Multidict ships with these nifty features:
 - word suggestions will match the font and style of whatever text area you are editing, because
   having 7 different fonts and sizes on any given website is criminal enough
 
-![Multidict in action!](../media/demo/demo-multidict.gif?raw=true "Multidict")
+![Multidict in action!](./demo-multidict.gif?raw=true "Multidict")
 
 ## Supported Languages
 
