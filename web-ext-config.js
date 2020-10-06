@@ -19,12 +19,18 @@ module.exports = {
   },
   ignoreFiles: [
     'package-lock.json',
+    'coverage/',
+    'coverage/**',
+    'docs/',
+    'docs/**',
     'src/',
     'src/**',
     'test_page/',
     'test_page/**',
     'tasks/',
     'tasks/**',
+    'test/',
+    'test/**',
     '_config.yml'
   ]
 }
