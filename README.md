@@ -6,7 +6,8 @@
 
 Welcome to Multidict, your friendly neighbourhood open source language detecting spellchecker.
 
-Looking for the [user docs][2]?
+Looking for the [User Docs][2]?
+Looking for the [JSDOCS][4]?
 
 ## Downloading
 
@@ -56,3 +57,4 @@ compilation of different dictionaries from different sources. They each have the
  [1]: https://github.com/wooorm/dictionaries/
  [2]: https://grayedfox.github.io/multidict/
  [3]: https://addons.mozilla.org/en-US/firefox/addon/multidict/?src=search
+ [4]: https://grayedfox.github.io/multidict/devdocs/index.html
