@@ -190,7 +190,7 @@ function handleSuggestions (event, direction) {
         suggestionTracker = new SuggestionTracker(topSuggestions)
       }
       // if we have no suggestions but the current word is misspelt, blink current mark
-      if ((misspeltWord && mark) && (maxSuggestions === 0 || topSuggestions.length === 0)) {
+      if ((misspeltWord && mark) && (maxSuggestions === 0 || !topSuggestions || topSuggestions.length === 0)) {
         blinkNode(mark, 3)
       }
       // cycle through suggestionTracker up or down and replace the word with the suggestion

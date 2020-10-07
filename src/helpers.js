@@ -30,14 +30,14 @@ async function _asyncForEach (array, callback, thisArg) {
 }
 
 /**
- * Blink target node N times over half a second by adding and removing color class
+ * Blink target node N times over 3/4 of a second by adding and removing color class
  *
  * @memberof Helpers
  * @param  {Node} node - the node we will add and remove the color class from
  * @param  {number} times - the amount of times to blink the node. Must be an integer.
  */
 function blinkNode (node, times) {
-  const interval = 500 / (times * 2)
+  const interval = 750 / (times * 2)
 
   // removing the color class first ensures we change color the correct amount of times
   node.classList.remove('color')
@@ -54,7 +54,7 @@ function blinkNode (node, times) {
     // the highlight color class is always added back after blinking the node
     /* istanbul ignore next */
     if (!node.classList.contains('color')) node.classList.add('color')
-  }, 500)
+  }, 750)
 }
 
 /**

@@ -89,14 +89,14 @@ describe('Helpers: Browser Methods', function () {
   it('asserts that blinkNode() calls classList.remove at least N times', async function () {
     sinon.spy(mark.classList, 'remove')
     blinkNode(mark, 3)
-    await promiseWait(500)
+    await promiseWait(750)
     assert.isAtLeast(mark.classList.remove.callCount, 3)
   })
 
   it('asserts that blinkNode() class classList.add at least N times', async function () {
     sinon.spy(mark.classList, 'add')
     blinkNode(mark, 4)
-    await promiseWait(500)
+    await promiseWait(750)
     assert.isAtLeast(mark.classList.add.callCount, 4)
   })
 
