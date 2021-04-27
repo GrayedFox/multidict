@@ -4,6 +4,12 @@
 ![Linting and Unit Tests](https://github.com/GrayedFox/multidict/workflows/Linting%20and%20Unit%20Tests/badge.svg)
 [![codecov](https://codecov.io/gh/GrayedFox/multidict/branch/master/graph/badge.svg)](https://codecov.io/gh/GrayedFox/multidict)
 
+# NOT ACTIVELY MAINTAINED
+
+This project is on hold until web-extensions exposes the native Hunspell implementation (and I have a bit of time an energy!), which will fix the memory consumption problems and make the whole thing a much simpler project. It will continue to live here for now but use with care.
+
+## Multidict
+
 Welcome to Multidict, your friendly neighbourhood open source language detecting spellchecker.
 
 Looking for the [User Docs][2]?
