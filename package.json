@@ -46,7 +46,7 @@
     "nyc": "^15.1.0",
     "sinon": "^10.0.0",
     "sinon-chrome": "^3.0.1",
-    "web-ext": "^6.1.0"
+    "web-ext": "^7.5.0"
   },
   "dependencies": {
     "nspell": "^2.1.5"
